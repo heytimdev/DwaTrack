@@ -140,3 +140,23 @@ export const listData6 = [
      location : 'MARKET VENDOR, NAIROBI'
   }
 ]
+
+export const listData7 = [
+  {
+    description : "No! KoboTrack works in any modern web browser on your phone, tablet, or laptop. You can print to standard desktop printers or Bluetooth thermal receipt printers if you choose."
+  },
+  {
+    description : "KoboTrack requires an internet connection to sync data securely. However, the app is optimized to work even on slow 2G/3G connections commonly found in markets."
+  },
+  {
+    description : "You can invite workers via their email or phone number. You assign them a role (Manager or Cashier), which controls what data they can see and edit."
+  },
+  {
+    description : "Yes, you can export your entire transaction history and expense reports at any time in PDF or CSV (Excel) formats."
+  },
+  {
+    description : "Currently, the service is entirely free and includes unlimited transactions per month."
+  }
+]
+
+console.log(listData7[0].description);

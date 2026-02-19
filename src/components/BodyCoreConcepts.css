@@ -345,7 +345,7 @@ h3 {
 .inline-gridd-6 {
   background-color: white;
   border-radius: 20px;
-  border: 2px solid rgb(228, 226, 226);
+  border: 1px solid rgb(228, 226, 226);
   width: 320px;
 
   margin-right: 200px;
@@ -354,7 +354,6 @@ h3 {
   padding-right: 20px;
 }
 
-
 .grid-6 {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
@@ -362,6 +361,9 @@ h3 {
   margin-right: 130px;
   padding: 0;
   column-gap: -100px;
+}
+.grid-6-hover :hover {
+  box-shadow: 2px 1px 1px 1px black;
 }
 
 .grid-6-second {
@@ -375,8 +377,135 @@ h3 {
   font-size: 15px;
 }
 
-#section-7{
+#section-7 {
   text-align: center;
   font-size: 25px;
   margin-top: 100px;
 }
+
+#section-7-background {
+  justify-content: start;
+}
+
+#section-77 {
+  text-align: start;
+  background-color: white;
+  padding-bottom: 1px;
+  width: 750px;
+  margin-left: 400px;
+  border-radius: 20px;
+  border: 1px solid rgb(228, 226, 226);
+  margin-bottom: 15px;
+  cursor: pointer;
+}
+#section-77:hover {
+  background-color: rgb(250, 247, 247);
+  transition: 0.1s;
+}
+
+#section-7-text {
+  font-size: 15.25px;
+  font-weight: 550;
+  margin-top: 20px;
+}
+
+#img-span {
+  /* display: flex;
+  justify-content:start ; */
+}
+
+#img-span-1 {
+  display: flex;
+  justify-content: end;
+  position: relative;
+  margin-right: 30px;
+  margin-top: -22px;
+}
+
+.active {
+  padding-bottom: 10px;
+  cursor: pointer;
+  overflow: hidden;
+  font-weight: 300;
+  color: rgb(107 114 128);
+}
+
+.active img {
+  margin-top: -100px;
+}
+
+#section-8 {
+  margin-top: 80px;
+  text-align: center;
+  background: linear-gradient(to bottom right, #059669, #14b8a6);
+  padding-top: 50px;
+  padding-bottom: 80px;
+  color: white;
+}
+
+#section-8-button {
+  padding-top: 15px;
+  padding-bottom: 15px;
+  width: 500px;
+  background-color: white;
+  color: green;
+  border: none;
+  border-radius: 15px;
+  font-size: 17.5px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 0.15s ease;
+}
+
+#section-8-button:active {
+  transform: scale(0.99);
+}
+
+#section-8-h3 {
+  font-size: 42px;
+  font-weight: 500;
+  margin-bottom: 20px;
+}
+
+.section-8-text {
+  font-size: 17.5px;
+  font-weight: 350;
+  margin-bottom: 30px;
+}
+
+.section-8-p {
+  color: rgb(209 250 229);
+  font-weight: 500;
+  font-size: 14px;
+}
+
+#section-9 {
+  background-color: #111827;
+  margin-top: -20px;
+  /* margin-bottom: -150px */
+  padding-bottom: 300px;
+}
+
+#section-9-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  margin-left: 220px;
+  column-gap: 40px;
+}
+ #section-9-grid h4{
+  color: white;
+  margin-top: 70px;
+  font-size: 20px;
+  font-weight: 500;
+ }
+
+ #section-9-grid p {
+  color: #9CA3AF;
+  font-size: 13px;
+  line-height: 20px;
+  font-weight: 450;
+ }
+ #section-9-grid p:hover{
+  color: #059669;
+  transition: 0.1s;
+ }

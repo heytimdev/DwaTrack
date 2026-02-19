@@ -3,7 +3,7 @@ import "./BodyCoreConcepts.css";
 export function BodyCoreConcept6({ star, description, image, name, location }) {
   return (
     <>
-      <div>
+      <div id="grid-6-hover">
         <ul className="inline-gridd-6">
           <img src={star} />
           <img src={star} />
