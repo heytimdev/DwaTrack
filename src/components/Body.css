@@ -26,7 +26,11 @@
   padding-left: 30px;
   padding-right: 30px;
   font-size: 18px;
-  
+  transition: transform 0.15s ease;
+}
+
+#button-main:active{
+  transform: scale(0.99);
 }
 #button-sub {
   height: 60px;
@@ -40,6 +44,10 @@
   padding-left: 30px;
   padding-right: 30px;
   font-size: 18px;
+  transition: transform 0.15s ease;
+}
+#button-sub:active{
+  transform: scale(0.99);
 }
 
 #img {
