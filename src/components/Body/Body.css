@@ -1,5 +1,5 @@
 *{
-  font-family: poppins;
+  font-family: 'Poppins', sans-serif;
 }
 
 #body-container {
@@ -11,7 +11,7 @@
   background: linear-gradient(to bottom right,  #14b8a6, #059669);
   padding-bottom: 50px;
   /* z-index: 50px; */
-  font-family: poppins;
+  font-family: 'Poppins', sans-serif;
   gap: 100px;
 }
 #button-main {
@@ -68,7 +68,7 @@ div h2 {
   color: white;
   font-weight: bold;
   line-height: 55px;
-  font-weight: poppins;
+  font-family: 'Poppins', sans-serif;
 }
 
 
@@ -92,13 +92,34 @@ div h2 {
 }
 
 #box{
- 
+
   height: 5px;
   width: 80px;
   background-color: #059669;
-  margin-left: 730px;
-  
-  
+  margin-left: auto;
+  margin-right: auto;
+
+
 }
 
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 1024px) {
+  #body-container { gap: 60px; }
+  #body-text { margin-left: 80px; }
+  #img { margin-left: 40px; }
+}
 
+@media (max-width: 768px) {
+  #body-container {
+    grid-template-columns: 1fr;
+    padding: 50px 24px 60px;
+    gap: 40px;
+    text-align: center;
+  }
+  #body-text { margin-left: 0; margin-top: 0; }
+  #img { margin-left: 0; width: 90%; max-width: 400px; margin: 0 auto; display: block; }
+  div h2 { font-size: 32px; line-height: 40px; }
+  #button-main, #button-sub { width: 100%; margin-right: 0; margin-bottom: 12px; display: block; }
+  #note-text { font-size: 22px; margin-top: 48px; padding: 0 20px; }
+  #box { margin: 12px auto 0; }
+}

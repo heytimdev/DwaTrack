@@ -1,10 +1,13 @@
 import "./Header.css";
+import logo from '../../assets/logo.svg';
+import { Link } from "react-router-dom";
 
 export function Header() {
   return (
     <>
       <div id="header">
-        <div>
+        <div className="flex flex-row gap-2 items-center ml-5">
+          <img src={logo} alt="logo" id="logo"/>
           <p id="main">KoboTrack</p>
         </div>
         <div>
@@ -21,7 +24,9 @@ export function Header() {
           </ul>
         </div>
         <div>
-          <button className="button">Get Started Free</button>
+          <Link to="/signup" className="no-underline">
+          <button className="button">Get Started</button>
+          </Link>
         </div>
       </div>
     </>

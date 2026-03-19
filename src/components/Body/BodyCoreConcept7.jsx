@@ -1,5 +1,5 @@
 import "./BodyCoreConcepts.css";
-import down from "../assets/down.svg";
+import down from "../../assets/down.svg";
 
 export function BodyCoreConcept7({ children, input }) {
   return (

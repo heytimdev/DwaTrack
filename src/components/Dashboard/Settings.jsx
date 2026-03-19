@@ -1,0 +1,358 @@
+import { useState } from "react";
+import { UserPlus, UserX, Shield, User, Briefcase, Save, Camera } from "lucide-react";
+import { useApp } from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
+import ktLogo from "../../assets/logo.svg";
+
+const ROLE_LABELS = {
+  manager: { label: "Manager", color: "bg-blue-100 text-blue-700", icon: Briefcase },
+  cashier: { label: "Cashier", color: "bg-amber-100 text-amber-700", icon: User },
+};
+
+const ROLE_PERMISSIONS = {
+  manager: ["View all transactions", "Add & edit transactions", "Manage expenses", "View reports", "Manage products"],
+  cashier: ["Add transactions only", "View own transactions"],
+};
+
+export function Settings() {
+  const { team, addTeamMember, removeTeamMember } = useApp();
+  const { currentUser, canManageTeam, isOwner, updateShopInfo } = useAuth();
+
+  const [activeTab, setActiveTab] = useState("shop");
+
+  // Shop form
+  const [shopForm, setShopForm] = useState({
+    businessName: currentUser?.businessName || "",
+    city: currentUser?.city || "",
+    phoneNumber: currentUser?.phoneNumber || "",
+    businessEmail: currentUser?.businessEmail || "",
+    businessLogo: currentUser?.businessLogo || null,
+  });
+  const [shopSaved, setShopSaved] = useState(false);
+  const [logoPreview, setLogoPreview] = useState(currentUser?.businessLogo || null);
+
+  // Team form
+  const [memberForm, setMemberForm] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    role: "cashier",
+  });
+  const [teamError, setTeamError] = useState("");
+  const [teamSuccess, setTeamSuccess] = useState("");
+
+  function handleLogoChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      setLogoPreview(ev.target.result);
+      setShopForm((prev) => ({ ...prev, businessLogo: ev.target.result }));
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function handleShopSave(e) {
+    e.preventDefault();
+    updateShopInfo(shopForm);
+    setShopSaved(true);
+    setTimeout(() => setShopSaved(false), 2500);
+  }
+
+  function handleAddMember(e) {
+    e.preventDefault();
+    setTeamError("");
+    setTeamSuccess("");
+    if (!memberForm.firstName || !memberForm.email || !memberForm.password) {
+      setTeamError("First name, email, and password are required.");
+      return;
+    }
+    const result = addTeamMember({ ...memberForm });
+    if (result.success) {
+      setMemberForm({ firstName: "", lastName: "", email: "", password: "", role: "cashier" });
+      setTeamSuccess(`${memberForm.firstName} added successfully.`);
+      setTimeout(() => setTeamSuccess(""), 3000);
+    } else {
+      setTeamError(result.error);
+    }
+  }
+
+  const tabs = [...(isOwner ? ["shop"] : []), ...(canManageTeam ? ["team"] : []), "account"];
+
+  // Default to first available tab if current tab is no longer visible
+  const resolvedTab = tabs.includes(activeTab) ? activeTab : tabs[0];
+
+  return (
+    <div className="max-w-3xl mx-auto px-4 sm:px-0">
+      <div className="mb-5">
+        <h2 className="text-lg font-semibold text-gray-800 m-0">Settings</h2>
+        <p className="text-sm text-gray-500 m-0">Manage your shop, team, and account.</p>
+      </div>
+
+      {/* Tabs */}
+      <div className="flex gap-1 bg-gray-100 p-1 rounded-lg w-fit mb-5">
+        {tabs.map((t) => (
+          <button
+            key={t}
+            onClick={() => setActiveTab(t)}
+            className={`px-4 py-1.5 rounded-md text-sm font-medium border-none cursor-pointer transition-colors capitalize
+              ${resolvedTab === t ? "bg-white text-gray-900 shadow-sm" : "text-gray-500 bg-transparent hover:text-gray-700"}`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+
+      {/* Shop settings */}
+      {resolvedTab === "shop" && isOwner && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-sm font-semibold text-gray-800 m-0 mb-5">Shop Information</h3>
+          <form onSubmit={handleShopSave} className="space-y-5">
+
+            {/* Logo upload */}
+            <div className="flex items-center gap-4">
+              <div className="relative">
+                <div className="w-16 h-16 rounded-xl border-2 border-gray-200 overflow-hidden bg-gray-50 flex items-center justify-center">
+                  {logoPreview
+                    ? <img src={logoPreview} alt="logo" className="w-full h-full object-contain" />
+                    : <img src={ktLogo} alt="logo" className="w-8 h-8 opacity-40" />
+                  }
+                </div>
+                <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center cursor-pointer">
+                  <Camera size={12} className="text-white" />
+                  <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                </label>
+              </div>
+              <div>
+                <p className="text-sm font-medium text-gray-700 m-0">Business Logo</p>
+                <p className="text-xs text-gray-400 m-0 mt-0.5">Shown on receipts. Click the camera to update.</p>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="min-w-0">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Business name</label>
+                <input
+                  type="text"
+                  value={shopForm.businessName}
+                  onChange={(e) => setShopForm({ ...shopForm, businessName: e.target.value })}
+                  className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-medium text-gray-600 mb-1">City / Address</label>
+                <input
+                  type="text"
+                  value={shopForm.city}
+                  onChange={(e) => setShopForm({ ...shopForm, city: e.target.value })}
+                  className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Phone number</label>
+                <input
+                  type="tel"
+                  value={shopForm.phoneNumber}
+                  onChange={(e) => setShopForm({ ...shopForm, phoneNumber: e.target.value })}
+                  className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                />
+              </div>
+              <div className="min-w-0">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Business email</label>
+                <input
+                  type="email"
+                  value={shopForm.businessEmail}
+                  onChange={(e) => setShopForm({ ...shopForm, businessEmail: e.target.value })}
+                  className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                />
+              </div>
+            </div>
+            <button
+              type="submit"
+              className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors"
+            >
+              <Save size={15} /> {shopSaved ? "Saved!" : "Save Changes"}
+            </button>
+          </form>
+        </div>
+      )}
+
+      {/* Team management */}
+      {resolvedTab === "team" && canManageTeam && (
+        <div className="space-y-5">
+          {/* Add member form */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+            <div className="flex items-center gap-2 mb-4">
+              <UserPlus size={18} className="text-teal-500" />
+              <h3 className="text-sm font-semibold text-gray-800 m-0">Add Team Member</h3>
+            </div>
+
+            <form onSubmit={handleAddMember} className="space-y-3">
+              {teamError && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg m-0">{teamError}</p>}
+              {teamSuccess && <p className="text-xs text-teal-700 bg-teal-50 px-3 py-2 rounded-lg m-0">{teamSuccess}</p>}
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <div className="min-w-0">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">First name</label>
+                  <input
+                    type="text"
+                    value={memberForm.firstName}
+                    onChange={(e) => setMemberForm({ ...memberForm, firstName: e.target.value })}
+                    placeholder="John"
+                    className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Last name</label>
+                  <input
+                    type="text"
+                    value={memberForm.lastName}
+                    onChange={(e) => setMemberForm({ ...memberForm, lastName: e.target.value })}
+                    placeholder="Doe"
+                    className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Email</label>
+                  <input
+                    type="email"
+                    value={memberForm.email}
+                    onChange={(e) => setMemberForm({ ...memberForm, email: e.target.value })}
+                    placeholder="john@shop.com"
+                    className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                  />
+                </div>
+                <div className="min-w-0">
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Password</label>
+                  <input
+                    type="password"
+                    value={memberForm.password}
+                    onChange={(e) => setMemberForm({ ...memberForm, password: e.target.value })}
+                    placeholder="••••••••"
+                    className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                  />
+                </div>
+              </div>
+
+              <div>
+                <label className="block text-xs font-medium text-gray-600 mb-2">Role</label>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  {["cashier", "manager"].map((role) => {
+                    const { label, icon: Icon } = ROLE_LABELS[role];
+                    const perms = ROLE_PERMISSIONS[role];
+                    return (
+                      <label
+                        key={role}
+                        className={`border-2 rounded-xl p-3 cursor-pointer transition-colors ${memberForm.role === role ? "border-teal-400 bg-teal-50" : "border-gray-200 hover:border-gray-300"}`}
+                      >
+                        <input
+                          type="radio"
+                          name="role"
+                          value={role}
+                          checked={memberForm.role === role}
+                          onChange={() => setMemberForm({ ...memberForm, role })}
+                          className="hidden"
+                        />
+                        <div className="flex items-center gap-2 mb-2">
+                          <Icon size={15} className={memberForm.role === role ? "text-teal-600" : "text-gray-400"} />
+                          <span className={`text-sm font-semibold ${memberForm.role === role ? "text-teal-700" : "text-gray-700"}`}>{label}</span>
+                        </div>
+                        <ul className="m-0 p-0 list-none space-y-0.5">
+                          {perms.map((p, i) => (
+                            <li key={i} className="text-xs text-gray-500 flex items-center gap-1">
+                              <span className="w-1 h-1 bg-gray-400 rounded-full shrink-0" />
+                              {p}
+                            </li>
+                          ))}
+                        </ul>
+                      </label>
+                    );
+                  })}
+                </div>
+              </div>
+
+              <button
+                type="submit"
+                className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors"
+              >
+                <UserPlus size={15} /> Add Member
+              </button>
+            </form>
+          </div>
+
+          {/* Team list */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="px-5 py-4 border-b border-gray-100">
+              <h3 className="text-sm font-semibold text-gray-800 m-0">Team Members ({team.filter((m) => m.status === "active").length})</h3>
+            </div>
+            {team.filter((m) => m.status === "active").length === 0 ? (
+              <div className="text-center py-10 text-gray-400">
+                <Shield size={32} className="mx-auto mb-2 opacity-30" />
+                <p className="text-sm m-0">No team members yet.</p>
+              </div>
+            ) : (
+              <div className="divide-y divide-gray-50">
+                {team.filter((m) => m.status === "active").map((member) => {
+                  const roleInfo = ROLE_LABELS[member.role];
+                  const RoleIcon = roleInfo?.icon || User;
+                  return (
+                    <div key={member.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 gap-3">
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-gray-600 font-semibold text-sm shrink-0">
+                          {member.firstName?.[0]}{member.lastName?.[0]}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-800 text-sm m-0 truncate">{member.firstName} {member.lastName}</p>
+                          <p className="text-xs text-gray-400 m-0 truncate">{member.email}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-3 shrink-0">
+                        <span className={`flex items-center gap-1 text-xs font-medium px-2 py-1 rounded-full ${roleInfo?.color || "bg-gray-100 text-gray-600"}`}>
+                          <RoleIcon size={11} />
+                          {roleInfo?.label || member.role}
+                        </span>
+                        <button
+                          onClick={() => removeTeamMember(member.id)}
+                          title="Remove member"
+                          className="text-gray-300 hover:text-red-500 border-none bg-transparent cursor-pointer"
+                        >
+                          <UserX size={16} />
+                        </button>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Account tab */}
+      {resolvedTab === "account" && (
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+          <h3 className="text-sm font-semibold text-gray-800 m-0 mb-4">Account Information</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between py-2 border-b border-gray-50 gap-4">
+              <span className="text-xs text-gray-500 shrink-0">Name</span>
+              <span className="text-sm font-medium text-gray-800 text-right">{currentUser?.firstName} {currentUser?.lastName}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-gray-50 gap-4">
+              <span className="text-xs text-gray-500 shrink-0">Email</span>
+              <span className="text-sm text-gray-800 text-right truncate">{currentUser?.email}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 border-b border-gray-50 gap-4">
+              <span className="text-xs text-gray-500 shrink-0">Role</span>
+              <span className="text-sm font-medium text-gray-800 capitalize">{currentUser?.role}</span>
+            </div>
+            <div className="flex items-center justify-between py-2 gap-4">
+              <span className="text-xs text-gray-500 shrink-0">Shop</span>
+              <span className="text-sm text-gray-800 text-right truncate">{currentUser?.businessName}</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

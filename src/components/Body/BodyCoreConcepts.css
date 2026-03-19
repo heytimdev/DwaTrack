@@ -1,6 +1,13 @@
 * {
-  font-family: poppins;
+  font-family: 'Poppins', sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
   font-weight: bold;
+}
+
+input, select, textarea, button {
+  font-weight: 400;
 }
 
 #list {
@@ -392,7 +399,8 @@ h3 {
   background-color: white;
   padding-bottom: 1px;
   width: 750px;
-  margin-left: 400px;
+  margin-left: auto;
+  margin-right: auto;
   border-radius: 20px;
   border: 1px solid rgb(228, 226, 226);
   margin-bottom: 15px;
@@ -489,7 +497,8 @@ h3 {
 #section-9-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
-  margin-left: 220px;
+  margin-left: 100px;
+  margin-right: 60px;
   column-gap: 40px;
 }
  #section-9-grid h4{
@@ -509,3 +518,65 @@ h3 {
   color: #059669;
   transition: 0.1s;
  }
+/* ── Scroll-reveal animations ───────────────── */
+@keyframes fadeSlideUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.animate-visible {
+  animation: fadeSlideUp 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.animate-fade {
+  animation: fadeIn 0.5s ease both;
+}
+
+section {
+  opacity: 0;
+  transform: translateY(24px);
+  transition: opacity 0.55s cubic-bezier(0.22,1,0.36,1), transform 0.55s cubic-bezier(0.22,1,0.36,1);
+}
+
+section.in-view {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Responsive ─────────────────────────────── */
+@media (max-width: 1024px) {
+  #list  { margin-right: 60px; }
+  #grid-2 { margin-left: 60px; }
+  .grid-3 { margin-left: 60px; margin-right: 60px; }
+  .grid-4 { margin-left: 60px; margin-right: 60px; }
+  .grid-6 { margin-left: 40px; margin-right: 40px; }
+  #section-77 { width: 90%; margin-left: auto; margin-right: auto; }
+  #section-9-grid { margin-left: 60px; }
+}
+
+@media (max-width: 768px) {
+  #list  { grid-template-columns: 1fr; margin-right: 0; margin-left: 0; padding: 0 20px; }
+  .style { width: 100%; margin-left: 0; box-sizing: border-box; }
+  #grid-2 { grid-template-columns: 1fr; margin-left: 20px; margin-right: 20px; }
+  .style-2 { width: 100%; }
+  .grid-3 { grid-template-columns: 1fr; margin-left: 20px; margin-right: 20px; }
+  .grid-4 { grid-template-columns: 1fr 1fr; margin-left: 20px; margin-right: 20px; }
+  .grid-4-style { width: 100%; }
+  .grid-6 { grid-template-columns: 1fr; margin-left: 20px; margin-right: 20px; }
+  .inline-gridd-6 { width: 100%; margin-right: 0; }
+  #section-77 { width: 90%; margin-left: auto; margin-right: auto; }
+  #section-9-grid { grid-template-columns: 1fr 1fr; margin-left: 20px; column-gap: 20px; }
+  #line-design { display: none; }
+}
+
+@media (max-width: 480px) {
+  h3 { font-size: 1.5rem; }
+  .grid-4 { grid-template-columns: 1fr; }
+  #section-9-grid { grid-template-columns: 1fr; }
+  #section-8-button { width: 90%; }
+}
