@@ -250,7 +250,7 @@ export function SignUp() {
               type={showPassword ? "text" : "password"}
               id="password"
               name="password"
-              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-full outline-none focus:border-teal-400"
+              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-119 outline-none focus:border-teal-400"
               required
               placeholder="********"
               onChange={(e) => handleChange('password', e.target.value)}
@@ -274,7 +274,7 @@ export function SignUp() {
               type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               name="confirmPassword"
-              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-full outline-none focus:border-teal-400"
+              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-119 outline-none focus:border-teal-400"
               required
               placeholder="********"
               onChange={(e) => handleChange('confirmPassword', e.target.value)}

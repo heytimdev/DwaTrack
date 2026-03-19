@@ -70,7 +70,7 @@ export function Login() {
               name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-full outline-none focus:border-teal-400"
+              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-104 outline-none focus:border-teal-400"
               required
               placeholder="********"
             />
