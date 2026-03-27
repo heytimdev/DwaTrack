@@ -2,174 +2,512 @@
   font-family: 'Poppins', sans-serif;
 }
 
+/* ── Hero ─────────────────────────────────────────── */
 #body-container {
   display: grid;
   grid-template-columns: 1fr 1fr;
   align-items: center;
-  background: linear-gradient(to bottom right, #14b8a6, #059669);
-  padding: 60px 80px 60px 80px;
-  gap: 60px;
-  font-family: 'Poppins', sans-serif;
+  background: linear-gradient(135deg, #064e3b 0%, #065f46 45%, #0e7490 100%);
+  padding: 88px 64px;
+  gap: 64px;
+  position: relative;
+  overflow: hidden;
 }
 
-#body-text {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
+/* Radial glow overlays for depth */
+#body-container::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at 15% 85%, rgba(52, 211, 153, 0.18) 0%, transparent 55%),
+    radial-gradient(ellipse at 85% 15%, rgba(6, 182, 212, 0.12) 0%, transparent 55%);
+  pointer-events: none;
 }
 
-div h2 {
-  font-size: 2.8rem;
+/* Subtle dot-grid texture */
+#body-container::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(circle, rgba(255,255,255,0.06) 1px, transparent 1px);
+  background-size: 28px 28px;
+  pointer-events: none;
+}
+
+#hero-text {
+  position: relative;
+  z-index: 1;
+}
+
+/* Badge pill */
+#hero-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: rgba(255, 255, 255, 0.9);
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 14px;
+  border-radius: 100px;
+  margin-bottom: 24px;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+.badge-dot {
+  width: 7px;
+  height: 7px;
+  background: #34d399;
+  border-radius: 50%;
+  display: inline-block;
+  box-shadow: 0 0 8px rgba(52, 211, 153, 0.8);
+  flex-shrink: 0;
+}
+
+#hero-heading {
+  font-size: 3.1rem;
   color: white;
-  font-weight: bold;
-  line-height: 3.2rem;
-  font-family: 'Poppins', sans-serif;
-  margin-bottom: 16px;
+  font-weight: 700;
+  line-height: 1.14;
+  margin: 0 0 22px;
+  letter-spacing: -0.025em;
 }
 
 #p-text {
-  font-size: 16px;
+  font-size: 16.5px;
   font-weight: 400;
-  margin-top: 0;
-  margin-bottom: 28px;
-  color: white;
-  line-height: 1.6;
+  margin: 0 0 36px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.75;
+  max-width: 460px;
+}
+
+/* Button row */
+#hero-buttons {
+  display: flex;
+  flex-direction: row;
+  gap: 12px;
+  flex-wrap: wrap;
 }
 
 #button-main {
-  height: 54px;
-  background-color: white;
-  color: #059669;
+  height: 52px;
+  background: #10b981;
+  color: white;
   border: none;
   border-radius: 10px;
   font-weight: 600;
-  margin-right: 12px;
-  margin-bottom: 12px;
-  padding: 0 28px;
-  font-size: 16px;
+  padding: 0 30px;
+  font-size: 15.5px;
   cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  transition: background-color 0.2s ease, transform 0.15s ease, box-shadow 0.2s ease;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.45);
+  letter-spacing: 0.01em;
+  white-space: nowrap;
 }
 
 #button-main:hover {
-  opacity: 0.9;
+  background: #059669;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(16, 185, 129, 0.5);
 }
 
 #button-main:active {
-  transform: scale(0.98);
+  transform: scale(0.98) translateY(0);
 }
 
 #button-sub {
-  height: 54px;
+  height: 52px;
   border-radius: 10px;
-  background-color: transparent;
+  background: transparent;
   color: white;
-  font-weight: 550;
-  border: 1.5px solid rgba(255,255,255,0.6);
+  font-weight: 500;
+  border: 1.5px solid rgba(255, 255, 255, 0.4);
   padding: 0 28px;
-  font-size: 16px;
+  font-size: 15.5px;
   cursor: pointer;
-  transition: transform 0.15s ease, background-color 0.15s ease;
+  transition: background-color 0.2s ease, border-color 0.2s ease, transform 0.15s ease;
+  white-space: nowrap;
 }
 
 #button-sub:hover {
-  background-color: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(255, 255, 255, 0.65);
 }
 
 #button-sub:active {
   transform: scale(0.98);
 }
 
+/* ── Hero image — browser window mockup ──────────── */
+#hero-image-wrap {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Soft glow behind the frame */
+#hero-image-wrap::before {
+  content: '';
+  position: absolute;
+  inset: -20px;
+  background: radial-gradient(ellipse at center, rgba(52, 211, 153, 0.2) 0%, transparent 70%);
+  border-radius: 50%;
+  pointer-events: none;
+  z-index: -1;
+}
+
+/* The outer frame */
+#browser-frame {
+  width: 100%;
+  max-width: 540px;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.08),        /* top highlight */
+    0 32px 80px rgba(0, 0, 0, 0.5),            /* deep drop shadow */
+    0 0 0 1px rgba(255, 255, 255, 0.07);        /* subtle border ring */
+  background: #0f1923;
+}
+
+/* Title bar */
+#browser-bar {
+  background: #1a2535;
+  padding: 11px 14px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+}
+
+/* Traffic-light dots */
+.browser-dots {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  display: block;
+  flex-shrink: 0;
+}
+
+.dot-red    { background: #ff5f57; box-shadow: 0 0 4px rgba(255, 95, 87, 0.5); }
+.dot-yellow { background: #febc2e; box-shadow: 0 0 4px rgba(254, 188, 46, 0.45); }
+.dot-green  { background: #28c840; box-shadow: 0 0 4px rgba(40, 200, 64, 0.45); }
+
+/* URL bar pill */
+#browser-url {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 6px;
+  padding: 4px 12px;
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.4);
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: 0.01em;
+}
+
+#url-lock {
+  margin-right: 5px;
+  font-size: 10px;
+  opacity: 0.7;
+}
+
+.browser-spacer {
+  width: 52px; /* mirrors the dots width for symmetric layout */
+  flex-shrink: 0;
+}
+
+/* Screenshot area */
+#browser-content {
+  overflow: hidden;
+  line-height: 0;
+  background: #f1f5f9;
+}
+
 #img {
   width: 100%;
-  max-width: 500px;
   height: auto;
   display: block;
 }
 
+/* ── Stats strip ──────────────────────────────────── */
+#hero-stats {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #0f172a;
+  padding: 30px 32px;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 52px;
+}
+
+.stat-num {
+  font-size: 2rem;
+  font-weight: 700;
+  color: #34d399;
+  line-height: 1;
+  margin-bottom: 6px;
+  letter-spacing: -0.02em;
+}
+
+.stat-label {
+  font-size: 11.5px;
+  color: rgba(255, 255, 255, 0.55);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+
+.stat-divider {
+  width: 1px;
+  height: 44px;
+  background: rgba(255, 255, 255, 0.1);
+  flex-shrink: 0;
+}
+
+/* ── Problem intro heading ────────────────────────── */
 #note-text {
-  margin-top: 60px;
-  color: rgb(34, 32, 32);
-  font-size: 1.6rem;
+  margin: 72px auto 14px;
+  color: #111827;
+  font-size: 1.8rem;
   text-align: center;
-  font-weight: bold;
-  margin-bottom: 8px;
-  padding: 0 20px;
+  font-weight: 700;
+  padding: 0 24px;
+  letter-spacing: -0.02em;
+  max-width: 680px;
 }
 
 #box {
-  height: 5px;
-  width: 80px;
-  background-color: #059669;
-  margin-left: auto;
-  margin-right: auto;
-  margin-bottom: 0;
+  height: 4px;
+  width: 56px;
+  background: linear-gradient(90deg, #059669, #34d399);
+  margin: 0 auto;
+  border-radius: 2px;
 }
 
-/* ── Tablet ───────────────────────────────────── */
+/* ══════════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS — HERO + STATS
+   ══════════════════════════════════════════════ */
+
+/* ── 1024px — Tablet landscape ─────────────── */
 @media (max-width: 1024px) {
   #body-container {
-    padding: 50px 40px;
-    gap: 40px;
+    padding: 64px 40px;
+    gap: 44px;
   }
 
-  div h2 {
-    font-size: 2.2rem;
-    line-height: 2.8rem;
+  #hero-heading {
+    font-size: 2.5rem;
+  }
+
+  #p-text {
+    font-size: 16px;
+  }
+
+  /* Stats: tighten item padding */
+  .stat-item {
+    padding: 0 28px;
+  }
+
+  .stat-num {
+    font-size: 1.8rem;
   }
 }
 
-/* ── Mobile ───────────────────────────────────── */
+/* ── 900px — Narrow tablet ──────────────────── */
+@media (max-width: 900px) {
+  #body-container {
+    padding: 56px 32px;
+    gap: 36px;
+  }
+
+  #hero-heading {
+    font-size: 2.2rem;
+  }
+
+  /* Stats: compact further, dividers may wrap */
+  .stat-item {
+    padding: 0 20px;
+  }
+
+  .stat-num {
+    font-size: 1.65rem;
+  }
+
+  .stat-label {
+    font-size: 10.5px;
+  }
+}
+
+/* ── 768px — Tablet portrait / mobile ───────── */
 @media (max-width: 768px) {
+  /* Hero switches to single column */
   #body-container {
     grid-template-columns: 1fr;
-    padding: 40px 24px 50px;
-    gap: 32px;
+    padding: 48px 24px 56px;
+    gap: 0;
     text-align: center;
   }
 
-  #body-text {
+  #hero-text {
+    display: flex;
+    flex-direction: column;
     align-items: center;
-    order: 1;
   }
 
-  #img {
-    order: 2;
-    margin: 0 auto;
-    max-width: 340px;
+  #hero-heading {
+    font-size: 2rem;
+    line-height: 1.18;
   }
 
-  div h2 {
+  #p-text {
+    font-size: 15.5px;
+    max-width: 480px;
+  }
+
+  #hero-buttons {
+    flex-direction: column;
+    width: 100%;
+    max-width: 320px;
+  }
+
+  #button-main,
+  #button-sub {
+    width: 100%;
+    box-sizing: border-box;
+    height: 50px;
+  }
+
+  /* Hide hero image on mobile — saves load time, text is enough */
+  #hero-image-wrap {
+    display: none;
+  }
+
+  /* Stats: 2×2 grid on mobile */
+  #hero-stats {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    padding: 0;
+  }
+
+  .stat-item {
+    padding: 20px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  /* Right column items get a left border */
+  .stat-item:nth-child(odd) {
+    border-right: 1px solid rgba(255, 255, 255, 0.06);
+  }
+
+  .stat-num {
+    font-size: 1.6rem;
+  }
+
+  .stat-label {
+    font-size: 11px;
+  }
+
+  /* Hide flex dividers — replaced by grid borders above */
+  .stat-divider {
+    display: none;
+  }
+
+  /* Problem section intro heading */
+  #note-text {
+    font-size: 1.35rem;
+    margin-top: 48px;
+    padding: 0 20px;
+  }
+}
+
+/* ── 640px — Mid-size phone ─────────────────── */
+@media (max-width: 640px) {
+  #body-container {
+    padding: 40px 20px 48px;
+  }
+
+  #hero-heading {
     font-size: 1.8rem;
-    line-height: 2.3rem;
+  }
+
+  #hero-badge {
+    font-size: 10.5px;
+    padding: 5px 12px;
   }
 
   #p-text {
     font-size: 15px;
   }
 
+  .stat-item {
+    padding: 18px 12px;
+  }
+
+  .stat-num {
+    font-size: 1.45rem;
+  }
+}
+
+/* ── 480px — Small phone ────────────────────── */
+@media (max-width: 480px) {
+  #body-container {
+    padding: 36px 16px 44px;
+  }
+
+  #hero-heading {
+    font-size: 1.65rem;
+    line-height: 1.2;
+  }
+
+  #p-text {
+    font-size: 14.5px;
+    max-width: 100%;
+  }
+
   #button-main,
   #button-sub {
-    width: 100%;
-    margin-right: 0;
-    display: block;
-    box-sizing: border-box;
+    font-size: 14.5px;
+    height: 48px;
+  }
+
+  .stat-item {
+    padding: 16px 10px;
+  }
+
+  .stat-num {
+    font-size: 1.35rem;
+  }
+
+  .stat-label {
+    font-size: 10px;
+    letter-spacing: 0.04em;
   }
 
   #note-text {
     font-size: 1.2rem;
     margin-top: 40px;
-  }
-}
-
-/* ── Small mobile ─────────────────────────────── */
-@media (max-width: 480px) {
-  div h2 {
-    font-size: 1.5rem;
-    line-height: 2rem;
-  }
-
-  #body-container {
-    padding: 32px 16px 40px;
   }
 }

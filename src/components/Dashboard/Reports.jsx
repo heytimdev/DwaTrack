@@ -8,15 +8,17 @@ export function Reports() {
   const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
 
-  // Revenue by month
+  // Revenue by month — sorted chronologically, last 6 months
   const byMonth = {};
   transactions.forEach((tx) => {
-    const d = new Date(parseInt(tx.id));
+    const d = new Date(tx.createdAt);
     const key = d.toLocaleDateString("en-GH", { month: "short", year: "numeric" });
     byMonth[key] = (byMonth[key] || 0) + (tx.total || 0);
   });
 
-  const monthlyData = Object.entries(byMonth).slice(-6);
+  const monthlyData = Object.entries(byMonth)
+    .sort((a, b) => new Date(a[0]) - new Date(b[0]))
+    .slice(-6);
   const maxMonthly = Math.max(...monthlyData.map(([, v]) => v), 1);
 
   // Expenses by category

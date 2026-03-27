@@ -1,15 +1,11 @@
 import "./BodyCoreConcepts.css";
 
-export function BodyCoreConcept3({image, title, description}) {
+export function BodyCoreConcept3({ step, title, description }) {
   return (
-    <>
-      <div >
-        <ul id="grid-3-style">
-            <img src={image} id="img-section-3"/>
-            <h4 id="text-h3">{title}</h4>
-            <p id="text-h4">{description}</p>
-        </ul>
-      </div>
-    </>
+    <div className="step-card">
+      <div className="step-number">{step}</div>
+      <h4 className="step-title">{title}</h4>
+      <p className="step-desc">{description}</p>
+    </div>
   );
 }

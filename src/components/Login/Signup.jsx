@@ -1,7 +1,7 @@
 import logo from "../../assets/logo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { MapPin, Loader, Eye, EyeOff } from "lucide-react";
+import { MapPin, Loader, Eye, EyeOff, Plus} from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 
 export function SignUp() {
@@ -12,6 +12,7 @@ export function SignUp() {
   const [locating, setLocating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [logoFileName, setLogoFileName] = useState("");
 
   const [data, setData] = useState({
     businessName: "",
@@ -38,7 +39,7 @@ export function SignUp() {
         try {
           const { latitude, longitude } = pos.coords;
           const res = await fetch(
-            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`
+            `https://nominatim.openstreetmap.org/reverse?lat=${latitude}&lon=${longitude}&format=json`,
           );
           const json = await res.json();
           const city =
@@ -48,7 +49,10 @@ export function SignUp() {
             json.address?.county ||
             "";
           const country = json.address?.country || "";
-          handleChange("city", city && country ? `${city}, ${country}` : city || country);
+          handleChange(
+            "city",
+            city && country ? `${city}, ${country}` : city || country,
+          );
         } catch {
           // silently fail
         } finally {
@@ -56,11 +60,11 @@ export function SignUp() {
         }
       },
       () => setLocating(false),
-      { timeout: 8000 }
+      { timeout: 8000 },
     );
   }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     if (data.password !== data.confirmPassword) {
@@ -72,7 +76,7 @@ export function SignUp() {
       return;
     }
     setLoading(true);
-    const result = signup(data);
+    const result = await signup(data);
     setLoading(false);
     if (result.success) {
       navigate("/dashboard");
@@ -81,11 +85,14 @@ export function SignUp() {
     }
   }
 
-  const inputClass = "border border-gray-300 rounded-md p-2 text-gray-500 font-normal w-full outline-none focus:border-teal-400";
+  const inputClass =
+    "border border-gray-300 rounded-md p-2 text-gray-500 font-normal w-full outline-none focus:border-teal-400";
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4">
-
+    <div
+      className="min-h-screen bg-gray-50 flex flex-col items-center py-10 px-4"
+      style={{ animation: "pageEnter 0.3s ease-out both" }}
+    >
       <div className="flex flex-row justify-center items-center mb-6">
         <Link to="/" className="no-underline text-teal-500">
           <img src={logo} alt="logo" id="logo" />
@@ -103,7 +110,9 @@ export function SignUp() {
         </p>
 
         {error && (
-          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg m-0">{error}</p>
+          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg m-0">
+            {error}
+          </p>
         )}
 
         {/* Business details */}
@@ -111,7 +120,9 @@ export function SignUp() {
         <hr className="border-gray-200 m-0" />
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="businessName" className="font-medium text-sm">Business name</label>
+          <label htmlFor="businessName" className="font-medium text-sm">
+            Business name
+          </label>
           <input
             type="text"
             id="businessName"
@@ -119,13 +130,15 @@ export function SignUp() {
             className={inputClass}
             required
             placeholder="My Setup Ghana"
-            onChange={(e) => handleChange('businessName', e.target.value)}
+            onChange={(e) => handleChange("businessName", e.target.value)}
             value={data.businessName}
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="businessEmail" className="font-medium text-sm">Business email</label>
+          <label htmlFor="businessEmail" className="font-medium text-sm">
+            Business email
+          </label>
           <input
             type="email"
             id="businessEmail"
@@ -133,13 +146,15 @@ export function SignUp() {
             className={inputClass}
             required
             placeholder="mysetupghana@gmail.com"
-            onChange={(e) => handleChange('businessEmail', e.target.value)}
+            onChange={(e) => handleChange("businessEmail", e.target.value)}
             value={data.businessEmail}
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="number" className="font-medium text-sm">Phone number</label>
+          <label htmlFor="number" className="font-medium text-sm">
+            Phone number
+          </label>
           <input
             type="tel"
             id="number"
@@ -147,13 +162,15 @@ export function SignUp() {
             className={inputClass}
             required
             placeholder="024 123 4567"
-            onChange={(e) => handleChange('phoneNumber', e.target.value)}
+            onChange={(e) => handleChange("phoneNumber", e.target.value)}
             value={data.phoneNumber}
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="city" className="font-medium text-sm">City or town</label>
+          <label htmlFor="city" className="font-medium text-sm">
+            City or town
+          </label>
           <div className="flex items-center gap-2">
             <input
               type="text"
@@ -162,7 +179,7 @@ export function SignUp() {
               className="border border-gray-300 rounded-md p-2 text-gray-500 font-normal flex-1 min-w-0 outline-none focus:border-teal-400"
               required
               placeholder="Accra"
-              onChange={(e) => handleChange('city', e.target.value)}
+              onChange={(e) => handleChange("city", e.target.value)}
               value={data.city}
             />
             <button
@@ -171,29 +188,52 @@ export function SignUp() {
               disabled={locating}
               className="flex items-center gap-1 text-xs text-teal-600 bg-transparent border-none cursor-pointer whitespace-nowrap hover:text-teal-800 disabled:opacity-50 shrink-0 p-1"
             >
-              {locating ? <Loader size={13} className="animate-spin" /> : <MapPin size={13} />}
-              <span className="hidden sm:inline">{locating ? "Locating..." : "Use current location"}</span>
+              {locating ? (
+                <Loader size={13} className="animate-spin" />
+              ) : (
+                <MapPin size={13} />
+              )}
+              <span className="hidden sm:inline">
+                {locating ? "Locating..." : "Use current location"}
+              </span>
               <span className="sm:hidden">{locating ? "..." : "Locate"}</span>
             </button>
           </div>
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="logo" className="font-medium text-sm">Business logo</label>
+          <label htmlFor="logo-input" className="font-medium text-sm">
+            Business logo
+          </label>
+          {/* Hidden native input — triggered by the label below */}
           <input
             type="file"
-            id="logo"
+            id="logo-input"
             name="logo"
             accept="image/*"
-            className="border border-gray-300 rounded-md p-2 text-gray-500 font-normal w-full"
+            className="sr-only"
             onChange={(e) => {
               const file = e.target.files?.[0];
               if (!file) return;
+              setLogoFileName(file.name);
               const reader = new FileReader();
-              reader.onload = (ev) => handleChange('businessLogo', ev.target.result);
+              reader.onload = (ev) =>
+                handleChange("businessLogo", ev.target.result);
               reader.readAsDataURL(file);
             }}
           />
+          {/* Custom styled trigger */}
+          <label
+            htmlFor="logo-input"
+            className="flex items-center w-full rounded-md border border-gray-300 overflow-hidden cursor-pointer hover:border-teal-400 transition-colors"
+          >
+            <span className="shrink-0 bg-teal-50 text-teal-600 font-medium text-sm px-4 py-2 border-r border-gray-300 hover:bg-teal-100 transition-colors">
+              Choose file
+            </span>
+            <span className="flex-1 px-3 text-sm text-gray-400 truncate">
+              {logoFileName || "Business logo  (PNG, JPG)"}
+            </span>
+          </label>
         </div>
 
         {/* Account details */}
@@ -202,7 +242,9 @@ export function SignUp() {
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           <div className="flex flex-col gap-1">
-            <label htmlFor="fname" className="font-medium text-sm">First name</label>
+            <label htmlFor="fname" className="font-medium text-sm">
+              First name
+            </label>
             <input
               type="text"
               id="fname"
@@ -210,12 +252,14 @@ export function SignUp() {
               className={inputClass}
               required
               placeholder="John"
-              onChange={(e) => handleChange('firstName', e.target.value)}
+              onChange={(e) => handleChange("firstName", e.target.value)}
               value={data.firstName}
             />
           </div>
           <div className="flex flex-col gap-1">
-            <label htmlFor="lname" className="font-medium text-sm">Last name</label>
+            <label htmlFor="lname" className="font-medium text-sm">
+              Last name
+            </label>
             <input
               type="text"
               id="lname"
@@ -223,14 +267,16 @@ export function SignUp() {
               className={inputClass}
               required
               placeholder="Doe"
-              onChange={(e) => handleChange('lastName', e.target.value)}
+              onChange={(e) => handleChange("lastName", e.target.value)}
               value={data.lastName}
             />
           </div>
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="email" className="font-medium text-sm">Email</label>
+          <label htmlFor="email" className="font-medium text-sm">
+            Email
+          </label>
           <input
             type="email"
             id="email"
@@ -238,22 +284,24 @@ export function SignUp() {
             className={inputClass}
             required
             placeholder="john.doe@gmail.com"
-            onChange={(e) => handleChange('email', e.target.value)}
+            onChange={(e) => handleChange("email", e.target.value)}
             value={data.email}
           />
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="password" className="font-medium text-sm">Password</label>
+          <label htmlFor="password" className="font-medium text-sm">
+            Password
+          </label>
           <div className="relative">
             <input
               type={showPassword ? "text" : "password"}
               id="password"
               name="password"
-              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-119 outline-none focus:border-teal-400"
+              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-full outline-none focus:border-teal-400"
               required
               placeholder="********"
-              onChange={(e) => handleChange('password', e.target.value)}
+              onChange={(e) => handleChange("password", e.target.value)}
               value={data.password}
             />
             <button
@@ -264,20 +312,24 @@ export function SignUp() {
               {showPassword ? <EyeOff size={17} /> : <Eye size={17} />}
             </button>
           </div>
-          <p className="text-xs text-gray-400 m-0 mt-0.5">At least 8 characters</p>
+          <p className="text-xs text-gray-400 m-0 mt-0.5">
+            At least 8 characters
+          </p>
         </div>
 
         <div className="flex flex-col gap-1">
-          <label htmlFor="confirmPassword" className="font-medium text-sm">Confirm password</label>
+          <label htmlFor="confirmPassword" className="font-medium text-sm">
+            Confirm password
+          </label>
           <div className="relative">
             <input
               type={showConfirmPassword ? "text" : "password"}
               id="confirmPassword"
               name="confirmPassword"
-              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-119 outline-none focus:border-teal-400"
+              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-full outline-none focus:border-teal-400"
               required
               placeholder="********"
-              onChange={(e) => handleChange('confirmPassword', e.target.value)}
+              onChange={(e) => handleChange("confirmPassword", e.target.value)}
               value={data.confirmPassword}
             />
             <button
@@ -300,7 +352,9 @@ export function SignUp() {
 
         <p className="text-center font-medium text-gray-400 text-sm m-0">
           Already have an account?
-          <Link to="/login" className="no-underline text-teal-500 ml-1.5">Sign in</Link>
+          <Link to="/login" className="no-underline text-teal-500 ml-1.5">
+            Sign in
+          </Link>
         </p>
       </form>
     </div>

@@ -1,207 +1,147 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import api from "../api";
 
 const AppContext = createContext(null);
 
-function getOwnerKey(user) {
-  return user?.ownerId || user?.id;
-}
-
-function useLocalStorage(key, defaultValue) {
-  const [value, setValue] = useState(() => {
-    const saved = localStorage.getItem(key);
-    return saved ? JSON.parse(saved) : defaultValue;
-  });
-
-  function set(newValue) {
-    const val = typeof newValue === "function" ? newValue(value) : newValue;
-    setValue(val);
-    localStorage.setItem(key, JSON.stringify(val));
-  }
-
-  return [value, set];
-}
-
-function generateReceiptNumber() {
-  const now = new Date();
-  const y = now.getFullYear();
-  const m = String(now.getMonth() + 1).padStart(2, "0");
-  const d = String(now.getDate()).padStart(2, "0");
-  const rand = Math.floor(1000 + Math.random() * 9000);
-  return `RCP-${y}${m}${d}-${rand}`;
-}
-
 export function AppProvider({ children }) {
   const { currentUser } = useAuth();
-  const ownerId = getOwnerKey(currentUser);
 
-  const txKey = ownerId ? `kobotrack_transactions_${ownerId}` : null;
-  const prodKey = ownerId ? `kobotrack_products_${ownerId}` : null;
-  const expKey = ownerId ? `kobotrack_expenses_${ownerId}` : null;
-  const teamKey = ownerId ? `kobotrack_team_${ownerId}` : null;
-  const stockKey = ownerId ? `kobotrack_stock_${ownerId}` : null;
+  const [transactions, setTransactions] = useState([]);
+  const [products,     setProducts]     = useState([]);
+  const [expenses,     setExpenses]     = useState([]);
+  const [team,         setTeam]         = useState([]);
+  const [stock,        setStock]        = useState([]);
+  const [loading,      setLoading]      = useState(false);
 
-  const [transactions, setTransactionsRaw] = useState([]);
-  const [products, setProductsRaw] = useState([]);
-  const [expenses, setExpensesRaw] = useState([]);
-  const [team, setTeamRaw] = useState([]);
-  const [stock, setStockRaw] = useState([]);
-
+  // ── Fetch all data whenever the logged-in user changes ───────────────────────
   useEffect(() => {
-    if (!ownerId) return;
-    setTransactionsRaw(JSON.parse(localStorage.getItem(txKey) || "[]"));
-    setProductsRaw(JSON.parse(localStorage.getItem(prodKey) || "[]"));
-    setExpensesRaw(JSON.parse(localStorage.getItem(expKey) || "[]"));
-    setTeamRaw(JSON.parse(localStorage.getItem(teamKey) || "[]"));
-    setStockRaw(JSON.parse(localStorage.getItem(stockKey) || "[]"));
-  }, [ownerId]);
-
-  function persist(key, setter, value) {
-    setter(value);
-    if (key) localStorage.setItem(key, JSON.stringify(value));
-  }
-
-  // Transactions
-  function addTransaction(txData) {
-    const newTx = {
-      id: Date.now().toString(),
-      receiptNumber: generateReceiptNumber(),
-      date: new Date().toLocaleDateString("en-GH", { weekday: "short", year: "numeric", month: "short", day: "numeric" }),
-      time: new Date().toLocaleTimeString("en-GH", { hour: "2-digit", minute: "2-digit" }),
-      addedBy: `${currentUser.firstName} ${currentUser.lastName}`,
-      ...txData,
-    };
-    const updated = [newTx, ...transactions];
-    persist(txKey, setTransactionsRaw, updated);
-
-    // Auto-deduct matching stock items
-    const currentStock = JSON.parse(localStorage.getItem(stockKey) || "[]");
-    if (currentStock.length > 0 && txData.items?.length > 0) {
-      let stockChanged = false;
-      const updatedStock = currentStock.map((stockItem) => {
-        const soldItem = txData.items.find(
-          (item) => item.productName?.toLowerCase() === stockItem.name?.toLowerCase()
-        );
-        if (soldItem) {
-          stockChanged = true;
-          return { ...stockItem, quantity: Math.max(0, stockItem.quantity - soldItem.qty) };
-        }
-        return stockItem;
-      });
-      if (stockChanged) {
-        setStockRaw(updatedStock);
-        localStorage.setItem(stockKey, JSON.stringify(updatedStock));
-      }
+    if (!currentUser) {
+      // Clear state on logout
+      setTransactions([]);
+      setProducts([]);
+      setExpenses([]);
+      setTeam([]);
+      setStock([]);
+      return;
     }
 
+    setLoading(true);
+    Promise.all([
+      api.get("/transactions").then(setTransactions),
+      api.get("/products").then(setProducts),
+      api.get("/expenses").then(setExpenses),
+      // Only owners have a team list
+      currentUser.role === "owner"
+        ? api.get("/team").then(setTeam)
+        : Promise.resolve(),
+      api.get("/stock").then(setStock),
+    ])
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, [currentUser?.id]);
+
+  // ── Transactions ─────────────────────────────────────────────────────────────
+  async function addTransaction(txData) {
+    const newTx = await api.post("/transactions", {
+      ...txData,
+      firstName: currentUser.firstName,
+      lastName:  currentUser.lastName,
+    });
+    setTransactions((prev) => [newTx, ...prev]);
+    // Refresh stock so quantities stay in sync after auto-deduction
+    api.get("/stock").then(setStock).catch(() => {});
     return newTx;
   }
 
-  function deleteTransaction(id) {
-    const updated = transactions.filter((t) => t.id !== id);
-    persist(txKey, setTransactionsRaw, updated);
+  async function deleteTransaction(id) {
+    await api.delete(`/transactions/${id}`);
+    setTransactions((prev) => prev.filter((t) => t.id !== id));
   }
 
-  // Products
-  function addProduct(productData) {
-    const newProd = { id: Date.now().toString(), ...productData };
-    const updated = [...products, newProd];
-    persist(prodKey, setProductsRaw, updated);
+  // ── Products ─────────────────────────────────────────────────────────────────
+  async function addProduct(productData) {
+    const newProd = await api.post("/products", productData);
+    setProducts((prev) => [...prev, newProd]);
     return newProd;
   }
 
-  function updateProduct(id, updates) {
-    const updated = products.map((p) => (p.id === id ? { ...p, ...updates } : p));
-    persist(prodKey, setProductsRaw, updated);
+  async function updateProduct(id, updates) {
+    const updated = await api.put(`/products/${id}`, updates);
+    setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
   }
 
-  function deleteProduct(id) {
-    const updated = products.filter((p) => p.id !== id);
-    persist(prodKey, setProductsRaw, updated);
+  async function deleteProduct(id) {
+    await api.delete(`/products/${id}`);
+    setProducts((prev) => prev.filter((p) => p.id !== id));
   }
 
-  // Expenses
-  function addExpense(expData) {
-    const newExp = {
-      id: Date.now().toString(),
-      date: new Date().toLocaleDateString("en-GH", { year: "numeric", month: "short", day: "numeric" }),
-      addedBy: `${currentUser.firstName} ${currentUser.lastName}`,
+  // ── Expenses ─────────────────────────────────────────────────────────────────
+  async function addExpense(expData) {
+    const newExp = await api.post("/expenses", {
       ...expData,
-    };
-    const updated = [newExp, ...expenses];
-    persist(expKey, setExpensesRaw, updated);
+      firstName: currentUser.firstName,
+      lastName:  currentUser.lastName,
+    });
+    setExpenses((prev) => [newExp, ...prev]);
     return newExp;
   }
 
-  function deleteExpense(id) {
-    const updated = expenses.filter((e) => e.id !== id);
-    persist(expKey, setExpensesRaw, updated);
+  async function deleteExpense(id) {
+    await api.delete(`/expenses/${id}`);
+    setExpenses((prev) => prev.filter((e) => e.id !== id));
   }
 
-  // Team
-  function addTeamMember(memberData) {
-    const existing = team.find((m) => m.email === memberData.email);
-    if (existing) return { success: false, error: "Email already used by a team member" };
-
-    const newMember = {
-      id: Date.now().toString(),
-      ...memberData,
-      status: "active",
-      addedOn: new Date().toLocaleDateString("en-GH", { year: "numeric", month: "short", day: "numeric" }),
-    };
-    const updated = [...team, newMember];
-    persist(teamKey, setTeamRaw, updated);
-    return { success: true };
+  // ── Team ─────────────────────────────────────────────────────────────────────
+  async function addTeamMember(memberData) {
+    try {
+      const newMember = await api.post("/team", memberData);
+      setTeam((prev) => [...prev, newMember]);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
   }
 
-  function removeTeamMember(id) {
-    const updated = team.map((m) => (m.id === id ? { ...m, status: "inactive" } : m));
-    persist(teamKey, setTeamRaw, updated);
+  async function removeTeamMember(id) {
+    const updated = await api.patch(`/team/${id}/status`);
+    setTeam((prev) => prev.map((m) => (m.id === id ? updated : m)));
   }
 
-  // Stock
-  function addStockItem(itemData) {
-    const newItem = {
-      id: Date.now().toString(),
-      ...itemData,
-      quantity: Number(itemData.quantity) || 0,
-      lowStockThreshold: Number(itemData.lowStockThreshold) || 5,
-      addedOn: new Date().toLocaleDateString("en-GH", { year: "numeric", month: "short", day: "numeric" }),
-    };
-    const updated = [...stock, newItem];
-    persist(stockKey, setStockRaw, updated);
+  // ── Stock ─────────────────────────────────────────────────────────────────────
+  async function addStockItem(itemData) {
+    const newItem = await api.post("/stock", itemData);
+    setStock((prev) => [...prev, newItem]);
     return newItem;
   }
 
-  function updateStockItem(id, updates) {
-    const updated = stock.map((s) => (s.id === id ? { ...s, ...updates } : s));
-    persist(stockKey, setStockRaw, updated);
+  async function updateStockItem(id, updates) {
+    const updated = await api.put(`/stock/${id}`, updates);
+    setStock((prev) => prev.map((s) => (s.id === id ? updated : s)));
   }
 
-  function deleteStockItem(id) {
-    const updated = stock.filter((s) => s.id !== id);
-    persist(stockKey, setStockRaw, updated);
+  async function deleteStockItem(id) {
+    await api.delete(`/stock/${id}`);
+    setStock((prev) => prev.filter((s) => s.id !== id));
   }
 
-  function restockItem(id, addQty) {
-    const updated = stock.map((s) =>
-      s.id === id ? { ...s, quantity: s.quantity + Number(addQty) } : s
-    );
-    persist(stockKey, setStockRaw, updated);
+  async function restockItem(id, addQty) {
+    const updated = await api.patch(`/stock/${id}/restock`, { addQty });
+    setStock((prev) => prev.map((s) => (s.id === id ? updated : s)));
   }
 
-  // Analytics helpers
+  // ── Analytics helpers (pure client-side, no API needed) ──────────────────────
   function getTodaySales() {
     const today = new Date().toDateString();
     return transactions
-      .filter((t) => new Date(t.createdAt || Date.now()).toDateString() === today || t.date.includes(new Date().toLocaleDateString("en-GH", { day: "numeric" })))
+      .filter((t) => new Date(t.createdAt).toDateString() === today)
       .reduce((sum, t) => sum + (t.total || 0), 0);
   }
 
   function getWeeklyData() {
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const now = new Date();
-    const dayOfWeek = now.getDay(); // 0=Sun
+    const dayOfWeek = now.getDay();
     const startOfWeek = new Date(now);
     startOfWeek.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
 
@@ -210,10 +150,7 @@ export function AppProvider({ children }) {
       date.setDate(startOfWeek.getDate() + i);
       const dateStr = date.toDateString();
       const total = transactions
-        .filter((t) => {
-          const tDate = new Date(t.createdAt);
-          return tDate.toDateString() === dateStr;
-        })
+        .filter((t) => new Date(t.createdAt).toDateString() === dateStr)
         .reduce((sum, t) => sum + (t.total || 0), 0);
       return { day, total, isToday: date.toDateString() === now.toDateString() };
     });
@@ -223,8 +160,9 @@ export function AppProvider({ children }) {
     const map = {};
     transactions.forEach((tx) => {
       (tx.items || []).forEach((item) => {
-        if (!map[item.productName]) map[item.productName] = { name: item.productName, qty: 0, revenue: 0 };
-        map[item.productName].qty += item.qty;
+        if (!map[item.productName])
+          map[item.productName] = { name: item.productName, qty: 0, revenue: 0 };
+        map[item.productName].qty     += item.qty;
         map[item.productName].revenue += item.price * item.qty;
       });
     });
@@ -234,6 +172,7 @@ export function AppProvider({ children }) {
   return (
     <AppContext.Provider
       value={{
+        loading,
         transactions,
         products,
         expenses,

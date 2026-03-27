@@ -47,12 +47,11 @@ function SimpleBarChart({ data }) {
 
 export function DashboardHome() {
   const { transactions, getWeeklyData } = useApp();
-  const { currentUser, canAddTransactions } = useAuth();
+  const { canAddTransactions } = useAuth();
 
   const todayStr = new Date().toDateString();
   const todayTx = transactions.filter((t) => {
-    const d = new Date(parseInt(t.id));
-    return d.toDateString() === todayStr;
+    return new Date(t.createdAt).toDateString() === todayStr;
   });
   const todaySales = todayTx.reduce((s, t) => s + (t.total || 0), 0);
   const totalTx = transactions.length;

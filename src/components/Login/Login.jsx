@@ -13,11 +13,11 @@ export function Login() {
   const [loading, setLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     setError("");
     setLoading(true);
-    const result = login(email, password);
+    const result = await login(email, password);
     setLoading(false);
     if (result.success) {
       navigate("/dashboard");
@@ -27,7 +27,7 @@ export function Login() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-4 py-10">
+    <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center px-5 sm:px-8 py-10" style={{ animation: "pageEnter 0.3s ease-out both" }}>
 
       <div className="flex flex-row justify-center items-center mb-6">
         <Link to="/" className="no-underline text-teal-500">
@@ -70,7 +70,7 @@ export function Login() {
               name="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-104 outline-none focus:border-teal-400"
+              className="border border-gray-300 rounded-md p-2 pr-10 text-gray-500 font-normal w-full outline-none focus:border-teal-400"
               required
               placeholder="********"
             />

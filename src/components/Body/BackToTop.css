@@ -1,0 +1,78 @@
+#back-to-top {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  z-index: 300;
+
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: #10b981;
+  color: white;
+  border: none;
+  cursor: pointer;
+
+  box-shadow: 0 4px 18px rgba(16, 185, 129, 0.45);
+
+  /* Hidden by default */
+  opacity: 0;
+  transform: translateY(14px) scale(0.9);
+  pointer-events: none;
+
+  transition:
+    opacity 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.28s cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+/* Visible state */
+#back-to-top.btt-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+
+#back-to-top:hover {
+  background: #059669;
+  box-shadow: 0 6px 24px rgba(16, 185, 129, 0.55);
+  transform: translateY(-3px) scale(1);
+}
+
+#back-to-top:active {
+  transform: scale(0.94);
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.4);
+}
+
+/* Tablet */
+@media (max-width: 1024px) {
+  #back-to-top {
+    bottom: 28px;
+    right: 28px;
+  }
+}
+
+/* Mobile */
+@media (max-width: 768px) {
+  #back-to-top {
+    bottom: 22px;
+    right: 18px;
+    width: 42px;
+    height: 42px;
+  }
+}
+
+/* Small mobile */
+@media (max-width: 480px) {
+  #back-to-top {
+    bottom: 16px;
+    right: 14px;
+    width: 40px;
+    height: 40px;
+  }
+}

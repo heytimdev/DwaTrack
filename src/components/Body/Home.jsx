@@ -19,142 +19,135 @@ import { BodyCoreConcept8 } from "./BodyCoreConcept8.jsx";
 import { BodyCoreConcept9 } from "./BodyCoreConcept9.jsx";
 import { Header } from "./Header.jsx";
 import { Body } from "./Body.jsx";
+import { BackToTop } from "./BackToTop.jsx";
 
 export function Home() {
-  const [data, setData] = useState();
+  const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {
     const sections = document.querySelectorAll("section");
     const observer = new IntersectionObserver(
-      (entries) => entries.forEach((e) => { if (e.isIntersecting) e.target.classList.add("in-view"); }),
-      { threshold: 0.1 }
+      (entries) =>
+        entries.forEach((e) => {
+          if (e.isIntersecting) e.target.classList.add("in-view");
+        }),
+      { threshold: 0.08 }
     );
     sections.forEach((s) => observer.observe(s));
     return () => observer.disconnect();
   }, []);
 
-  function handleSelect(input) {
-    setData(input);
-    console.log(data);
+  function handleFaqToggle(key) {
+    setOpenFaq((prev) => (prev === key ? null : key));
   }
-  function handleDelete() {
-    setData("hey");
-  }
+
+  const faqKeys = ["equipment", "internet", "workers", "data", "limit"];
+
   return (
     <>
       <Header />
       <Body />
-      <section>
-        <menu>
-          <li id="list">
-            {listData.map((list) => (
-              <BodyCoreConcept1 key={list.text} {...list} />
+
+      {/* Section 1 — The Problem */}
+      <section id="problem-section">
+        <ul id="list">
+          {listData.map((list) => (
+            <BodyCoreConcept1 key={list.text} {...list} />
+          ))}
+        </ul>
+      </section>
+
+      {/* Section 2 — Automation Features */}
+      <section id="features-section">
+        <div id="section-2">
+          <h3 className="section-heading">Automate What Used to Take Hours</h3>
+          <p className="section-subheading">
+            KoboTrack digitalizes your entire transaction workflow
+          </p>
+          <ul id="grid-2">
+            {listData2.map((list) => (
+              <BodyCoreConcept2 key={list.title} {...list} />
             ))}
-          </li>
-        </menu>
+          </ul>
+        </div>
       </section>
 
-      <section id="section-2">
-        <h3 className="body-text">Automate What Used to Take Hours</h3>
-        <p id="pp-text" className="body-text">
-          KoboTrack digitalizes your entire transaction workflow
-        </p>
-        <li id="grid-2">
-          {listData2.map((list) => (
-            <BodyCoreConcept2 key={list.text} {...list} />
+      {/* Section 3 — Steps */}
+      <section id="steps-section">
+        <div id="section-3-space">
+          <h3 id="section-3">Get Started in 3 Simple Steps</h3>
+          <ul className="grid-3">
+            {listData3.map((list) => (
+              <BodyCoreConcept3 key={list.title} {...list} />
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Section 4 — Impact Stats */}
+      <section>
+        <div id="section-4-background">
+          <h3 id="section-4">The Impact of Digitalization</h3>
+          <ul className="grid-4">
+            {listData4.map((list) => (
+              <BodyCoreConcept4 key={list.title} {...list} />
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Section 5 — Feature Checklist */}
+      <section>
+        <div id="section-5-background">
+          <h3 id="section-5">Everything You Need, Nothing You Don't</h3>
+          <ul className="grid-4">
+            {listData5.map((list) => (
+              <BodyCoreConcept5 key={list.description} {...list} />
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Section 6 — Testimonials */}
+      <section>
+        <div id="section-6-background">
+          <h3 id="section-6">Trusted by Microentrepreneurs Across Africa</h3>
+          <ul className="grid-6">
+            {listData6.map((list) => (
+              <BodyCoreConcept6 key={list.name} {...list} />
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* Section 7 — FAQ */}
+      <section id="faq-section">
+        <div id="section-7-background">
+          <h3 id="section-7">Frequently Asked Questions</h3>
+
+          {listData7.map((item, i) => (
+            <BodyCoreConcept7
+              key={faqKeys[i]}
+              question={item.question}
+              answer={item.description}
+              isOpen={openFaq === faqKeys[i]}
+              onToggle={() => handleFaqToggle(faqKeys[i])}
+            />
           ))}
-        </li>
+        </div>
       </section>
 
-      <section id="section-3-space">
-        <h3 id="section-3">Get Started in 3 Simple Steps</h3>
-        <li className="grid-3">
-          {listData3.map((list) => (
-            <BodyCoreConcept3 key={list.title} {...list} />
-          ))}
-        </li>
-      </section>
-
-      <section id="section-4-background">
-        <h3 id="section-4">The Impact of Digitalization</h3>
-        <li className="grid-4">
-          {listData4.map((list) => (
-            <BodyCoreConcept4 key={list.title} {...list} />
-          ))}
-        </li>
-      </section>
-
-      <section id="section-5-background">
-        <h3 id="section-5">Everything You Need, Nothing You Don't</h3>
-        <li className="grid-4">
-          {listData5.map((list) => (
-            <BodyCoreConcept5 key={list.description} {...list} />
-          ))}
-        </li>
-      </section>
-
-      <section id="section-6-background">
-        <h3 id="section-6">Trusted by Microentrepreneurs Across Africa</h3>
-        <li className="grid-6">
-          {listData6.map((list) => (
-            <BodyCoreConcept6 key={list.name} {...list} />
-          ))}
-        </li>
-      </section>
-
-      <section id="section-7-background">
-        <h3 id="section-7">Frequently Asked Questions</h3>
-
-        <BodyCoreConcept7 input={() => handleSelect("equipment")}>
-          Do I need to buy any special equipment?
-          {data === "equipment" ? (
-            <p className="active">{listData7[0].description}</p>
-          ) : (
-            ""
-          )}
-        </BodyCoreConcept7>
-
-        <BodyCoreConcept7 input={() => handleSelect("internet")}>
-          Can I use this without the internet?
-          {data === "internet" ? (
-            <p className="active">{listData7[1].description}</p>
-          ) : (
-            ""
-          )}
-        </BodyCoreConcept7>
-        <BodyCoreConcept7 input={() => handleSelect("workers")}>
-          How do I add my workers?
-          {data === "workers" ? (
-            <p className="active">{listData7[2].description}</p>
-          ) : (
-            ""
-          )}
-        </BodyCoreConcept7>
-        <BodyCoreConcept7 input={() => handleSelect("data")}>
-          Can I export my data?
-          {data === "data" ? (
-            <p className="active">{listData7[3].description}</p>
-          ) : (
-            ""
-          )}
-        </BodyCoreConcept7>
-        <BodyCoreConcept7 input={() => handleSelect("limit")}>
-          Is there a limit on transactions?
-          {data === "limit" ? (
-            <p className="active">{listData7[4].description}</p>
-          ) : (
-            ""
-          )}
-        </BodyCoreConcept7>
-      </section>
-
+      {/* Section 8 — CTA */}
       <section>
         <BodyCoreConcept8 />
       </section>
 
+      {/* Section 9 — Footer */}
       <section id="section-9">
         <BodyCoreConcept9 />
       </section>
+
+      <BackToTop />
     </>
   );
 }

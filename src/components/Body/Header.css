@@ -1,82 +1,327 @@
-
-*{
-    font-family: 'Poppins', sans-serif;
+* {
+  font-family: 'Poppins', sans-serif;
 }
 
-#header{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-evenly;
-    align-items: center;
-    gap: 20px;
-    z-index: 100;
-    top: 0;
-    margin: 0;
-    background-color: rgba(10, 14, 20, 0.92);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    font-family: 'Poppins', sans-serif;
-    height: 68px;
-    position: sticky;
-    padding: 0 32px;
+/* ── Base header ──────────────────────────────────── */
+#header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 200;
+  top: 0;
+  margin: 0;
+  background-color: rgba(8, 12, 18, 0.97);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  height: 68px;
+  position: sticky;
+  padding: 0 40px;
 }
 
-#main{
-    font-size: 22px;
-    font-weight: 700;
-    color: white;
-    letter-spacing: -0.01em;
-}
-.button{
-    background-color: #059669;
-    border-radius: 8px;
-    height: 38px;
-    width: 140px;
-    text-align: center;
-    color: white;
-    border: none;
-    font-weight: 600;
-    font-size: 14px;
-    letter-spacing: 0.01em;
-    cursor: pointer;
-    transition: background-color 0.15s ease, transform 0.1s ease;
+/* Brand */
+.header-brand {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  flex-shrink: 0;
 }
 
-.button:hover{
-  background-color: #047857;
+#logo {
+  height: 26px;
+  width: 26px;
+}
+
+#main {
+  font-size: 20px;
+  font-weight: 700;
+  color: white;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+/* ── Desktop nav ──────────────────────────────────── */
+#nav-bar {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 2px;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-btn {
+  background: none;
+  border: none;
+  padding: 6px 13px;
+  cursor: pointer;
+  font-size: 13.5px;
+  font-weight: 400;
+  color: rgba(255, 255, 255, 0.65);
+  transition: color 0.15s ease, background-color 0.15s ease;
+  border-radius: 6px;
+  font-family: 'Poppins', sans-serif;
+}
+
+.nav-btn:hover {
+  color: #34d399;
+  background-color: rgba(52, 211, 153, 0.08);
+}
+
+/* ── Desktop action buttons ───────────────────────── */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.btn-login {
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  height: 36px;
+  padding: 0 18px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13.5px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.btn-login:hover {
+  border-color: rgba(255, 255, 255, 0.45);
+  background-color: rgba(255, 255, 255, 0.06);
+  color: white;
+}
+
+.btn-primary {
+  background: #10b981;
+  border: none;
+  border-radius: 8px;
+  height: 36px;
+  padding: 0 18px;
+  color: white;
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.15s ease, transform 0.1s ease, box-shadow 0.15s ease;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.35);
+}
+
+.btn-primary:hover {
+  background: #059669;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px rgba(16, 185, 129, 0.45);
+}
+
+.btn-primary:active {
+  transform: scale(0.98);
+}
+
+/* Keep .button alias for compatibility */
+.button {
+  background-color: #10b981;
+  border-radius: 8px;
+  height: 36px;
+  padding: 0 18px;
+  color: white;
+  border: none;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.15s ease, transform 0.1s ease;
+}
+
+.button:hover {
+  background-color: #059669;
   transform: translateY(-1px);
 }
 
-.button:active {
-  transform: scale(0.98);
-}
-#nav-bar{
-    display: flex;
-    flex-direction: row;
-    justify-content: space-around;
-    align-items: center;
-    gap: 20px;
-}
-
-ul a {
-    text-decoration: none;
-    color: white;
-}
-
-.nav-text{
-    font-size: 14.5px;
-    font-weight: 400;
-    color: rgba(255,255,255,0.75);
-    transition: color 0.15s ease;
+/* ── Hamburger button (mobile only) ───────────────── */
+.hamburger {
+  display: none;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  width: 38px;
+  height: 38px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 6px;
+  border-radius: 8px;
+  transition: background-color 0.15s ease;
+  flex-shrink: 0;
 }
 
-.nav-text:hover{
-    color: #34d399;
+.hamburger:hover {
+  background: rgba(255, 255, 255, 0.08);
 }
 
-/* ── Responsive ─────────────────────────────── */
+.hamburger span {
+  display: block;
+  width: 20px;
+  height: 2px;
+  background: rgba(255, 255, 255, 0.85);
+  border-radius: 2px;
+  transition: transform 0.25s cubic-bezier(0.23, 1, 0.32, 1),
+              opacity 0.2s ease;
+  transform-origin: center;
+}
+
+/* Animate to X when open */
+.hamburger-open span:nth-child(1) {
+  transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-open span:nth-child(2) {
+  opacity: 0;
+  transform: scaleX(0);
+}
+
+.hamburger-open span:nth-child(3) {
+  transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Mobile nav panel ─────────────────────────────── */
+#mobile-nav {
+  display: none; /* shown only inside the media query block */
+  position: fixed;
+  top: 68px;
+  left: 0;
+  right: 0;
+  z-index: 199;
+  background: #0b0f17;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  padding: 12px 16px 20px;
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5);
+  animation: slideDown 0.2s cubic-bezier(0.23, 1, 0.32, 1) both;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.mobile-nav-link {
+  display: block;
+  width: 100%;
+  text-align: left;
+  background: none;
+  border: none;
+  padding: 13px 14px;
+  font-size: 15px;
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.75);
+  cursor: pointer;
+  border-radius: 8px;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+.mobile-nav-link:hover {
+  background: rgba(52, 211, 153, 0.09);
+  color: #34d399;
+}
+
+.mobile-nav-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.08);
+  margin: 10px 2px;
+}
+
+.mobile-nav-actions {
+  display: flex;
+  gap: 10px;
+  padding: 2px;
+}
+
+.mobile-btn-login {
+  flex: 1;
+  height: 44px;
+  background: transparent;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 9px;
+  color: rgba(255, 255, 255, 0.82);
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: border-color 0.15s ease, background-color 0.15s ease, color 0.15s ease;
+}
+
+.mobile-btn-login:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.mobile-btn-primary {
+  flex: 1;
+  height: 44px;
+  background: #10b981;
+  border: none;
+  border-radius: 9px;
+  color: white;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: 'Poppins', sans-serif;
+  transition: background-color 0.15s ease;
+  box-shadow: 0 2px 10px rgba(16, 185, 129, 0.35);
+}
+
+.mobile-btn-primary:hover {
+  background: #059669;
+}
+
+/* ── Tablet (≤1024px) ─────────────────────────────── */
+@media (max-width: 1024px) {
+  #header {
+    padding: 0 28px;
+  }
+}
+
+/* ── Mobile (≤768px) ──────────────────────────────── */
 @media (max-width: 768px) {
-  #header { padding: 0 20px; justify-content: space-between; gap: 12px; }
-  #nav-bar { display: none; }
+  #header {
+    padding: 0 20px;
+  }
+
+  #nav-bar {
+    display: none;
+  }
+
+  .header-actions {
+    display: none;
+  }
+
+  .hamburger {
+    display: flex;
+  }
+
+  #mobile-nav {
+    display: flex;
+  }
+}
+
+/* ── Small mobile (≤480px) ────────────────────────── */
+@media (max-width: 480px) {
+  #header {
+    padding: 0 16px;
+  }
+
+  #main {
+    font-size: 18px;
+  }
 }

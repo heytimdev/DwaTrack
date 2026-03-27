@@ -15,7 +15,13 @@ import { Settings } from "./components/Dashboard/Settings.jsx";
 import { Stock } from "./components/Dashboard/Stock.jsx";
 
 function ProtectedRoute({ children }) {
-  const { currentUser } = useAuth();
+  const { currentUser, authLoading } = useAuth();
+  if (authLoading) return (
+    <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#f9fafb" }}>
+      <div style={{ width: 36, height: 36, border: "3px solid #d1fae5", borderTopColor: "#10b981", borderRadius: "50%", animation: "spin 0.7s linear infinite" }} />
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+    </div>
+  );
   if (!currentUser) return <Navigate to="/login" replace />;
   return children;
 }

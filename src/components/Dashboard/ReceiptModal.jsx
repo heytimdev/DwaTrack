@@ -17,20 +17,24 @@ export function ReceiptModal({ transaction, onClose }) {
 
   function handlePrint() {
     const printContent = printRef.current.innerHTML;
-    const originalBody = document.body.innerHTML;
-    const originalTitle = document.title;
-    document.title = "";
-    document.body.innerHTML = `
-      <style>
-        @page { margin: 0; }
-        body { margin: 14mm 12mm; font-family: monospace; font-size: 12px; }
-      </style>
-      ${printContent}
-    `;
-    window.print();
-    document.body.innerHTML = originalBody;
-    document.title = originalTitle;
-    window.location.reload();
+    const popup = window.open("", "_blank", "width=420,height=680");
+    popup.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>Receipt</title>
+          <style>
+            @page { margin: 0; }
+            body { margin: 14mm 12mm; font-family: monospace; font-size: 12px; }
+          </style>
+        </head>
+        <body>${printContent}</body>
+      </html>
+    `);
+    popup.document.close();
+    popup.focus();
+    popup.print();
+    popup.close();
   }
 
   return (

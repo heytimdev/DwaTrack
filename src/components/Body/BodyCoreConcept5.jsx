@@ -1,14 +1,10 @@
 import "./BodyCoreConcepts.css";
 
-export function BodyCoreConcept5({ image, description }) {
+export function BodyCoreConcept5({ description }) {
   return (
-    <>
-      <div>
-        <ul className="grid-5">
-          <img src={image} id="img-5" />
-          <p id="grid-5-text" >{description}</p>
-        </ul>
-      </div>
-    </>
+    <div className="checklist-item">
+      <span className="check-icon">✓</span>
+      <p className="checklist-text">{description}</p>
+    </div>
   );
 }

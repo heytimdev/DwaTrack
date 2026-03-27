@@ -13,6 +13,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
   const [discount, setDiscount] = useState(0);
   const [note, setNote] = useState("");
   const [error, setError] = useState("");
+  const [submitting, setSubmitting] = useState(false);
 
   function handleItemChange(index, field, value) {
     setItems((prev) => {
@@ -46,7 +47,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
 
   const total = Math.max(0, subtotal - (parseFloat(discount) || 0));
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
     const validItems = items.filter((i) => i.productName && parseFloat(i.price) > 0 && parseInt(i.qty) > 0);
     if (validItems.length === 0) {
@@ -54,24 +55,28 @@ export function AddTransactionModal({ onClose, onSuccess }) {
       return;
     }
 
-    const tx = addTransaction({
-      customer: customer || "Walk-in Customer",
-      paymentMethod,
-      items: validItems.map((i) => ({
-        productId: i.productId,
-        productName: i.productName,
-        price: parseFloat(i.price),
-        qty: parseInt(i.qty),
-      })),
-      subtotal,
-      discount: parseFloat(discount) || 0,
-      total,
-      note,
-      status: "completed",
-      createdAt: new Date().toISOString(),
-    });
-
-    onSuccess(tx);
+    setSubmitting(true);
+    try {
+      const tx = await addTransaction({
+        customer: customer || "Walk-in Customer",
+        paymentMethod,
+        items: validItems.map((i) => ({
+          productId: i.productId,
+          productName: i.productName,
+          price: parseFloat(i.price),
+          qty: parseInt(i.qty),
+        })),
+        subtotal,
+        discount: parseFloat(discount) || 0,
+        total,
+        note,
+        status: "completed",
+      });
+      onSuccess(tx);
+    } catch {
+      setError("Failed to record transaction. Please try again.");
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -261,9 +266,15 @@ export function AddTransactionModal({ onClose, onSuccess }) {
             </button>
             <button
               type="submit"
-              className="flex-1 bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors"
+              disabled={submitting}
+              className="flex-1 bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors disabled:opacity-60 disabled:cursor-not-allowed flex items-center justify-center gap-2"
             >
-              Record Sale
+              {submitting ? (
+                <>
+                  <span style={{ width: 14, height: 14, border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white", borderRadius: "50%", display: "inline-block", animation: "spin 0.6s linear infinite" }} />
+                  Recording...
+                </>
+              ) : "Record Sale"}
             </button>
           </div>
         </form>

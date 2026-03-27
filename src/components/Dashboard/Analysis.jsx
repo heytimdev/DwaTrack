@@ -29,7 +29,7 @@ function BarChart({ data, valueKey, nameKey, color = "bg-teal-500", currency = "
 }
 
 export function Analysis() {
-  const { transactions, products, getProductSalesData } = useApp();
+  const { transactions, getProductSalesData } = useApp();
   const [compareA, setCompareA] = useState("");
   const [compareB, setCompareB] = useState("");
   const currency = "GH₵";
@@ -57,7 +57,7 @@ export function Analysis() {
   // Build daily trend data for selected products
   const dailyMap = {};
   transactions.forEach((tx) => {
-    const d = new Date(parseInt(tx.id));
+    const d = new Date(tx.createdAt);
     const dateStr = d.toLocaleDateString("en-GH", { month: "short", day: "numeric" });
     if (!dailyMap[dateStr]) dailyMap[dateStr] = { date: dateStr };
     (tx.items || []).forEach((item) => {

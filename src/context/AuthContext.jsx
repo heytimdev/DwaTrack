@@ -1,129 +1,94 @@
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useState, useEffect } from "react";
+import api from "../api";
 
 const AuthContext = createContext(null);
 
 export function AuthProvider({ children }) {
-  const [currentUser, setCurrentUser] = useState(() => {
-    const saved = localStorage.getItem("kobotrack_user");
-    return saved ? JSON.parse(saved) : null;
-  });
+  const [currentUser, setCurrentUser] = useState(null);
+  // true while we're verifying the stored token on first load
+  const [authLoading, setAuthLoading] = useState(true);
 
-  function signup(formData) {
-    const users = JSON.parse(localStorage.getItem("kobotrack_users") || "[]");
-    const emailNorm = (formData.email || "").trim().toLowerCase();
-
-    if (users.find((u) => u.email === emailNorm && u.role === "owner")) {
-      return { success: false, error: "Email already exists" };
+  // ── Restore session on mount ─────────────────────────────────────────────────
+  useEffect(() => {
+    const token = localStorage.getItem("kobotrack_token");
+    if (!token) {
+      setAuthLoading(false);
+      return;
     }
-    const newUser = {
-      id: Date.now().toString(),
-      businessName: formData.businessName,
-      businessEmail: formData.businessEmail,
-      phoneNumber: formData.phoneNumber,
-      city: formData.city,
-      businessLogo: formData.businessLogo || "",
-      firstName: formData.firstName,
-      lastName: formData.lastName,
-      email: emailNorm,
-      password: formData.password,
-      role: "owner",
-      createdAt: new Date().toISOString(),
-    };
-    users.push(newUser);
-    localStorage.setItem("kobotrack_users", JSON.stringify(users));
+    api.get("/auth/me")
+      .then((user) => setCurrentUser(user))
+      .catch(() => localStorage.removeItem("kobotrack_token"))
+      .finally(() => setAuthLoading(false));
+  }, []);
 
-    // Init team list for this owner
-    const teamKey = `kobotrack_team_${newUser.id}`;
-    if (!localStorage.getItem(teamKey)) {
-      localStorage.setItem(teamKey, JSON.stringify([]));
-    }
-
-    const { password, ...userWithoutPassword } = newUser;
-    setCurrentUser(userWithoutPassword);
-    localStorage.setItem("kobotrack_user", JSON.stringify(userWithoutPassword));
-    return { success: true };
-  }
-
-  function login(email, password) {
-    const emailNorm = (email || "").trim().toLowerCase();
-    const users = JSON.parse(localStorage.getItem("kobotrack_users") || "[]");
-
-    // Check owner accounts only (role === "owner")
-    const ownerUsers = users.filter((u) => u.role === "owner");
-    const user = ownerUsers.find(
-      (u) => u.email === emailNorm && u.password === password
-    );
-    if (user) {
-      const { password: _p, ...userWithoutPassword } = user;
-      setCurrentUser(userWithoutPassword);
-      localStorage.setItem("kobotrack_user", JSON.stringify(userWithoutPassword));
+  // ── signup ───────────────────────────────────────────────────────────────────
+  async function signup(formData) {
+    try {
+      const { token, user } = await api.post("/auth/signup", {
+        businessName:  formData.businessName,
+        businessEmail: formData.businessEmail,
+        phoneNumber:   formData.phoneNumber,
+        city:          formData.city,
+        businessLogo:  formData.businessLogo || "",
+        firstName:     formData.firstName,
+        lastName:      formData.lastName,
+        email:         formData.email,
+        password:      formData.password,
+      });
+      localStorage.setItem("kobotrack_token", token);
+      setCurrentUser(user);
       return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
     }
-
-    // Check team members — search every owner's team list
-    for (const owner of ownerUsers) {
-      const teamKey = `kobotrack_team_${owner.id}`;
-      const team = JSON.parse(localStorage.getItem(teamKey) || "[]");
-      const member = team.find(
-        (m) =>
-          (m.email || "").trim().toLowerCase() === emailNorm &&
-          m.password === password &&
-          m.status === "active"
-      );
-      if (member) {
-        const memberUser = {
-          ...member,
-          businessName: owner.businessName,
-          businessEmail: owner.businessEmail,
-          businessLogo: owner.businessLogo,
-          city: owner.city,
-          phoneNumber: owner.phoneNumber,
-          ownerId: owner.id,
-        };
-        const { password: _p, ...memberWithoutPassword } = memberUser;
-        setCurrentUser(memberWithoutPassword);
-        localStorage.setItem("kobotrack_user", JSON.stringify(memberWithoutPassword));
-        return { success: true };
-      }
-    }
-
-    return { success: false, error: "Invalid email or password" };
   }
 
+  // ── login ────────────────────────────────────────────────────────────────────
+  async function login(email, password) {
+    try {
+      const { token, user } = await api.post("/auth/login", { email, password });
+      localStorage.setItem("kobotrack_token", token);
+      setCurrentUser(user);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
+  // ── logout ───────────────────────────────────────────────────────────────────
   function logout() {
+    localStorage.removeItem("kobotrack_token");
     setCurrentUser(null);
-    localStorage.removeItem("kobotrack_user");
   }
 
-  function updateShopInfo(updates) {
-    const users = JSON.parse(localStorage.getItem("kobotrack_users") || "[]");
-    const userId = currentUser.ownerId || currentUser.id;
-    const idx = users.findIndex((u) => u.id === userId);
-    if (idx !== -1) {
-      // Preserve password — only spread non-sensitive updates
-      users[idx] = { ...users[idx], ...updates };
-      localStorage.setItem("kobotrack_users", JSON.stringify(users));
+  // ── updateShopInfo ───────────────────────────────────────────────────────────
+  async function updateShopInfo(updates) {
+    try {
+      const updatedUser = await api.put("/settings/shop", updates);
+      setCurrentUser(updatedUser);
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
     }
-    const updated = { ...currentUser, ...updates };
-    setCurrentUser(updated);
-    localStorage.setItem("kobotrack_user", JSON.stringify(updated));
   }
 
-  const isOwner = currentUser?.role === "owner";
+  // ── Role & permission flags (derived, never stored) ──────────────────────────
+  const isOwner   = currentUser?.role === "owner";
   const isManager = currentUser?.role === "manager";
   const isCashier = currentUser?.role === "cashier";
 
-  const canManageTeam = isOwner;
-  const canManageProducts = isOwner || isManager;
-  const canViewReports = isOwner || isManager;
-  const canAddTransactions = isOwner || isManager || isCashier;
+  const canManageTeam         = isOwner;
+  const canManageProducts     = isOwner || isManager;
+  const canViewReports        = isOwner || isManager;
+  const canAddTransactions    = isOwner || isManager || isCashier;
   const canDeleteTransactions = isOwner;
-  const canManageExpenses = isOwner || isManager;
+  const canManageExpenses     = isOwner || isManager;
 
   return (
     <AuthContext.Provider
       value={{
         currentUser,
+        authLoading,
         login,
         signup,
         logout,

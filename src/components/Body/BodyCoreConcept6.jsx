@@ -1,28 +1,17 @@
 import "./BodyCoreConcepts.css";
 
-export function BodyCoreConcept6({ star, description, image, name, location }) {
+export function BodyCoreConcept6({ description, image, name, location }) {
   return (
-    <>
-      <div id="grid-6-hover">
-        <ul className="inline-gridd-6">
-          <img src={star} />
-          <img src={star} />
-          <img src={star} />
-          <img src={star} />
-          <img src={star} />
-          <p className="grid-6-text-p">"{description}"</p>
-
-          <div className="inline-grid-6">
-            <div>
-              <img src={image} />
-            </div>
-            <div className="grid-6-second">
-              <p className="grid-6-text" id="grid-6-first">{name}</p>
-              <h4 className="grid-6-text" id="grid-6-text">{location}</h4>
-            </div>
-          </div>
-        </ul>
+    <div className="testimonial-card">
+      <div className="star-rating">★★★★★</div>
+      <p className="testimonial-body">"{description}"</p>
+      <div className="testimonial-author">
+        <img src={image} alt={name} className="author-avatar" />
+        <div>
+          <p className="author-name">{name}</p>
+          <p className="author-location">{location}</p>
+        </div>
       </div>
-    </>
+    </div>
   );
 }
