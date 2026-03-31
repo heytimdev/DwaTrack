@@ -8,15 +8,20 @@ const router = express.Router();
 // PUT /api/settings/shop  (owner only)
 router.put('/shop', requireAuth, requireRole('owner'), async (req, res) => {
   try {
-    const { businessName, businessEmail, phoneNumber, city, businessLogo } = req.body;
+    const { businessName, businessEmail, phoneNumber, city, country, currency, businessLogo,
+            taxEnabled, taxLabel, taxRate } = req.body;
 
     const { rows } = await pool.query(
       `UPDATE users
-       SET business_name=$1, business_email=$2, phone_number=$3, city=$4, business_logo=$5
-       WHERE id=$6
-       RETURNING id, first_name, last_name, email, role,
-                 business_name, business_email, phone_number, city, business_logo, created_at`,
-      [businessName, businessEmail, phoneNumber, city, businessLogo || null, req.user.id]
+       SET business_name=$1, business_email=$2, phone_number=$3, city=$4, business_logo=$5,
+           tax_enabled=$6, tax_label=$7, tax_rate=$8,
+           country=$9, currency=$10
+       WHERE id=$11
+       RETURNING *`,
+      [businessName, businessEmail, phoneNumber, city, businessLogo || null,
+       taxEnabled || false, taxLabel || 'VAT', parseFloat(taxRate) || 0,
+       country || 'Ghana', currency || 'GH₵',
+       req.user.id]
     );
 
     const u = rows[0];
@@ -31,7 +36,12 @@ router.put('/shop', requireAuth, requireRole('owner'), async (req, res) => {
       businessEmail: u.business_email,
       phoneNumber: u.phone_number,
       city: u.city,
+      country: u.country || 'Ghana',
+      currency: u.currency || 'GH₵',
       businessLogo: u.business_logo,
+      taxEnabled: u.tax_enabled,
+      taxLabel: u.tax_label,
+      taxRate: parseFloat(u.tax_rate),
       createdAt: u.created_at,
     });
   } catch (err) {

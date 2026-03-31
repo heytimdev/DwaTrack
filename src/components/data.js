@@ -124,12 +124,12 @@ export const listData7 = [
   {
     question: "Do I need to buy any special equipment?",
     description:
-      "No! KoboTrack works in any modern web browser on your phone, tablet, or laptop. You can print to standard desktop printers or Bluetooth thermal receipt printers if you choose.",
+      "No! DwaTrack works in any modern web browser on your phone, tablet, or laptop. You can print to standard desktop printers or Bluetooth thermal receipt printers if you choose.",
   },
   {
     question: "Can I use this without the internet?",
     description:
-      "KoboTrack requires an internet connection to sync data securely. However, the app is optimized to work even on slow 2G/3G connections commonly found in markets.",
+      "DwaTrack requires an internet connection to sync data securely. However, the app is optimized to work even on slow 2G/3G connections commonly found in markets.",
   },
   {
     question: "How do I add my workers?",

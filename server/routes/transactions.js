@@ -21,8 +21,11 @@ function format(tx) {
     customer: tx.customer || 'Walk-in Customer',
     items: tx.items,
     total: parseFloat(tx.total),
+    taxLabel: tx.tax_label || null,
+    taxAmount: parseFloat(tx.tax_amount) || 0,
     paymentMethod: tx.payment_method,
     addedBy: tx.added_by,
+    status: tx.status || 'completed',
     date: date.toLocaleDateString('en-GH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }),
     time: date.toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' }),
     createdAt: tx.created_at,
@@ -52,12 +55,16 @@ router.post('/', requireAuth, async (req, res) => {
 
     const receiptNumber = generateReceiptNumber();
 
+    const { taxLabel, taxAmount } = req.body;
+
     const { rows } = await pool.query(
-      `INSERT INTO transactions (owner_id, receipt_number, customer, items, total, payment_method, added_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7)
+      `INSERT INTO transactions (owner_id, receipt_number, customer, items, total, tax_label, tax_amount, payment_method, added_by)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
        RETURNING *`,
       [req.user.ownerId, receiptNumber, customer || 'Walk-in Customer',
-       JSON.stringify(items || []), total || 0, paymentMethod || 'cash', addedBy]
+       JSON.stringify(items || []), total || 0,
+       taxLabel || null, parseFloat(taxAmount) || 0,
+       paymentMethod || 'cash', addedBy]
     );
 
     // Deduct matching stock quantities
@@ -75,6 +82,28 @@ router.post('/', requireAuth, async (req, res) => {
     }
 
     res.status(201).json(format(rows[0]));
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// PATCH /api/transactions/:id/void  (owner or manager)
+router.patch('/:id/void', requireAuth, async (req, res) => {
+  try {
+    const { reason } = req.body;
+    if (!reason || !reason.trim()) {
+      return res.status(400).json({ error: 'A void reason is required' });
+    }
+    const { rows, rowCount } = await pool.query(
+      `UPDATE transactions
+       SET status = 'voided', void_reason = $1, voided_at = NOW()
+       WHERE id = $2 AND owner_id = $3 AND status = 'completed'
+       RETURNING *`,
+      [reason.trim(), req.params.id, req.user.ownerId]
+    );
+    if (!rowCount) return res.status(404).json({ error: 'Transaction not found or already voided' });
+    res.json(format(rows[0]));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });

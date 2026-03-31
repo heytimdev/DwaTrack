@@ -10,14 +10,14 @@ export function AuthProvider({ children }) {
 
   // ── Restore session on mount ─────────────────────────────────────────────────
   useEffect(() => {
-    const token = localStorage.getItem("kobotrack_token");
+    const token = localStorage.getItem("dwatrack_token");
     if (!token) {
       setAuthLoading(false);
       return;
     }
     api.get("/auth/me")
       .then((user) => setCurrentUser(user))
-      .catch(() => localStorage.removeItem("kobotrack_token"))
+      .catch(() => localStorage.removeItem("dwatrack_token"))
       .finally(() => setAuthLoading(false));
   }, []);
 
@@ -35,7 +35,7 @@ export function AuthProvider({ children }) {
         email:         formData.email,
         password:      formData.password,
       });
-      localStorage.setItem("kobotrack_token", token);
+      localStorage.setItem("dwatrack_token", token);
       setCurrentUser(user);
       return { success: true };
     } catch (err) {
@@ -47,7 +47,7 @@ export function AuthProvider({ children }) {
   async function login(email, password) {
     try {
       const { token, user } = await api.post("/auth/login", { email, password });
-      localStorage.setItem("kobotrack_token", token);
+      localStorage.setItem("dwatrack_token", token);
       setCurrentUser(user);
       return { success: true };
     } catch (err) {
@@ -57,7 +57,7 @@ export function AuthProvider({ children }) {
 
   // ── logout ───────────────────────────────────────────────────────────────────
   function logout() {
-    localStorage.removeItem("kobotrack_token");
+    localStorage.removeItem("dwatrack_token");
     setCurrentUser(null);
   }
 
@@ -72,7 +72,10 @@ export function AuthProvider({ children }) {
     }
   }
 
-  // ── Role & permission flags (derived, never stored) ──────────────────────────
+  // ── Derived values ───────────────────────────────────────────────────────────
+  const currency = currentUser?.currency || "GH₵";
+
+  // ── Role & permission flags ──────────────────────────────────────────────────
   const isOwner   = currentUser?.role === "owner";
   const isManager = currentUser?.role === "manager";
   const isCashier = currentUser?.role === "cashier";
@@ -89,6 +92,7 @@ export function AuthProvider({ children }) {
       value={{
         currentUser,
         authLoading,
+        currency,
         login,
         signup,
         logout,

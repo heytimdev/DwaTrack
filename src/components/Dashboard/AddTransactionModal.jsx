@@ -1,11 +1,17 @@
 import { useState } from "react";
 import { X, Plus, Trash2 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
 
 const PAYMENT_METHODS = ["cash", "mobile money", "card", "bank transfer", "credit"];
 
 export function AddTransactionModal({ onClose, onSuccess }) {
   const { products, addTransaction } = useApp();
+  const { currentUser, currency } = useAuth();
+
+  const taxEnabled = currentUser?.taxEnabled || false;
+  const taxLabel   = currentUser?.taxLabel   || "VAT";
+  const taxRate    = parseFloat(currentUser?.taxRate) || 0;
 
   const [customer, setCustomer] = useState("");
   const [paymentMethod, setPaymentMethod] = useState("cash");
@@ -45,7 +51,9 @@ export function AddTransactionModal({ onClose, onSuccess }) {
     return sum + price * qty;
   }, 0);
 
-  const total = Math.max(0, subtotal - (parseFloat(discount) || 0));
+  const afterDiscount = Math.max(0, subtotal - (parseFloat(discount) || 0));
+  const taxAmount = taxEnabled ? parseFloat(((afterDiscount * taxRate) / 100).toFixed(2)) : 0;
+  const total = afterDiscount + taxAmount;
 
   async function handleSubmit(e) {
     e.preventDefault();
@@ -68,6 +76,8 @@ export function AddTransactionModal({ onClose, onSuccess }) {
         })),
         subtotal,
         discount: parseFloat(discount) || 0,
+        taxLabel: taxEnabled ? taxLabel : null,
+        taxAmount,
         total,
         note,
         status: "completed",
@@ -148,7 +158,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
                           <option value="">-- Select product or type below --</option>
                           {products.map((p) => (
                             <option key={p.id} value={p.id}>
-                              {p.name} — GH₵{Number(p.price).toFixed(2)}
+                              {p.name} — {currency}{Number(p.price).toFixed(2)}
                             </option>
                           ))}
                         </select>
@@ -169,7 +179,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
                       )}
 
                       <div>
-                        <label className="block text-xs text-gray-500 mb-1">Price (GH₵)</label>
+                        <label className="block text-xs text-gray-500 mb-1">Price ({currency})</label>
                         <input
                           type="number"
                           min="0"
@@ -195,7 +205,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
 
                     <div className="flex items-center justify-between">
                       <span className="text-xs text-gray-500">
-                        Subtotal: GH₵{((parseFloat(item.price) || 0) * (parseInt(item.qty) || 0)).toFixed(2)}
+                        Subtotal: {currency}{((parseFloat(item.price) || 0) * (parseInt(item.qty) || 0)).toFixed(2)}
                       </span>
                       {items.length > 1 && (
                         <button
@@ -214,7 +224,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
 
             <div className="grid grid-cols-2 gap-3">
               <div className="min-w-0">
-                <label className="block text-xs font-medium text-gray-600 mb-1">Discount (GH₵)</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Discount ({currency})</label>
                 <input
                   type="number"
                   min="0"
@@ -241,17 +251,23 @@ export function AddTransactionModal({ onClose, onSuccess }) {
             <div className="bg-teal-50 rounded-lg p-3 text-sm">
               <div className="flex justify-between text-gray-600 mb-1">
                 <span>Subtotal</span>
-                <span>GH₵{subtotal.toFixed(2)}</span>
+                <span>{currency}{subtotal.toFixed(2)}</span>
               </div>
               {parseFloat(discount) > 0 && (
                 <div className="flex justify-between text-gray-600 mb-1">
                   <span>Discount</span>
-                  <span>-GH₵{parseFloat(discount).toFixed(2)}</span>
+                  <span>-{currency}{parseFloat(discount).toFixed(2)}</span>
+                </div>
+              )}
+              {taxEnabled && taxAmount > 0 && (
+                <div className="flex justify-between text-gray-600 mb-1">
+                  <span>{taxLabel} ({taxRate}%)</span>
+                  <span>{currency}{taxAmount.toFixed(2)}</span>
                 </div>
               )}
               <div className="flex justify-between font-bold text-gray-900 text-base mt-2 pt-2 border-t border-teal-200">
                 <span>Total</span>
-                <span>GH₵{total.toFixed(2)}</span>
+                <span>{currency}{total.toFixed(2)}</span>
               </div>
             </div>
           </div>

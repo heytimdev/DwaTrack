@@ -20,8 +20,8 @@ export function Header() {
     <>
       <div id="header">
         <div className="header-brand">
-          <img src={logo} alt="KoboTrack logo" id="logo" />
-          <p id="main">KoboTrack</p>
+          <img src={logo} alt="DwaTrack logo" id="logo" />
+          <p id="main">DwaTrack</p>
         </div>
 
         {/* Desktop nav */}

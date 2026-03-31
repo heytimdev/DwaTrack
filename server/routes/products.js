@@ -9,6 +9,7 @@ function format(p) {
     id: p.id,
     name: p.name,
     price: parseFloat(p.price),
+    costPrice: parseFloat(p.cost_price) || 0,
     category: p.category,
     createdAt: p.created_at,
   };
@@ -31,13 +32,13 @@ router.get('/', requireAuth, async (req, res) => {
 // POST /api/products  (owner or manager)
 router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
-    const { name, price, category } = req.body;
+    const { name, price, costPrice, category } = req.body;
     if (!name) return res.status(400).json({ error: 'Product name is required' });
 
     const { rows } = await pool.query(
-      `INSERT INTO products (owner_id, name, price, category)
-       VALUES ($1,$2,$3,$4) RETURNING *`,
-      [req.user.ownerId, name, price || 0, category || null]
+      `INSERT INTO products (owner_id, name, price, cost_price, category)
+       VALUES ($1,$2,$3,$4,$5) RETURNING *`,
+      [req.user.ownerId, name, price || 0, costPrice || 0, category || null]
     );
     res.status(201).json(format(rows[0]));
   } catch (err) {
@@ -49,11 +50,11 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
 // PUT /api/products/:id  (owner or manager)
 router.put('/:id', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
-    const { name, price, category } = req.body;
+    const { name, price, costPrice, category } = req.body;
     const { rows, rowCount } = await pool.query(
-      `UPDATE products SET name=$1, price=$2, category=$3
-       WHERE id=$4 AND owner_id=$5 RETURNING *`,
-      [name, price, category || null, req.params.id, req.user.ownerId]
+      `UPDATE products SET name=$1, price=$2, cost_price=$3, category=$4
+       WHERE id=$5 AND owner_id=$6 RETURNING *`,
+      [name, price, costPrice || 0, category || null, req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Product not found' });
     res.json(format(rows[0]));

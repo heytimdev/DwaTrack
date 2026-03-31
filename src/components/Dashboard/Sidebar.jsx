@@ -49,7 +49,7 @@ export function Sidebar({ open, onClose }) {
         {/* Logo */}
         <div className="flex items-center gap-2 px-5 py-5 border-b border-gray-100">
           <img src={logo} alt="logo" className="w-8 h-8" />
-          <span className="text-lg font-semibold text-teal-600">KoboTrack</span>
+          <span className="text-lg font-semibold text-teal-600">DwaTrack</span>
           <button
             onClick={onClose}
             className="ml-auto lg:hidden text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer"

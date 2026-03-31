@@ -62,7 +62,7 @@ export function Home() {
         <div id="section-2">
           <h3 className="section-heading">Automate What Used to Take Hours</h3>
           <p className="section-subheading">
-            KoboTrack digitalizes your entire transaction workflow
+            DwaTrack digitalizes your entire transaction workflow
           </p>
           <ul id="grid-2">
             {listData2.map((list) => (

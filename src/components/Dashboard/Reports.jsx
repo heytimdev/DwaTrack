@@ -1,8 +1,9 @@
 import { useApp } from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
 
 export function Reports() {
   const { transactions, expenses } = useApp();
-  const currency = "GH₵";
+  const { currency } = useAuth();
 
   const totalRevenue = transactions.reduce((s, t) => s + (t.total || 0), 0);
   const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);

@@ -7,7 +7,7 @@ const CATEGORIES = ["Rent", "Utilities", "Salaries", "Inventory", "Transport", "
 
 export function Expenses() {
   const { expenses, addExpense, deleteExpense } = useApp();
-  const { canManageExpenses, canDeleteTransactions } = useAuth();
+  const { canManageExpenses, canDeleteTransactions, currency } = useAuth();
 
   const [form, setForm] = useState({ description: "", amount: "", category: "Other" });
   const [error, setError] = useState("");
@@ -30,7 +30,6 @@ export function Expenses() {
     setError("");
   }
 
-  const currency = "GH₵";
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -75,7 +74,7 @@ export function Expenses() {
                 />
               </div>
               <div>
-                <label className="block text-xs font-medium text-gray-600 mb-1">Amount (GH₵)</label>
+                <label className="block text-xs font-medium text-gray-600 mb-1">Amount ({currency})</label>
                 <input
                   type="number"
                   min="0"

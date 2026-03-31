@@ -8,7 +8,7 @@ import { ReceiptModal } from "./ReceiptModal";
 
 export function Transactions() {
   const { transactions, deleteTransaction, addProduct, products, deleteProduct } = useApp();
-  const { canAddTransactions, canDeleteTransactions, canManageProducts } = useAuth();
+  const { canAddTransactions, canDeleteTransactions, canManageProducts, currency } = useAuth();
   const location = useLocation();
 
   const [showAdd, setShowAdd] = useState(false);
@@ -16,9 +16,12 @@ export function Transactions() {
   const [viewTx, setViewTx] = useState(null);
   const [search, setSearch] = useState("");
   const [tab, setTab] = useState("transactions"); // "transactions" | "products"
+  const [datePreset, setDatePreset] = useState("all"); // "all" | "today" | "week" | "month" | "custom"
+  const [dateFrom, setDateFrom] = useState("");
+  const [dateTo, setDateTo] = useState("");
 
   // New product form
-  const [newProduct, setNewProduct] = useState({ name: "", price: "", category: "" });
+  const [newProduct, setNewProduct] = useState({ name: "", price: "", costPrice: "", category: "" });
   const [productError, setProductError] = useState("");
 
   useEffect(() => {
@@ -34,13 +37,38 @@ export function Transactions() {
   }, [location.state]);
 
   const filtered = transactions.filter((tx) => {
+    // text search
     const q = search.toLowerCase();
-    return (
+    const matchesSearch =
       tx.customer?.toLowerCase().includes(q) ||
       tx.receiptNumber?.toLowerCase().includes(q) ||
-      tx.items?.some((i) => i.productName?.toLowerCase().includes(q))
-    );
+      tx.items?.some((i) => i.productName?.toLowerCase().includes(q));
+    if (!matchesSearch) return false;
+
+    // date filter
+    const txDate = new Date(tx.createdAt);
+    const now = new Date();
+
+    if (datePreset === "today") {
+      return txDate.toDateString() === now.toDateString();
+    }
+    if (datePreset === "week") {
+      const startOfWeek = new Date(now);
+      startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+      startOfWeek.setHours(0, 0, 0, 0);
+      return txDate >= startOfWeek;
+    }
+    if (datePreset === "month") {
+      return txDate.getMonth() === now.getMonth() && txDate.getFullYear() === now.getFullYear();
+    }
+    if (datePreset === "custom") {
+      if (dateFrom && txDate < new Date(dateFrom + "T00:00:00")) return false;
+      if (dateTo   && txDate > new Date(dateTo   + "T23:59:59")) return false;
+    }
+    return true;
   });
+
+  const filteredTotal = filtered.reduce((s, t) => s + (t.total || 0), 0);
 
   function handleAddSuccess(tx) {
     setShowAdd(false);
@@ -53,13 +81,13 @@ export function Transactions() {
       setProductError("Name and price are required.");
       return;
     }
-    addProduct({ name: newProduct.name, price: parseFloat(newProduct.price), category: newProduct.category });
-    setNewProduct({ name: "", price: "", category: "" });
+    addProduct({ name: newProduct.name, price: parseFloat(newProduct.price), costPrice: parseFloat(newProduct.costPrice) || 0, category: newProduct.category });
+    setNewProduct({ name: "", price: "", costPrice: "", category: "" });
     setProductError("");
   }
 
   function exportCSV() {
-    const headers = ["Receipt #", "Date", "Time", "Customer", "Items", "Payment Method", "Total (GH₵)", "Added By"];
+    const headers = ["Receipt #", "Date", "Time", "Customer", "Items", "Payment Method", `Total (${currency})`, "Added By"];
     const rows = transactions.map((tx) => [
       tx.receiptNumber || "",
       tx.date || "",
@@ -82,7 +110,6 @@ export function Transactions() {
     URL.revokeObjectURL(url);
   }
 
-  const currency = "GH₵";
 
   return (
     <div className="max-w-5xl mx-auto">
@@ -128,23 +155,67 @@ export function Transactions() {
 
       {tab === "transactions" && (
         <>
-          {/* Search */}
-          <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 mb-4 w-full max-w-xs">
-            <Search size={16} className="text-gray-400 flex-shrink-0" />
-            <input
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              placeholder="Search by customer, receipt..."
-              className="bg-transparent border-none outline-none text-sm text-gray-600 w-full"
-            />
+          {/* Search + date filter bar */}
+          <div className="flex flex-wrap items-center gap-2 mb-4">
+            {/* Search */}
+            <div className="flex items-center gap-2 bg-white border border-gray-200 rounded-lg px-3 py-2 w-full max-w-xs">
+              <Search size={16} className="text-gray-400 shrink-0" />
+              <input
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                placeholder="Search by customer, receipt..."
+                className="bg-transparent border-none outline-none text-sm text-gray-600 w-full"
+              />
+            </div>
+
+            {/* Preset buttons */}
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+              {[
+                { key: "all",   label: "All" },
+                { key: "today", label: "Today" },
+                { key: "week",  label: "This Week" },
+                { key: "month", label: "This Month" },
+                { key: "custom",label: "Custom" },
+              ].map(({ key, label }) => (
+                <button
+                  key={key}
+                  onClick={() => setDatePreset(key)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors
+                    ${datePreset === key ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-gray-500 hover:text-gray-700"}`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            {/* Custom date range */}
+            {datePreset === "custom" && (
+              <div className="flex items-center gap-2">
+                <input
+                  type="date"
+                  value={dateFrom}
+                  onChange={(e) => setDateFrom(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 outline-none focus:border-teal-400 bg-white"
+                />
+                <span className="text-gray-400 text-sm">—</span>
+                <input
+                  type="date"
+                  value={dateTo}
+                  onChange={(e) => setDateTo(e.target.value)}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-600 outline-none focus:border-teal-400 bg-white"
+                />
+              </div>
+            )}
           </div>
 
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
             {filtered.length === 0 ? (
               <div className="text-center py-14 text-gray-400">
                 <ChevronDown size={36} className="mx-auto mb-2 opacity-30" />
-                <p className="m-0 text-sm">{search ? "No transactions match your search." : "No transactions yet."}</p>
-                {canAddTransactions && !search && (
+                <p className="m-0 text-sm">
+                  {search || datePreset !== "all" ? "No transactions match your filter." : "No transactions yet."}
+                </p>
+                {canAddTransactions && !search && datePreset === "all" && (
                   <button
                     onClick={() => setShowAdd(true)}
                     className="mt-3 text-sm text-teal-500 hover:text-teal-700 border-none bg-transparent cursor-pointer font-medium"
@@ -210,6 +281,26 @@ export function Transactions() {
               </div>
             )}
           </div>
+
+          {/* Filtered summary */}
+          {filtered.length > 0 && (
+            <div className="flex items-center justify-between mt-3 px-1">
+              <p className="text-xs text-gray-400 m-0">
+                {filtered.length} transaction{filtered.length !== 1 ? "s" : ""}
+                {datePreset !== "all" && (
+                  <button
+                    onClick={() => { setDatePreset("all"); setDateFrom(""); setDateTo(""); }}
+                    className="ml-2 text-teal-500 hover:text-teal-700 border-none bg-transparent cursor-pointer text-xs font-medium p-0"
+                  >
+                    Clear filter ×
+                  </button>
+                )}
+              </p>
+              <p className="text-sm font-semibold text-gray-800 m-0">
+                Total: <span className="text-teal-600">{currency}{filteredTotal.toFixed(2)}</span>
+              </p>
+            </div>
+          )}
         </>
       )}
 
@@ -234,13 +325,25 @@ export function Transactions() {
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-600 mb-1">Price (GH₵)</label>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Selling price ({currency})</label>
                   <input
                     type="number"
                     min="0"
                     step="0.01"
                     value={newProduct.price}
                     onChange={(e) => setNewProduct({ ...newProduct, price: e.target.value })}
+                    placeholder="0.00"
+                    className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-600 mb-1">Cost price ({currency})</label>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={newProduct.costPrice}
+                    onChange={(e) => setNewProduct({ ...newProduct, costPrice: e.target.value })}
                     placeholder="0.00"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
                   />
@@ -279,25 +382,41 @@ export function Transactions() {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-50">
-                  {products.map((p) => (
-                    <div key={p.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50">
-                      <div>
-                        <p className="font-medium text-gray-800 text-sm m-0">{p.name}</p>
-                        {p.category && <p className="text-xs text-gray-400 m-0">{p.category}</p>}
+                  {products.map((p) => {
+                    const cost = Number(p.costPrice) || 0;
+                    const price = Number(p.price) || 0;
+                    const margin = price > 0 && cost > 0
+                      ? (((price - cost) / price) * 100).toFixed(1)
+                      : null;
+                    const marginColor = margin === null ? "" : parseFloat(margin) >= 30 ? "text-teal-600" : parseFloat(margin) >= 10 ? "text-amber-500" : "text-red-500";
+                    return (
+                      <div key={p.id} className="px-5 py-3 flex items-center justify-between hover:bg-gray-50 gap-3">
+                        <div className="min-w-0">
+                          <p className="font-medium text-gray-800 text-sm m-0">{p.name}</p>
+                          {p.category && <p className="text-xs text-gray-400 m-0">{p.category}</p>}
+                          {cost > 0 && (
+                            <p className="text-xs text-gray-400 m-0">Cost: {currency}{cost.toFixed(2)}</p>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-3 shrink-0">
+                          <div className="text-right">
+                            <p className="text-sm font-semibold text-teal-600 m-0">{currency}{price.toFixed(2)}</p>
+                            {margin !== null && (
+                              <p className={`text-xs font-medium m-0 ${marginColor}`}>{margin}% margin</p>
+                            )}
+                          </div>
+                          {canManageProducts && (
+                            <button
+                              onClick={() => deleteProduct(p.id)}
+                              className="text-gray-300 hover:text-red-500 border-none bg-transparent cursor-pointer"
+                            >
+                              <Trash2 size={15} />
+                            </button>
+                          )}
+                        </div>
                       </div>
-                      <div className="flex items-center gap-3">
-                        <span className="text-sm font-semibold text-teal-600">{currency}{Number(p.price).toFixed(2)}</span>
-                        {canManageProducts && (
-                          <button
-                            onClick={() => deleteProduct(p.id)}
-                            className="text-gray-300 hover:text-red-500 border-none bg-transparent cursor-pointer"
-                          >
-                            <Trash2 size={15} />
-                          </button>
-                        )}
-                      </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               )}
             </div>

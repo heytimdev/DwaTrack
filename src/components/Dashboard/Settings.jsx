@@ -3,6 +3,7 @@ import { UserPlus, UserX, Shield, User, Briefcase, Save, Camera } from "lucide-r
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import ktLogo from "../../assets/logo.svg";
+import { COUNTRIES, currencyForCountry } from "../../utils/currency";
 
 const ROLE_LABELS = {
   manager: { label: "Manager", color: "bg-blue-100 text-blue-700", icon: Briefcase },
@@ -24,9 +25,14 @@ export function Settings() {
   const [shopForm, setShopForm] = useState({
     businessName: currentUser?.businessName || "",
     city: currentUser?.city || "",
+    country: currentUser?.country || "Ghana",
+    currency: currentUser?.currency || "GH₵",
     phoneNumber: currentUser?.phoneNumber || "",
     businessEmail: currentUser?.businessEmail || "",
     businessLogo: currentUser?.businessLogo || null,
+    taxEnabled: currentUser?.taxEnabled || false,
+    taxLabel: currentUser?.taxLabel || "VAT",
+    taxRate: currentUser?.taxRate ?? 0,
   });
   const [shopSaved, setShopSaved] = useState(false);
   const [logoPreview, setLogoPreview] = useState(currentUser?.businessLogo || null);
@@ -150,6 +156,21 @@ export function Settings() {
                 />
               </div>
               <div className="min-w-0">
+                <label className="block text-xs font-medium text-gray-600 mb-1">Country & currency</label>
+                <select
+                  value={shopForm.country}
+                  onChange={(e) => {
+                    const country = e.target.value;
+                    setShopForm({ ...shopForm, country, currency: currencyForCountry(country) });
+                  }}
+                  className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400 bg-white"
+                >
+                  {COUNTRIES.map((c) => (
+                    <option key={c.name} value={c.name}>{c.name} ({c.currency})</option>
+                  ))}
+                </select>
+              </div>
+              <div className="min-w-0">
                 <label className="block text-xs font-medium text-gray-600 mb-1">Phone number</label>
                 <input
                   type="tel"
@@ -168,6 +189,52 @@ export function Settings() {
                 />
               </div>
             </div>
+            {/* Tax configuration */}
+            <div className="border-t border-gray-100 pt-5">
+              <div className="flex items-center justify-between mb-3">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 m-0">Tax Configuration</p>
+                  <p className="text-xs text-gray-400 m-0 mt-0.5">Applies as a line item on every receipt.</p>
+                </div>
+                <label className="relative inline-flex items-center cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={shopForm.taxEnabled}
+                    onChange={(e) => setShopForm({ ...shopForm, taxEnabled: e.target.checked })}
+                    className="sr-only peer"
+                  />
+                  <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:bg-teal-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" />
+                </label>
+              </div>
+              {shopForm.taxEnabled && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="min-w-0">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Tax label</label>
+                    <input
+                      type="text"
+                      value={shopForm.taxLabel}
+                      onChange={(e) => setShopForm({ ...shopForm, taxLabel: e.target.value })}
+                      placeholder="e.g. VAT, NHIL, Tax"
+                      className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                    />
+                  </div>
+                  <div className="min-w-0">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Rate (%)</label>
+                    <input
+                      type="number"
+                      min="0"
+                      max="100"
+                      step="0.01"
+                      value={shopForm.taxRate}
+                      onChange={(e) => setShopForm({ ...shopForm, taxRate: e.target.value })}
+                      placeholder="e.g. 12.5"
+                      className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                    />
+                  </div>
+                </div>
+              )}
+            </div>
+
             <button
               type="submit"
               className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors"

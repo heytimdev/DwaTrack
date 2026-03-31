@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useApp } from "../../context/AppContext";
+import { useAuth } from "../../context/AuthContext";
 
 function BarChart({ data, valueKey, nameKey, color = "bg-teal-500", currency = "GH₵" }) {
   const max = Math.max(...data.map((d) => d[valueKey]), 1);
@@ -29,10 +30,10 @@ function BarChart({ data, valueKey, nameKey, color = "bg-teal-500", currency = "
 }
 
 export function Analysis() {
-  const { transactions, getProductSalesData } = useApp();
+  const { transactions, getProductSalesData, products } = useApp();
   const [compareA, setCompareA] = useState("");
   const [compareB, setCompareB] = useState("");
-  const currency = "GH₵";
+  const { currency } = useAuth();
 
   const productSales = getProductSalesData();
 
@@ -68,7 +69,18 @@ export function Analysis() {
 
   const allProductNames = [...new Set(transactions.flatMap((tx) => tx.items?.map((i) => i.productName) || []))];
 
-  // All products revenue for the bar chart
+  // Profit margin data — only products with cost price set
+  const marginData = products
+    .filter((p) => Number(p.costPrice) > 0 && Number(p.price) > 0)
+    .map((p) => ({
+      name: p.name,
+      margin: parseFloat((((p.price - p.costPrice) / p.price) * 100).toFixed(1)),
+      profit: parseFloat((p.price - p.costPrice).toFixed(2)),
+      price: Number(p.price),
+      costPrice: Number(p.costPrice),
+    }))
+    .sort((a, b) => b.margin - a.margin);
+
   return (
     <div className="max-w-5xl mx-auto">
       <div className="mb-5">
@@ -183,7 +195,7 @@ export function Analysis() {
       </div>
 
       {/* Top products by revenue */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 mb-5">
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
           <h3 className="text-sm font-semibold text-gray-800 m-0 mb-4">Top Products by Revenue</h3>
           {productSales.length === 0 ? (
@@ -207,6 +219,41 @@ export function Analysis() {
             />
           )}
         </div>
+      </div>
+
+      {/* Profit margin per product */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
+        <h3 className="text-sm font-semibold text-gray-800 m-0 mb-1">Profit Margin per Product</h3>
+        <p className="text-xs text-gray-400 m-0 mb-4">Based on cost price vs selling price. Set cost prices in the Products tab.</p>
+        {marginData.length === 0 ? (
+          <p className="text-sm text-gray-400 m-0">No products with cost prices set yet. Add a cost price to a product to see margins here.</p>
+        ) : (
+          <div className="space-y-3">
+            {marginData.map((p) => {
+              const barColor = p.margin >= 30 ? "bg-teal-500" : p.margin >= 10 ? "bg-amber-400" : "bg-red-400";
+              const textColor = p.margin >= 30 ? "text-teal-600" : p.margin >= 10 ? "text-amber-500" : "text-red-500";
+              return (
+                <div key={p.name}>
+                  <div className="flex items-center justify-between text-xs mb-1 gap-2">
+                    <span className="font-medium text-gray-700 truncate">{p.name}</span>
+                    <div className="flex items-center gap-3 shrink-0 text-gray-500">
+                      <span>Cost: {currency}{p.costPrice.toFixed(2)}</span>
+                      <span>Sell: {currency}{p.price.toFixed(2)}</span>
+                      <span>+{currency}{p.profit.toFixed(2)}</span>
+                      <span className={`font-semibold ${textColor}`}>{p.margin}%</span>
+                    </div>
+                  </div>
+                  <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden">
+                    <div
+                      className={`h-full ${barColor} rounded-full transition-all duration-500`}
+                      style={{ width: `${Math.min(p.margin, 100)}%` }}
+                    />
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -33,7 +33,7 @@ export function Login() {
         <Link to="/" className="no-underline text-teal-500">
           <img src={logo} alt="logo" id="logo" />
         </Link>
-        <p className="ml-2 text-xl font-semibold">KoboTrack</p>
+        <p className="ml-2 text-xl font-semibold">DwaTrack</p>
       </div>
 
       <form

@@ -19,12 +19,17 @@ function formatOwner(u) {
     lastName: u.last_name,
     email: u.email,
     role: 'owner',
-    ownerId: u.id,          // always equal to id for owners
+    ownerId: u.id,
     businessName: u.business_name,
     businessEmail: u.business_email,
     phoneNumber: u.phone_number,
     city: u.city,
+    country: u.country || 'Ghana',
+    currency: u.currency || 'GH₵',
     businessLogo: u.business_logo,
+    taxEnabled: u.tax_enabled || false,
+    taxLabel: u.tax_label || 'VAT',
+    taxRate: parseFloat(u.tax_rate) || 0,
     createdAt: u.created_at,
   };
 }
@@ -38,12 +43,16 @@ function formatMember(m) {
     role: m.role,
     ownerId: m.owner_id,
     status: m.status,
-    // Business info from joined owner row
     businessName: m.business_name,
     businessEmail: m.business_email,
     phoneNumber: m.phone_number,
     city: m.city,
+    country: m.country || 'Ghana',
+    currency: m.currency || 'GH₵',
     businessLogo: m.business_logo,
+    taxEnabled: m.tax_enabled || false,
+    taxLabel: m.tax_label || 'VAT',
+    taxRate: parseFloat(m.tax_rate) || 0,
   };
 }
 
@@ -51,7 +60,7 @@ function formatMember(m) {
 router.post('/signup', async (req, res) => {
   try {
     const {
-      businessName, businessEmail, phoneNumber, city, businessLogo,
+      businessName, businessEmail, phoneNumber, city, country, currency, businessLogo,
       firstName, lastName, email, password,
     } = req.body;
 
@@ -74,12 +83,14 @@ router.post('/signup', async (req, res) => {
     const { rows } = await pool.query(
       `INSERT INTO users
          (first_name, last_name, email, password_hash,
-          business_name, business_email, phone_number, city, business_logo)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+          business_name, business_email, phone_number, city, country, currency, business_logo)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11)
        RETURNING *`,
       [firstName, lastName, emailNorm, passwordHash,
        businessName || null, businessEmail || null,
-       phoneNumber || null, city || null, businessLogo || null]
+       phoneNumber || null, city || null,
+       country || 'Ghana', currency || 'GH₵',
+       businessLogo || null]
     );
 
     const user = rows[0];
@@ -119,7 +130,9 @@ router.post('/login', async (req, res) => {
     const memberRes = await pool.query(
       `SELECT tm.*,
               u.business_name, u.business_email,
-              u.phone_number,  u.city, u.business_logo
+              u.phone_number,  u.city, u.business_logo,
+              u.tax_enabled,   u.tax_label, u.tax_rate,
+              u.country,       u.currency
        FROM   team_members tm
        JOIN   users u ON u.id = tm.owner_id
        WHERE  tm.email = $1 AND tm.status = 'active'
@@ -155,7 +168,9 @@ router.get('/me', requireAuth, async (req, res) => {
     const { rows } = await pool.query(
       `SELECT tm.*,
               u.business_name, u.business_email,
-              u.phone_number,  u.city, u.business_logo
+              u.phone_number,  u.city, u.business_logo,
+              u.tax_enabled,   u.tax_label, u.tax_rate,
+              u.country,       u.currency
        FROM   team_members tm
        JOIN   users u ON u.id = tm.owner_id
        WHERE  tm.id = $1`,

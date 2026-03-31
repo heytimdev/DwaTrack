@@ -40,12 +40,12 @@ export function Body() {
               </div>
               <div id="browser-url">
                 <span id="url-lock">🔒</span>
-                kobotrack.app/dashboard
+                dwatrack.app/dashboard
               </div>
               <div className="browser-spacer"></div>
             </div>
             <div id="browser-content">
-              <img src={bodyimg} alt="KoboTrack dashboard preview" id="img" />
+              <img src={bodyimg} alt="DwaTrack dashboard preview" id="img" />
             </div>
           </div>
         </div>

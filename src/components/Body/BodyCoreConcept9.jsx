@@ -5,7 +5,7 @@ export function BodyCoreConcept9() {
     <footer id="footer-wrap">
       <div id="section-9-grid">
         <div className="footer-brand-col">
-          <p className="footer-brand-name">KoboTrack</p>
+          <p className="footer-brand-name">DwaTrack</p>
           <p className="footer-tagline">
             Empowering microenterprises through digital transformation across
             developing economies.
@@ -42,7 +42,7 @@ export function BodyCoreConcept9() {
       </div>
 
       <div id="footer-bottom">
-        <p id="footer-copyright">© 2025 KoboTrack. All rights reserved.</p>
+        <p id="footer-copyright">© 2025 DwaTrack. All rights reserved.</p>
         <p id="footer-heart">Made with ♥ for African entrepreneurs</p>
       </div>
     </footer>

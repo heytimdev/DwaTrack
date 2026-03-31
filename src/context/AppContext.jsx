@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useEffect } from "react";
 import { useAuth } from "./AuthContext";
+import { useToast } from "./ToastContext";
 import api from "../api";
 
 const AppContext = createContext(null);
 
 export function AppProvider({ children }) {
   const { currentUser } = useAuth();
+  const toast = useToast();
 
   const [transactions, setTransactions] = useState([]);
   const [products,     setProducts]     = useState([]);
@@ -43,53 +45,88 @@ export function AppProvider({ children }) {
 
   // ── Transactions ─────────────────────────────────────────────────────────────
   async function addTransaction(txData) {
-    const newTx = await api.post("/transactions", {
-      ...txData,
-      firstName: currentUser.firstName,
-      lastName:  currentUser.lastName,
-    });
-    setTransactions((prev) => [newTx, ...prev]);
-    // Refresh stock so quantities stay in sync after auto-deduction
-    api.get("/stock").then(setStock).catch(() => {});
-    return newTx;
+    try {
+      const newTx = await api.post("/transactions", {
+        ...txData,
+        firstName: currentUser.firstName,
+        lastName:  currentUser.lastName,
+      });
+      setTransactions((prev) => [newTx, ...prev]);
+      api.get("/stock").then(setStock).catch(() => {});
+      toast.success("Sale recorded successfully");
+      return newTx;
+    } catch (err) {
+      toast.error(err.message || "Failed to record sale");
+      throw err;
+    }
   }
 
   async function deleteTransaction(id) {
-    await api.delete(`/transactions/${id}`);
-    setTransactions((prev) => prev.filter((t) => t.id !== id));
+    try {
+      await api.delete(`/transactions/${id}`);
+      setTransactions((prev) => prev.filter((t) => t.id !== id));
+      toast.success("Transaction deleted");
+    } catch (err) {
+      toast.error(err.message || "Failed to delete transaction");
+    }
   }
 
   // ── Products ─────────────────────────────────────────────────────────────────
   async function addProduct(productData) {
-    const newProd = await api.post("/products", productData);
-    setProducts((prev) => [...prev, newProd]);
-    return newProd;
+    try {
+      const newProd = await api.post("/products", productData);
+      setProducts((prev) => [...prev, newProd]);
+      toast.success("Product added");
+      return newProd;
+    } catch (err) {
+      toast.error(err.message || "Failed to add product");
+    }
   }
 
   async function updateProduct(id, updates) {
-    const updated = await api.put(`/products/${id}`, updates);
-    setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+    try {
+      const updated = await api.put(`/products/${id}`, updates);
+      setProducts((prev) => prev.map((p) => (p.id === id ? updated : p)));
+      toast.success("Product updated");
+    } catch (err) {
+      toast.error(err.message || "Failed to update product");
+    }
   }
 
   async function deleteProduct(id) {
-    await api.delete(`/products/${id}`);
-    setProducts((prev) => prev.filter((p) => p.id !== id));
+    try {
+      await api.delete(`/products/${id}`);
+      setProducts((prev) => prev.filter((p) => p.id !== id));
+      toast.success("Product deleted");
+    } catch (err) {
+      toast.error(err.message || "Failed to delete product");
+    }
   }
 
   // ── Expenses ─────────────────────────────────────────────────────────────────
   async function addExpense(expData) {
-    const newExp = await api.post("/expenses", {
-      ...expData,
-      firstName: currentUser.firstName,
-      lastName:  currentUser.lastName,
-    });
-    setExpenses((prev) => [newExp, ...prev]);
-    return newExp;
+    try {
+      const newExp = await api.post("/expenses", {
+        ...expData,
+        firstName: currentUser.firstName,
+        lastName:  currentUser.lastName,
+      });
+      setExpenses((prev) => [newExp, ...prev]);
+      toast.success("Expense recorded");
+      return newExp;
+    } catch (err) {
+      toast.error(err.message || "Failed to record expense");
+    }
   }
 
   async function deleteExpense(id) {
-    await api.delete(`/expenses/${id}`);
-    setExpenses((prev) => prev.filter((e) => e.id !== id));
+    try {
+      await api.delete(`/expenses/${id}`);
+      setExpenses((prev) => prev.filter((e) => e.id !== id));
+      toast.success("Expense deleted");
+    } catch (err) {
+      toast.error(err.message || "Failed to delete expense");
+    }
   }
 
   // ── Team ─────────────────────────────────────────────────────────────────────
@@ -97,37 +134,64 @@ export function AppProvider({ children }) {
     try {
       const newMember = await api.post("/team", memberData);
       setTeam((prev) => [...prev, newMember]);
+      toast.success("Team member added");
       return { success: true };
     } catch (err) {
+      toast.error(err.message || "Failed to add team member");
       return { success: false, error: err.message };
     }
   }
 
   async function removeTeamMember(id) {
-    const updated = await api.patch(`/team/${id}/status`);
-    setTeam((prev) => prev.map((m) => (m.id === id ? updated : m)));
+    try {
+      const updated = await api.patch(`/team/${id}/status`);
+      setTeam((prev) => prev.map((m) => (m.id === id ? updated : m)));
+      toast.success("Team member deactivated");
+    } catch (err) {
+      toast.error(err.message || "Failed to deactivate team member");
+    }
   }
 
   // ── Stock ─────────────────────────────────────────────────────────────────────
   async function addStockItem(itemData) {
-    const newItem = await api.post("/stock", itemData);
-    setStock((prev) => [...prev, newItem]);
-    return newItem;
+    try {
+      const newItem = await api.post("/stock", itemData);
+      setStock((prev) => [...prev, newItem]);
+      toast.success("Stock item added");
+      return newItem;
+    } catch (err) {
+      toast.error(err.message || "Failed to add stock item");
+    }
   }
 
   async function updateStockItem(id, updates) {
-    const updated = await api.put(`/stock/${id}`, updates);
-    setStock((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    try {
+      const updated = await api.put(`/stock/${id}`, updates);
+      setStock((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      toast.success("Stock item updated");
+    } catch (err) {
+      toast.error(err.message || "Failed to update stock item");
+    }
   }
 
   async function deleteStockItem(id) {
-    await api.delete(`/stock/${id}`);
-    setStock((prev) => prev.filter((s) => s.id !== id));
+    try {
+      await api.delete(`/stock/${id}`);
+      setStock((prev) => prev.filter((s) => s.id !== id));
+      toast.success("Stock item deleted");
+    } catch (err) {
+      toast.error(err.message || "Failed to delete stock item");
+    }
   }
 
   async function restockItem(id, addQty) {
-    const updated = await api.patch(`/stock/${id}/restock`, { addQty });
-    setStock((prev) => prev.map((s) => (s.id === id ? updated : s)));
+    try {
+      const updated = await api.patch(`/stock/${id}/restock`, { addQty });
+      setStock((prev) => prev.map((s) => (s.id === id ? updated : s)));
+      toast.success("Stock restocked");
+    } catch (err) {
+      toast.error(err.message || "Failed to restock item");
+    }
   }
 
   // ── Analytics helpers (pure client-side, no API needed) ──────────────────────

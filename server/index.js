@@ -31,10 +31,10 @@ app.use('/api/team',         teamRoutes);
 app.use('/api/stock',        stockRoutes);
 app.use('/api/settings',     settingsRoutes);
 
-app.get('/', (_req, res) => res.json({ message: 'KoboTrack API is running' }));
+app.get('/', (_req, res) => res.json({ message: 'DwaTrack API is running' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
 // ── Start ──────────────────────────────────────────────────────────────────────
 app.listen(PORT, () => {
-  console.log(`KoboTrack server running on http://localhost:${PORT}`);
+  console.log(`DwaTrack server running on http://localhost:${PORT}`);
 });

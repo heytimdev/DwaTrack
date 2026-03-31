@@ -25,29 +25,72 @@ function StatCard({ title, value, sub, subColor, icon: Icon, iconBg }) {
   );
 }
 
-function SimpleBarChart({ data }) {
+function WeeklyBarChart({ data, currency }) {
   const max = Math.max(...data.map((d) => d.total), 1);
+  const weekTotal = data.reduce((s, d) => s + d.total, 0);
+  const activeDays = data.filter((d) => d.total > 0).length;
+
   return (
-    <div className="flex items-end gap-2 h-32 mt-4">
-      {data.map((d) => {
-        const height = Math.max((d.total / max) * 100, 4);
-        return (
-          <div key={d.day} className="flex flex-col items-center flex-1 gap-1">
-            <div
-              className={`w-full rounded-t-md transition-all ${d.isToday ? "bg-teal-500" : "bg-teal-200"}`}
-              style={{ height: `${height}%` }}
-            />
-            <span className="text-xs text-gray-400">{d.day}</span>
-          </div>
-        );
-      })}
+    <div>
+      {/* Summary row */}
+      <div className="flex items-center justify-between mt-1 mb-4">
+        <div>
+          <p className="text-xl font-bold text-gray-900 m-0">{currency}{weekTotal.toFixed(2)}</p>
+          <p className="text-xs text-gray-400 m-0">{activeDays} day{activeDays !== 1 ? "s" : ""} with sales</p>
+        </div>
+        <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">This week</span>
+      </div>
+
+      {/* Bars */}
+      <div className="flex items-end gap-1.5" style={{ height: 140 }}>
+        {data.map((d) => {
+          const heightPct = d.total > 0 ? Math.max((d.total / max) * 85, 8) : 0;
+          const isEmpty = d.total === 0;
+          return (
+            <div key={d.day} className="flex flex-col items-center flex-1 gap-1 h-full justify-end group relative">
+              {/* Tooltip on hover */}
+              {!isEmpty && (
+                <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                  {currency}{d.total.toFixed(2)}
+                  <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
+                </div>
+              )}
+
+              {/* Amount label above bar */}
+              {!isEmpty && (
+                <p className="text-[9px] font-semibold text-teal-600 m-0 leading-none mb-0.5 truncate max-w-full px-0.5 text-center">
+                  {d.total >= 1000 ? `${(d.total / 1000).toFixed(1)}k` : d.total.toFixed(0)}
+                </p>
+              )}
+
+              {/* Bar */}
+              <div
+                className={`w-full rounded-t-lg transition-all duration-500 ${
+                  isEmpty
+                    ? "bg-gray-100"
+                    : d.isToday
+                    ? "bg-teal-500 shadow-sm shadow-teal-200"
+                    : "bg-teal-200 group-hover:bg-teal-300"
+                }`}
+                style={{ height: isEmpty ? 4 : `${heightPct}%` }}
+              />
+
+              {/* Day label */}
+              <p className={`text-[11px] font-medium m-0 mt-1 ${d.isToday ? "text-teal-600" : "text-gray-400"}`}>
+                {d.day}
+              </p>
+              {d.isToday && <div className="w-1 h-1 bg-teal-500 rounded-full -mt-0.5" />}
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
 
 export function DashboardHome() {
   const { transactions, getWeeklyData } = useApp();
-  const { canAddTransactions } = useAuth();
+  const { canAddTransactions, currency } = useAuth();
 
   const todayStr = new Date().toDateString();
   const todayTx = transactions.filter((t) => {
@@ -60,7 +103,6 @@ export function DashboardHome() {
   const bestDay = [...weeklyData].sort((a, b) => b.total - a.total)[0];
   const recent = transactions.slice(0, 5);
 
-  const currency = "GH₵";
 
   return (
     <div className="max-w-6xl mx-auto">
@@ -122,16 +164,12 @@ export function DashboardHome() {
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
         {/* Weekly trend */}
         <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
-          <div className="flex items-center justify-between mb-1">
-            <h3 className="text-sm font-semibold text-gray-800 m-0">Weekly Trend</h3>
-            <span className="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">Current Week</span>
-          </div>
-          <SimpleBarChart data={weeklyData} />
+          <h3 className="text-sm font-semibold text-gray-800 m-0">Weekly Sales</h3>
+          <WeeklyBarChart data={weeklyData} currency={currency} />
           {bestDay && bestDay.total > 0 && (
-            <p className="text-xs text-gray-500 mt-3 m-0">
-              Your best selling day this week was{" "}
-              <span className="text-teal-600 font-semibold">{bestDay.day}</span>.
-              Consider stocking up on essentials before this day.
+            <p className="text-xs text-gray-500 mt-3 m-0 pt-3 border-t border-gray-50">
+              Best day: <span className="text-teal-600 font-semibold">{bestDay.day}</span>
+              {" — "}{currency}{bestDay.total.toFixed(2)}
             </p>
           )}
         </div>

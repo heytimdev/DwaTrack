@@ -1,4 +1,4 @@
--- KoboTrack Database Schema
+-- DwaTrack Database Schema
 -- Run this once against your PostgreSQL database to create all tables.
 -- psql $DATABASE_URL -f server/db/schema.sql
 
@@ -42,12 +42,23 @@ CREATE TABLE IF NOT EXISTS transactions (
   id              UUID          PRIMARY KEY DEFAULT gen_random_uuid(),
   owner_id        UUID          NOT NULL REFERENCES users(id) ON DELETE CASCADE,
   receipt_number  VARCHAR(50)   NOT NULL,
+  customer        VARCHAR(255)  DEFAULT 'Walk-in Customer',
   items           JSONB         NOT NULL DEFAULT '[]',
   total           NUMERIC(12,2) NOT NULL DEFAULT 0,
   payment_method  VARCHAR(50)   NOT NULL DEFAULT 'cash',
   added_by        VARCHAR(255),
+  status          VARCHAR(20)   NOT NULL DEFAULT 'completed'
+                    CHECK (status IN ('completed', 'voided')),
+  void_reason     VARCHAR(500),
+  voided_at       TIMESTAMPTZ,
   created_at      TIMESTAMPTZ   NOT NULL DEFAULT NOW()
 );
+
+-- Run these if upgrading an existing database:
+-- ALTER TABLE transactions ADD COLUMN IF NOT EXISTS customer VARCHAR(255) DEFAULT 'Walk-in Customer';
+-- ALTER TABLE transactions ADD COLUMN IF NOT EXISTS status VARCHAR(20) NOT NULL DEFAULT 'completed' CHECK (status IN ('completed','voided'));
+-- ALTER TABLE transactions ADD COLUMN IF NOT EXISTS void_reason VARCHAR(500);
+-- ALTER TABLE transactions ADD COLUMN IF NOT EXISTS voided_at TIMESTAMPTZ;
 
 CREATE INDEX IF NOT EXISTS idx_transactions_owner_id  ON transactions(owner_id);
 CREATE INDEX IF NOT EXISTS idx_transactions_created_at ON transactions(created_at DESC);

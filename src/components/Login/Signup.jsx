@@ -1,13 +1,16 @@
 import logo from "../../assets/logo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
-import { MapPin, Loader, Eye, EyeOff, Plus} from "lucide-react";
+import { MapPin, Loader, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
+import { COUNTRIES, currencyForCountry } from "../../utils/currency";
 
 export function SignUp() {
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState("");
+  const [errorType, setErrorType] = useState(""); // "duplicate" | "general"
+  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
   const [locating, setLocating] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -19,6 +22,8 @@ export function SignUp() {
     businessEmail: "",
     phoneNumber: "",
     city: "",
+    country: "Ghana",
+    currency: "GH₵",
     businessLogo: "",
     firstName: "",
     lastName: "",
@@ -49,10 +54,13 @@ export function SignUp() {
             json.address?.county ||
             "";
           const country = json.address?.country || "";
-          handleChange(
-            "city",
-            city && country ? `${city}, ${country}` : city || country,
-          );
+          const detectedCurrency = currencyForCountry(country);
+          setData((prev) => ({
+            ...prev,
+            city: city || prev.city,
+            country: country || prev.country,
+            currency: detectedCurrency,
+          }));
         } catch {
           // silently fail
         } finally {
@@ -67,20 +75,29 @@ export function SignUp() {
   async function handleSubmit(e) {
     e.preventDefault();
     setError("");
+    setErrorType("");
     if (data.password !== data.confirmPassword) {
       setError("Passwords do not match.");
+      setErrorType("general");
       return;
     }
     if (data.password.length < 8) {
       setError("Password must be at least 8 characters.");
+      setErrorType("general");
       return;
     }
     setLoading(true);
     const result = await signup(data);
     setLoading(false);
     if (result.success) {
-      navigate("/dashboard");
+      setSuccess(true);
+      setTimeout(() => navigate("/dashboard"), 1800);
     } else {
+      const isDuplicate =
+        result.error?.toLowerCase().includes("already") ||
+        result.error?.toLowerCase().includes("registered") ||
+        result.error?.toLowerCase().includes("exist");
+      setErrorType(isDuplicate ? "duplicate" : "general");
       setError(result.error || "Something went wrong. Please try again.");
     }
   }
@@ -97,7 +114,7 @@ export function SignUp() {
         <Link to="/" className="no-underline text-teal-500">
           <img src={logo} alt="logo" id="logo" />
         </Link>
-        <p className="ml-2 text-xl font-semibold">KoboTrack</p>
+        <p className="ml-2 text-xl font-semibold">DwaTrack</p>
       </div>
 
       <form
@@ -109,10 +126,32 @@ export function SignUp() {
           Register your business and start tracking every kobo!
         </p>
 
-        {error && (
-          <p className="text-sm text-red-600 bg-red-50 px-3 py-2 rounded-lg m-0">
-            {error}
-          </p>
+        {success && (
+          <div className="flex items-center gap-2.5 bg-teal-50 border border-teal-200 px-4 py-3 rounded-lg">
+            <CheckCircle size={17} className="text-teal-500 shrink-0" />
+            <p className="text-sm text-teal-700 font-medium m-0">
+              Account created! Redirecting to your dashboard…
+            </p>
+          </div>
+        )}
+
+        {error && !success && (
+          <div className={`px-4 py-3 rounded-lg border text-sm ${
+            errorType === "duplicate"
+              ? "bg-amber-50 border-amber-200 text-amber-800"
+              : "bg-red-50 border-red-200 text-red-700"
+          }`}>
+            {errorType === "duplicate" ? (
+              <p className="m-0">
+                An account with this email already exists.{" "}
+                <Link to="/login" className="font-semibold underline text-amber-800 hover:text-amber-900">
+                  Sign in instead?
+                </Link>
+              </p>
+            ) : (
+              <p className="m-0">{error}</p>
+            )}
+          </div>
         )}
 
         {/* Business details */}
@@ -168,6 +207,30 @@ export function SignUp() {
         </div>
 
         <div className="flex flex-col gap-1">
+          <label htmlFor="country" className="font-medium text-sm">
+            Country
+          </label>
+          <select
+            id="country"
+            name="country"
+            required
+            value={data.country}
+            onChange={(e) => {
+              const country = e.target.value;
+              const currency = currencyForCountry(country);
+              setData((prev) => ({ ...prev, country, currency }));
+            }}
+            className={inputClass}
+          >
+            {COUNTRIES.map((c) => (
+              <option key={c.name} value={c.name}>
+                {c.name} ({c.currency})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-1">
           <label htmlFor="city" className="font-medium text-sm">
             City or town
           </label>
@@ -188,17 +251,12 @@ export function SignUp() {
               disabled={locating}
               className="flex items-center gap-1 text-xs text-teal-600 bg-transparent border-none cursor-pointer whitespace-nowrap hover:text-teal-800 disabled:opacity-50 shrink-0 p-1"
             >
-              {locating ? (
-                <Loader size={13} className="animate-spin" />
-              ) : (
-                <MapPin size={13} />
-              )}
-              <span className="hidden sm:inline">
-                {locating ? "Locating..." : "Use current location"}
-              </span>
-              <span className="sm:hidden">{locating ? "..." : "Locate"}</span>
+              {locating ? <Loader size={13} className="animate-spin" /> : <MapPin size={13} />}
+              <span className="hidden sm:inline">{locating ? "Locating..." : "Auto-detect"}</span>
+              <span className="sm:hidden">{locating ? "..." : "Detect"}</span>
             </button>
           </div>
+          <p className="text-xs text-gray-400 m-0">Auto-detect also sets your country and currency.</p>
         </div>
 
         <div className="flex flex-col gap-1">
@@ -344,10 +402,10 @@ export function SignUp() {
 
         <button
           type="submit"
-          disabled={loading}
+          disabled={loading || success}
           className="bg-teal-500 text-white rounded-md border-none font-medium hover:bg-teal-600 w-full h-12 cursor-pointer disabled:opacity-60 mt-2"
         >
-          {loading ? "Creating account..." : "Create account"}
+          {loading ? "Creating account..." : success ? "Account created!" : "Create account"}
         </button>
 
         <p className="text-center font-medium text-gray-400 text-sm m-0">

@@ -1,7 +1,7 @@
 {
-  "name": "kobotrack-server",
+  "name": "dwatrack-server",
   "version": "1.0.0",
-  "description": "KoboTrack Express + PostgreSQL backend",
+  "description": "DwaTrack Express + PostgreSQL backend",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",
