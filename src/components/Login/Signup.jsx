@@ -405,7 +405,11 @@ export function SignUp() {
           disabled={loading || success}
           className="bg-teal-500 text-white rounded-md border-none font-medium hover:bg-teal-600 w-full h-12 cursor-pointer disabled:opacity-60 mt-2"
         >
-          {loading ? "Creating account..." : success ? "Account created!" : "Create account"}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader size={16} className="animate-spin" /> Creating account…
+            </span>
+          ) : success ? "Account created!" : "Create account"}
         </button>
 
         <p className="text-center font-medium text-gray-400 text-sm m-0">

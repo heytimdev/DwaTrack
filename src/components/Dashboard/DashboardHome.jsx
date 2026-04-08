@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useState, useEffect } from "react";
 import {
   TrendingUp,
   ArrowLeftRight,
@@ -6,9 +7,14 @@ import {
   Plus,
   Zap,
   Eye,
+  Sparkles,
+  RefreshCw,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
+function getToken() { return localStorage.getItem("dwatrack_token"); }
 
 function StatCard({ title, value, sub, subColor, icon: Icon, iconBg }) {
   return (
@@ -88,6 +94,62 @@ function WeeklyBarChart({ data, currency }) {
   );
 }
 
+function AISummaryBanner() {
+  const [summary, setSummary] = useState(null);
+  const [loading, setLoading] = useState(false);
+
+  async function load() {
+    setLoading(true);
+    try {
+      const res = await fetch(`${API_URL}/ai/daily-summary`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
+      });
+      const data = await res.json();
+      setSummary(data.summary || null);
+    } catch {
+      setSummary(null);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  useEffect(() => { load(); }, []);
+
+  if (!loading && !summary) return null;
+
+  return (
+    <div className="bg-linear-to-r from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4 mb-6 flex gap-3">
+      <div className="w-8 h-8 bg-teal-500 rounded-lg flex items-center justify-center shrink-0 mt-0.5">
+        <Sparkles size={15} className="text-white" />
+      </div>
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <p className="text-xs font-semibold text-teal-700 m-0 uppercase tracking-wide">AI Daily Insight</p>
+          <button
+            onClick={load}
+            disabled={loading}
+            className="ml-auto p-1 text-teal-400 hover:text-teal-600 border-none bg-transparent cursor-pointer disabled:opacity-40"
+          >
+            <RefreshCw size={12} className={loading ? "animate-spin" : ""} />
+          </button>
+        </div>
+        {loading ? (
+          <div className="flex items-center gap-2 text-teal-600 text-xs">
+            <div className="w-3 h-3 border-2 border-teal-200 border-t-teal-500 rounded-full animate-spin" />
+            Generating your daily insight…
+          </div>
+        ) : (
+          <p className="text-sm text-teal-800 m-0 leading-relaxed line-clamp-3">{summary}</p>
+        )}
+        <Link to="/dashboard/ai" className="text-xs text-teal-600 font-medium no-underline hover:text-teal-800 mt-1.5 inline-block">
+          Open AI Assistant →
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 export function DashboardHome() {
   const { transactions, getWeeklyData } = useApp();
   const { canAddTransactions, currency } = useAuth();
@@ -96,7 +158,7 @@ export function DashboardHome() {
   const todayTx = transactions.filter((t) => {
     return new Date(t.createdAt).toDateString() === todayStr;
   });
-  const todaySales = todayTx.reduce((s, t) => s + (t.total || 0), 0);
+  const todaySales = todayTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0);
   const totalTx = transactions.length;
   const pending = transactions.filter((t) => t.status === "pending").length;
   const weeklyData = getWeeklyData();
@@ -106,6 +168,7 @@ export function DashboardHome() {
 
   return (
     <div className="max-w-6xl mx-auto">
+      <AISummaryBanner />
       {/* Action buttons */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>

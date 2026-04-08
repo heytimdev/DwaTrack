@@ -7,6 +7,8 @@ import {
   TrendingUp,
   Settings,
   Package,
+  Sparkles,
+  BookOpen,
   X,
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
@@ -17,18 +19,20 @@ const navItems = [
   { to: "/dashboard/transactions", label: "Transactions", icon: ArrowLeftRight },
   { to: "/dashboard/expenses", label: "Expenses", icon: Receipt },
   { to: "/dashboard/stock", label: "Stock", icon: Package },
+  { to: "/dashboard/debtors", label: "Debtors", icon: BookOpen, perm: "canManageDebtors" },
   { to: "/dashboard/reports", label: "Reports", icon: BarChart2 },
   { to: "/dashboard/analysis", label: "Analysis", icon: TrendingUp },
+  { to: "/dashboard/ai", label: "AI Assistant", icon: Sparkles },
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar({ open, onClose }) {
-  const { currentUser, canViewReports, canManageExpenses } = useAuth();
+  const { currentUser, canViewReports, canManageExpenses, canManageStock, canManageDebtors } = useAuth();
+
+  const perms = { canViewReports, canManageExpenses, canManageStock, canManageDebtors };
 
   const visibleItems = navItems.filter((item) => {
-    if (item.to === "/dashboard/reports" && !canViewReports) return false;
-    if (item.to === "/dashboard/expenses" && !canManageExpenses) return false;
-    if (item.to === "/dashboard/stock" && !canManageExpenses) return false;
+    if (item.perm && !perms[item.perm]) return false;
     return true;
   });
 

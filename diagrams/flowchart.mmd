@@ -1,0 +1,91 @@
+flowchart TD
+    A([Start]) --> B[Visit KoboTrack]
+    B --> C{Has Account?}
+    C -- No --> D[Sign Up\nName · Email · Password · Country]
+    D --> E{Email\nAlready Exists?}
+    E -- Yes --> F([Error: Duplicate Email])
+    E -- No --> G[Account Created\nCurrency Auto-set from Country]
+    G --> H[Go to Login]
+    C -- Yes --> H
+
+    H --> I[Enter Email & Password]
+    I --> J{Credentials\nValid?}
+    J -- No --> K([Error: Invalid Login])
+    J -- Yes --> L{What is\nthe Role?}
+
+    L -- Owner --> OW
+    L -- Manager --> MG
+    L -- Cashier --> CS
+
+    subgraph OW [" OWNER — Full Access "]
+        direction TB
+        O1[Dashboard + AI Insights] --> O2{Action}
+        O2 --> O3[Record Sale]
+        O2 --> O4[View & Delete Transactions]
+        O2 --> O5[Manage Products]
+        O2 --> O6[Manage Stock]
+        O2 --> O7[Manage Expenses]
+        O2 --> O8[View Reports & Net Profit]
+        O2 --> O9[AI Assistant\nSummary · Restock · Chat]
+        O2 --> O10[Settings\nShop · Tax · Team]
+        O2 --> O11[Logout]
+    end
+
+    subgraph MG [" MANAGER — Limited Access "]
+        direction TB
+        M1[Dashboard] --> M2{Action}
+        M2 --> M3[Record Sale]
+        M2 --> M4[View Transactions\nNo Delete]
+        M2 --> M5[Manage Products]
+        M2 --> M6[Manage Stock]
+        M2 --> M7[Logout]
+    end
+
+    subgraph CS [" CASHIER — Basic Access "]
+        direction TB
+        C1[Dashboard] --> C2{Action}
+        C2 --> C3[Record Sale]
+        C2 --> C4[View Own Transactions]
+        C2 --> C5[Logout]
+    end
+
+    O3 & M3 & C3 --> REC
+
+    subgraph REC [" Record Sale Flow "]
+        direction TB
+        R1[Select Products & Qty] --> R2[Apply Discount]
+        R2 --> R3[System Calculates\nSubtotal + VAT + Total]
+        R3 --> R4[Choose Payment Method]
+        R4 --> R5[Submit Transaction]
+        R5 --> R6[Stock Auto-deducted]
+        R6 --> R7[Receipt Generated]
+        R7 --> R8{Print?}
+        R8 -- Yes --> R9[Open Print Dialog]
+        R8 -- No --> R10([Return to Dashboard])
+        R9 --> R10
+    end
+
+    O6 & M6 --> STK
+
+    subgraph STK [" Stock Management "]
+        direction TB
+        S1{Action} --> S2[Add Item + Threshold]
+        S1 --> S3[Restock Existing]
+        S1 --> S4[View Low Stock Alerts]
+    end
+
+    O1 & M1 & C1 --> TM{15 Min\nInactivity?}
+    TM -- Yes --> TM1[Warning Modal\n60s Countdown]
+    TM1 --> TM2{Response?}
+    TM2 -- Stay --> O1 & M1 & C1
+    TM2 -- Timeout / Logout --> Z([End · Session Closed])
+
+    O11 & M7 & C5 --> Z
+
+    style A fill:#0f766e,color:#fff,stroke:none
+    style Z fill:#1f2937,color:#fff,stroke:none
+    style F fill:#ef4444,color:#fff,stroke:none
+    style K fill:#ef4444,color:#fff,stroke:none
+    style TM1 fill:#f59e0b,color:#fff,stroke:none
+    style R7 fill:#6366f1,color:#fff,stroke:none
+    style G fill:#10b981,color:#fff,stroke:none

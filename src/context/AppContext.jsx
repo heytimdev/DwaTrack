@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect } from "react";
+import { createContext, useContext, useState, useEffect, useCallback } from "react";
 import { useAuth } from "./AuthContext";
 import { useToast } from "./ToastContext";
 import api from "../api";
@@ -14,17 +14,18 @@ export function AppProvider({ children }) {
   const [expenses,     setExpenses]     = useState([]);
   const [team,         setTeam]         = useState([]);
   const [stock,        setStock]        = useState([]);
+  const [customers,    setCustomers]    = useState([]);
   const [loading,      setLoading]      = useState(false);
 
   // ── Fetch all data whenever the logged-in user changes ───────────────────────
   useEffect(() => {
     if (!currentUser) {
-      // Clear state on logout
       setTransactions([]);
       setProducts([]);
       setExpenses([]);
       setTeam([]);
       setStock([]);
+      setCustomers([]);
       return;
     }
 
@@ -33,11 +34,11 @@ export function AppProvider({ children }) {
       api.get("/transactions").then(setTransactions),
       api.get("/products").then(setProducts),
       api.get("/expenses").then(setExpenses),
-      // Only owners have a team list
       currentUser.role === "owner"
         ? api.get("/team").then(setTeam)
         : Promise.resolve(),
       api.get("/stock").then(setStock),
+      api.get("/customers").then(setCustomers),
     ])
       .catch(console.error)
       .finally(() => setLoading(false));
@@ -194,7 +195,54 @@ export function AppProvider({ children }) {
     }
   }
 
-  // ── Analytics helpers (pure client-side, no API needed) ──────────────────────
+  // ── Customers ─────────────────────────────────────────────────────────────────
+  async function addCustomer(customerData) {
+    try {
+      const newCustomer = await api.post("/customers", customerData);
+      setCustomers((prev) => [...prev, newCustomer].sort((a, b) => a.name.localeCompare(b.name)));
+      return newCustomer;
+    } catch (err) {
+      toast.error(err.message || "Failed to add customer");
+      throw err;
+    }
+  }
+
+  // ── Debtors ───────────────────────────────────────────────────────────────────
+  // Fetches live debtors summary from the server (not cached in state, called on demand)
+  const fetchDebtors = useCallback(async () => {
+    return api.get("/debtors");
+  }, []);
+
+  const fetchCustomerDebts = useCallback(async (customerId) => {
+    return api.get(`/debtors/${customerId}`);
+  }, []);
+
+  async function recordDebtPayment(transactionId, amount, note) {
+    try {
+      const result = await api.post("/debtors/payments", {
+        transactionId,
+        amount,
+        note,
+        firstName: currentUser.firstName,
+        lastName:  currentUser.lastName,
+      });
+      // If the debt is now fully paid, remove the credit payment_status from local tx list
+      if (result.nowPaid) {
+        setTransactions((prev) =>
+          prev.map((t) =>
+            t.id === transactionId ? { ...t, paymentStatus: "paid" } : t
+          )
+        );
+      }
+      toast.success("Payment recorded");
+      return result;
+    } catch (err) {
+      toast.error(err.message || "Failed to record payment");
+      throw err;
+    }
+  }
+
+  // ── Analytics helpers (pure client-side) ─────────────────────────────────────
   function getTodaySales() {
     const today = new Date().toDateString();
     return transactions
@@ -215,7 +263,7 @@ export function AppProvider({ children }) {
       const dateStr = date.toDateString();
       const total = transactions
         .filter((t) => new Date(t.createdAt).toDateString() === dateStr)
-        .reduce((sum, t) => sum + (t.total || 0), 0);
+        .reduce((sum, t) => sum + ((t.total || 0) - (t.taxAmount || 0)), 0);
       return { day, total, isToday: date.toDateString() === now.toDateString() };
     });
   }
@@ -242,6 +290,7 @@ export function AppProvider({ children }) {
         expenses,
         team,
         stock,
+        customers,
         addTransaction,
         deleteTransaction,
         addProduct,
@@ -255,6 +304,10 @@ export function AppProvider({ children }) {
         updateStockItem,
         deleteStockItem,
         restockItem,
+        addCustomer,
+        fetchDebtors,
+        fetchCustomerDebts,
+        recordDebtPayment,
         getTodaySales,
         getWeeklyData,
         getProductSalesData,

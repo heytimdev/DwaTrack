@@ -9,6 +9,9 @@ const expenseRoutes     = require('./routes/expenses');
 const teamRoutes        = require('./routes/team');
 const stockRoutes       = require('./routes/stock');
 const settingsRoutes    = require('./routes/settings');
+const aiRoutes          = require('./routes/ai');
+const customerRoutes    = require('./routes/customers');
+const debtorRoutes      = require('./routes/debtors');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -30,6 +33,9 @@ app.use('/api/expenses',     expenseRoutes);
 app.use('/api/team',         teamRoutes);
 app.use('/api/stock',        stockRoutes);
 app.use('/api/settings',     settingsRoutes);
+app.use('/api/ai',           aiRoutes);
+app.use('/api/customers',    customerRoutes);
+app.use('/api/debtors',      debtorRoutes);
 
 app.get('/', (_req, res) => res.json({ message: 'DwaTrack API is running' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

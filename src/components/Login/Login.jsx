@@ -2,7 +2,7 @@ import logo from "../../assets/logo.svg";
 import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, Loader } from "lucide-react";
 
 export function Login() {
   const { login } = useAuth();
@@ -89,7 +89,11 @@ export function Login() {
           disabled={loading}
           className="bg-teal-500 h-12 text-white font-medium rounded-md hover:bg-teal-600 border-none w-full mt-2 cursor-pointer disabled:opacity-60"
         >
-          {loading ? "Signing in..." : "Sign in"}
+          {loading ? (
+            <span className="flex items-center justify-center gap-2">
+              <Loader size={16} className="animate-spin" /> Signing in…
+            </span>
+          ) : "Sign in"}
         </button>
 
         <Link to="/forgot-password" className="text-teal-500 hover:text-teal-700 font-medium no-underline text-center text-sm">

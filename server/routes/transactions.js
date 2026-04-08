@@ -16,18 +16,21 @@ function generateReceiptNumber() {
 function format(tx) {
   const date = new Date(tx.created_at);
   return {
-    id: tx.id,
+    id:            tx.id,
     receiptNumber: tx.receipt_number,
-    customer: tx.customer || 'Walk-in Customer',
-    items: tx.items,
-    total: parseFloat(tx.total),
-    taxLabel: tx.tax_label || null,
-    taxAmount: parseFloat(tx.tax_amount) || 0,
+    customer:      tx.customer || 'Walk-in Customer',
+    customerId:    tx.customer_id || null,
+    items:         tx.items,
+    total:         parseFloat(tx.total),
+    taxLabel:      tx.tax_label || null,
+    taxAmount:     parseFloat(tx.tax_amount) || 0,
     paymentMethod: tx.payment_method,
-    addedBy: tx.added_by,
-    status: tx.status || 'completed',
-    date: date.toLocaleDateString('en-GH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }),
-    time: date.toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' }),
+    paymentStatus: tx.payment_status || 'paid',
+    amountPaid:    parseFloat(tx.amount_paid) || 0,
+    addedBy:       tx.added_by,
+    status:        tx.status || 'completed',
+    date:    date.toLocaleDateString('en-GH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }),
+    time:    date.toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' }),
     createdAt: tx.created_at,
   };
 }
@@ -49,22 +52,32 @@ router.get('/', requireAuth, async (req, res) => {
 // POST /api/transactions
 router.post('/', requireAuth, async (req, res) => {
   try {
-    const { items, total, paymentMethod, customer } = req.body;
+    const { items, total, paymentMethod, customer, customerId, taxLabel, taxAmount } = req.body;
     const addedBy = `${req.body.firstName || ''} ${req.body.lastName || ''}`.trim()
       || 'Unknown';
 
     const receiptNumber = generateReceiptNumber();
 
-    const { taxLabel, taxAmount } = req.body;
+    // Determine payment status from paymentMethod + amountPaid
+    let paymentStatus = 'paid';
+    let amountPaid    = parseFloat(total) || 0;
+    if (paymentMethod === 'credit') {
+      const deposit = parseFloat(req.body.amountPaid) || 0;
+      amountPaid    = deposit;
+      paymentStatus = deposit <= 0 ? 'credit' : deposit < parseFloat(total) ? 'partial' : 'paid';
+    }
 
     const { rows } = await pool.query(
-      `INSERT INTO transactions (owner_id, receipt_number, customer, items, total, tax_label, tax_amount, payment_method, added_by)
-       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
+      `INSERT INTO transactions
+         (owner_id, receipt_number, customer, items, total, tax_label, tax_amount,
+          payment_method, added_by, customer_id, payment_status, amount_paid)
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12)
        RETURNING *`,
       [req.user.ownerId, receiptNumber, customer || 'Walk-in Customer',
        JSON.stringify(items || []), total || 0,
        taxLabel || null, parseFloat(taxAmount) || 0,
-       paymentMethod || 'cash', addedBy]
+       paymentMethod || 'cash', addedBy,
+       customerId || null, paymentStatus, amountPaid]
     );
 
     // Deduct matching stock quantities

@@ -1,7 +1,29 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(npm install:*)",
+      "Bash(node index.js)",
+      "Bash(cmd /c \"for /f \\\\\"tokens=5\\\\\" %a in \\('netstat -aon ^| findstr :5000'\\) do taskkill /F /PID %a\")",
+      "Bash(netstat -ano)",
+      "Bash(taskkill /F /PID 18400)",
+      "Bash(cmd /c \"taskkill /F /PID 4676\")",
+      "Bash(grep -E \"^[4-9][0-9]{3}$\")",
+      "Bash(cmd /c \"taskkill /F /PID 4676 & taskkill /F /PID 7356\")",
+      "Bash(node -e ':*)",
+      "Bash(curl -s -X POST http://localhost:8080/api/ai/chat -H 'Content-Type: application/json' -H 'Authorization: Bearer test' -d '{\"message\":\"hello\"}')",
+      "Bash(mmdc -i flowchart.mmd -o flowchart.png -w 2400 -H 3200 --backgroundColor white)",
+      "Bash(mmdc -i flowchart.mmd -o flowchart.png -w 2800 -H 3600 --backgroundColor white)",
+      "Bash(mmdc -i flowchart.mmd -o flowchart.png -w 4000 -H 5000 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i flowchart.mmd -o flowchart.png -w 3200 -H 4000 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i context.mmd -o context.png -w 3200 -H 2000 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i context.mmd -o context.png -w 3600 -H 3200 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i context.mmd -o context.png -w 4000 -H 3000 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i context.mmd -o context.png -w 5000 -H 3500 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i context.mmd -o context.png -w 5000 -H 4000 -s 2 --backgroundColor white)",
+      "Bash(mmdc -i context.mmd -o context.png -w 5000 -H 3000 -s 2 --backgroundColor white)",
+      "Bash(node gen-context.js)",
+      "Bash(node --input-type=commonjs)"
     ]
   }
 }

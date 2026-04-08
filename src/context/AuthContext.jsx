@@ -82,10 +82,12 @@ export function AuthProvider({ children }) {
 
   const canManageTeam         = isOwner;
   const canManageProducts     = isOwner || isManager;
-  const canViewReports        = isOwner || isManager;
+  const canViewReports        = isOwner;
   const canAddTransactions    = isOwner || isManager || isCashier;
   const canDeleteTransactions = isOwner;
-  const canManageExpenses     = isOwner || isManager;
+  const canManageExpenses     = isOwner;
+  const canManageStock        = isOwner || isManager;
+  const canManageDebtors      = isOwner || isManager;
 
   return (
     <AuthContext.Provider
@@ -106,6 +108,8 @@ export function AuthProvider({ children }) {
         canAddTransactions,
         canDeleteTransactions,
         canManageExpenses,
+        canManageStock,
+        canManageDebtors,
       }}
     >
       {children}

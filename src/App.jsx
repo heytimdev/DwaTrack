@@ -6,6 +6,8 @@ import { ToastProvider } from "./context/ToastContext";
 import { SignUp } from "./components/Login/Signup.jsx";
 import { Home } from "./components/Body/Home.jsx";
 import { Login } from "./components/Login/Login.jsx";
+import { ForgotPassword } from "./components/Login/ForgotPassword.jsx";
+import { ResetPassword } from "./components/Login/ResetPassword.jsx";
 import { DashboardLayout } from "./components/Dashboard/DashboardLayout.jsx";
 import { DashboardHome } from "./components/Dashboard/DashboardHome.jsx";
 import { Transactions } from "./components/Dashboard/Transactions.jsx";
@@ -14,6 +16,8 @@ import { Reports } from "./components/Dashboard/Reports.jsx";
 import { Analysis } from "./components/Dashboard/Analysis.jsx";
 import { Settings } from "./components/Dashboard/Settings.jsx";
 import { Stock } from "./components/Dashboard/Stock.jsx";
+import { AIAssistant } from "./components/Dashboard/AIAssistant.jsx";
+import { Debtors } from "./components/Dashboard/Debtors.jsx";
 
 function ProtectedRoute({ children }) {
   const { currentUser, authLoading } = useAuth();
@@ -33,6 +37,8 @@ function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/signup" element={<SignUp />} />
       <Route path="/login" element={<Login />} />
+      <Route path="/forgot-password" element={<ForgotPassword />} />
+      <Route path="/reset-password" element={<ResetPassword />} />
 
       <Route
         path="/dashboard"
@@ -48,9 +54,11 @@ function AppRoutes() {
         <Route path="transactions" element={<Transactions />} />
         <Route path="expenses" element={<Expenses />} />
         <Route path="stock" element={<Stock />} />
+        <Route path="debtors" element={<Debtors />} />
         <Route path="reports" element={<Reports />} />
         <Route path="analysis" element={<Analysis />} />
         <Route path="settings" element={<Settings />} />
+        <Route path="ai" element={<AIAssistant />} />
       </Route>
     </Routes>
   );

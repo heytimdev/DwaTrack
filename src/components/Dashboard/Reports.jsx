@@ -5,7 +5,7 @@ export function Reports() {
   const { transactions, expenses } = useApp();
   const { currency } = useAuth();
 
-  const totalRevenue = transactions.reduce((s, t) => s + (t.total || 0), 0);
+  const totalRevenue = transactions.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0);
   const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
   const netProfit = totalRevenue - totalExpenses;
 
@@ -14,7 +14,7 @@ export function Reports() {
   transactions.forEach((tx) => {
     const d = new Date(tx.createdAt);
     const key = d.toLocaleDateString("en-GH", { month: "short", year: "numeric" });
-    byMonth[key] = (byMonth[key] || 0) + (tx.total || 0);
+    byMonth[key] = (byMonth[key] || 0) + ((tx.total || 0) - (tx.taxAmount || 0));
   });
 
   const monthlyData = Object.entries(byMonth)
