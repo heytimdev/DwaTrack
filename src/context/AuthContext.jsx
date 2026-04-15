@@ -72,6 +72,17 @@ export function AuthProvider({ children }) {
     }
   }
 
+  // ── updateAvatar ─────────────────────────────────────────────────────────────
+  async function updateAvatar(avatar) {
+    try {
+      const { avatar: saved } = await api.put("/settings/avatar", { avatar });
+      setCurrentUser((prev) => ({ ...prev, avatar: saved }));
+      return { success: true };
+    } catch (err) {
+      return { success: false, error: err.message };
+    }
+  }
+
   // ── Derived values ───────────────────────────────────────────────────────────
   const currency = currentUser?.currency || "GH₵";
 
@@ -99,6 +110,7 @@ export function AuthProvider({ children }) {
         signup,
         logout,
         updateShopInfo,
+        updateAvatar,
         isOwner,
         isManager,
         isCashier,

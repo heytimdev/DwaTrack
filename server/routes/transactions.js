@@ -29,6 +29,7 @@ function format(tx) {
     amountPaid:    parseFloat(tx.amount_paid) || 0,
     addedBy:       tx.added_by,
     status:        tx.status || 'completed',
+    voidReason:    tx.void_reason || null,
     date:    date.toLocaleDateString('en-GH', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' }),
     time:    date.toLocaleTimeString('en-GH', { hour: '2-digit', minute: '2-digit' }),
     createdAt: tx.created_at,

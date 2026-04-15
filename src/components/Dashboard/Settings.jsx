@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { UserPlus, UserX, Shield, User, Briefcase, Save, Camera } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
@@ -17,7 +17,7 @@ const ROLE_PERMISSIONS = {
 
 export function Settings() {
   const { team, addTeamMember, removeTeamMember } = useApp();
-  const { currentUser, canManageTeam, isOwner, updateShopInfo } = useAuth();
+  const { currentUser, canManageTeam, isOwner, updateShopInfo, updateAvatar } = useAuth();
 
   const [activeTab, setActiveTab] = useState("shop");
 
@@ -36,6 +36,32 @@ export function Settings() {
   });
   const [shopSaved, setShopSaved] = useState(false);
   const [logoPreview, setLogoPreview] = useState(currentUser?.businessLogo || null);
+
+  // Avatar
+  const [avatarPreview, setAvatarPreview] = useState(currentUser?.avatar || null);
+  const [avatarSaving, setAvatarSaving] = useState(false);
+  const avatarInputRef = useRef(null);
+
+  async function handleAvatarChange(e) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const dataUrl = ev.target.result;
+      setAvatarPreview(dataUrl);
+      setAvatarSaving(true);
+      await updateAvatar(dataUrl);
+      setAvatarSaving(false);
+    };
+    reader.readAsDataURL(file);
+  }
+
+  async function handleRemoveAvatar() {
+    setAvatarPreview(null);
+    setAvatarSaving(true);
+    await updateAvatar(null);
+    setAvatarSaving(false);
+  }
 
   // Team form
   const [memberForm, setMemberForm] = useState({
@@ -398,9 +424,60 @@ export function Settings() {
 
       {/* Account tab */}
       {resolvedTab === "account" && (
-        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-          <h3 className="text-sm font-semibold text-gray-800 m-0 mb-4">Account Information</h3>
-          <div className="space-y-3">
+        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 space-y-6">
+          <h3 className="text-sm font-semibold text-gray-800 m-0">Account Information</h3>
+
+          {/* Avatar */}
+          <div className="flex items-center gap-5">
+            <div className="relative shrink-0">
+              <div className="w-20 h-20 rounded-full overflow-hidden bg-teal-100 flex items-center justify-center border-2 border-gray-200">
+                {avatarPreview
+                  ? <img src={avatarPreview} alt="avatar" className="w-full h-full object-cover" />
+                  : <span className="text-2xl font-bold text-teal-600 select-none">
+                      {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+                    </span>
+                }
+              </div>
+              <label className="absolute -bottom-1 -right-1 w-7 h-7 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center cursor-pointer shadow transition-colors">
+                <Camera size={13} className="text-white" />
+                <input
+                  ref={avatarInputRef}
+                  type="file"
+                  accept="image/*"
+                  onChange={handleAvatarChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            <div>
+              <p className="text-sm font-semibold text-gray-800 m-0">{currentUser?.firstName} {currentUser?.lastName}</p>
+              <p className="text-xs text-gray-400 m-0 mt-0.5 capitalize">{currentUser?.role} · {currentUser?.businessName}</p>
+              <div className="flex gap-2 mt-2">
+                <button
+                  onClick={() => avatarInputRef.current?.click()}
+                  disabled={avatarSaving}
+                  className="text-xs text-teal-600 hover:text-teal-700 font-medium border-none bg-transparent cursor-pointer p-0 disabled:opacity-50"
+                >
+                  {avatarSaving ? "Saving…" : "Change photo"}
+                </button>
+                {avatarPreview && (
+                  <>
+                    <span className="text-gray-300 text-xs">·</span>
+                    <button
+                      onClick={handleRemoveAvatar}
+                      disabled={avatarSaving}
+                      className="text-xs text-red-400 hover:text-red-500 font-medium border-none bg-transparent cursor-pointer p-0 disabled:opacity-50"
+                    >
+                      Remove
+                    </button>
+                  </>
+                )}
+              </div>
+            </div>
+          </div>
+
+          {/* Info rows */}
+          <div className="space-y-3 border-t border-gray-100 pt-4">
             <div className="flex items-center justify-between py-2 border-b border-gray-50 gap-4">
               <span className="text-xs text-gray-500 shrink-0">Name</span>
               <span className="text-sm font-medium text-gray-800 text-right">{currentUser?.firstName} {currentUser?.lastName}</span>

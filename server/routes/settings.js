@@ -77,4 +77,24 @@ router.put('/password', requireAuth, requireRole('owner'), async (req, res) => {
   }
 });
 
+// PUT /api/settings/avatar  (all roles)
+router.put('/avatar', requireAuth, async (req, res) => {
+  try {
+    const { avatar } = req.body;
+    const isOwner = req.user.role === 'owner';
+    const table   = isOwner ? 'users' : 'team_members';
+
+    const { rows } = await pool.query(
+      `UPDATE ${table} SET avatar=$1 WHERE id=$2 RETURNING avatar`,
+      [avatar || null, req.user.id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'User not found' });
+
+    res.json({ avatar: rows[0].avatar });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
 module.exports = router;

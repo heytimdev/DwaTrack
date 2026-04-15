@@ -1,5 +1,5 @@
 flowchart TD
-    A([Start]) --> B[Visit KoboTrack]
+    A([Start]) --> B[Visit DwaTrack]
     B --> C{Has Account?}
     C -- No --> D[Sign Up\nName · Email · Password · Country]
     D --> E{Email\nAlready Exists?}
@@ -8,7 +8,11 @@ flowchart TD
     G --> H[Go to Login]
     C -- Yes --> H
 
-    H --> I[Enter Email & Password]
+    H --> FP{Forgot\nPassword?}
+    FP -- Yes --> FP1[Enter Email\nReceive Reset Link]
+    FP1 --> FP2[Click Link · Set New Password]
+    FP2 --> H
+    FP -- No --> I[Enter Email & Password]
     I --> J{Credentials\nValid?}
     J -- No --> K([Error: Invalid Login])
     J -- Yes --> L{What is\nthe Role?}
@@ -21,24 +25,26 @@ flowchart TD
         direction TB
         O1[Dashboard + AI Insights] --> O2{Action}
         O2 --> O3[Record Sale]
-        O2 --> O4[View & Delete Transactions]
+        O2 --> O4[View · Void · Delete Transactions]
         O2 --> O5[Manage Products]
         O2 --> O6[Manage Stock]
         O2 --> O7[Manage Expenses]
-        O2 --> O8[View Reports & Net Profit]
+        O2 --> O8[View Reports · Sales Heatmap]
         O2 --> O9[AI Assistant\nSummary · Restock · Chat]
-        O2 --> O10[Settings\nShop · Tax · Team]
-        O2 --> O11[Logout]
+        O2 --> O10[Manage Debtors\nRecord Payments]
+        O2 --> O11[Settings\nShop · Tax · Team · Avatar]
+        O2 --> O12[Logout]
     end
 
     subgraph MG [" MANAGER — Limited Access "]
         direction TB
         M1[Dashboard] --> M2{Action}
         M2 --> M3[Record Sale]
-        M2 --> M4[View Transactions\nNo Delete]
-        M2 --> M5[Manage Products]
-        M2 --> M6[Manage Stock]
-        M2 --> M7[Logout]
+        M2 --> M4[View · Void Transactions]
+        M2 --> M5[Manage Products & Stock]
+        M2 --> M6[View Debtors\nRecord Payments]
+        M2 --> M7[Settings · Avatar]
+        M2 --> M8[Logout]
     end
 
     subgraph CS [" CASHIER — Basic Access "]
@@ -46,7 +52,8 @@ flowchart TD
         C1[Dashboard] --> C2{Action}
         C2 --> C3[Record Sale]
         C2 --> C4[View Own Transactions]
-        C2 --> C5[Logout]
+        C2 --> C5[Settings · Avatar]
+        C2 --> C6[Logout]
     end
 
     O3 & M3 & C3 --> REC
@@ -54,18 +61,35 @@ flowchart TD
     subgraph REC [" Record Sale Flow "]
         direction TB
         R1[Select Products & Qty] --> R2[Apply Discount]
-        R2 --> R3[System Calculates\nSubtotal + VAT + Total]
-        R3 --> R4[Choose Payment Method]
-        R4 --> R5[Submit Transaction]
-        R5 --> R6[Stock Auto-deducted]
-        R6 --> R7[Receipt Generated]
-        R7 --> R8{Print?}
-        R8 -- Yes --> R9[Open Print Dialog]
-        R8 -- No --> R10([Return to Dashboard])
-        R9 --> R10
+        R2 --> R3[System Calculates\nSubtotal + Tax + Total]
+        R3 --> R4{Payment Method}
+        R4 -- Cash / MoMo / Card --> R5[Full Payment\nStatus: Paid]
+        R4 -- Credit --> R6[Select Customer\nOptional Deposit]
+        R6 --> R6A{Deposit\nEntered?}
+        R6A -- Yes --> R6B[Status: Partial]
+        R6A -- No --> R6C[Status: Credit]
+        R5 & R6B & R6C --> R7[Submit Transaction]
+        R7 --> R8[Stock Auto-deducted]
+        R8 --> R9[Receipt Generated]
+        R9 --> R10{Print?}
+        R10 -- Yes --> R11[Open Print Dialog]
+        R10 -- No --> R12([Return to Dashboard])
+        R11 --> R12
     end
 
-    O6 & M6 --> STK
+    O10 & M6 --> DBT
+
+    subgraph DBT [" Debtors Flow "]
+        direction TB
+        D1[View Outstanding Debts] --> D2[Select Customer]
+        D2 --> D3[View Open Transactions\n+ Payment History]
+        D3 --> D4[Record Payment]
+        D4 --> D5{Fully Paid?}
+        D5 -- Yes --> D6[Status → Paid]
+        D5 -- No --> D7[Status → Partial]
+    end
+
+    O6 & M5 --> STK
 
     subgraph STK [" Stock Management "]
         direction TB
@@ -80,12 +104,15 @@ flowchart TD
     TM2 -- Stay --> O1 & M1 & C1
     TM2 -- Timeout / Logout --> Z([End · Session Closed])
 
-    O11 & M7 & C5 --> Z
+    O12 & M8 & C6 --> Z
 
     style A fill:#0f766e,color:#fff,stroke:none
     style Z fill:#1f2937,color:#fff,stroke:none
     style F fill:#ef4444,color:#fff,stroke:none
     style K fill:#ef4444,color:#fff,stroke:none
     style TM1 fill:#f59e0b,color:#fff,stroke:none
-    style R7 fill:#6366f1,color:#fff,stroke:none
+    style R9 fill:#6366f1,color:#fff,stroke:none
     style G fill:#10b981,color:#fff,stroke:none
+    style D6 fill:#10b981,color:#fff,stroke:none
+    style FP1 fill:#be185d,color:#fff,stroke:none
+    style FP2 fill:#be185d,color:#fff,stroke:none

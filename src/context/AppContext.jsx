@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
 import { useAuth } from "./AuthContext";
 import { useToast } from "./ToastContext";
 import api from "../api";
@@ -69,6 +69,18 @@ export function AppProvider({ children }) {
       toast.success("Transaction deleted");
     } catch (err) {
       toast.error(err.message || "Failed to delete transaction");
+    }
+  }
+
+  async function voidTransaction(id, reason) {
+    try {
+      const updated = await api.patch(`/transactions/${id}/void`, { reason });
+      setTransactions((prev) => prev.map((t) => (t.id === id ? updated : t)));
+      toast.success("Transaction voided");
+      return updated;
+    } catch (err) {
+      toast.error(err.message || "Failed to void transaction");
+      throw err;
     }
   }
 
@@ -242,20 +254,19 @@ export function AppProvider({ children }) {
     }
   }
 
-  // ── Analytics helpers (pure client-side) ─────────────────────────────────────
-  function getTodaySales() {
+  // ── Analytics helpers (memoized — only recompute when transactions change) ────
+  const getTodaySales = useCallback(() => {
     const today = new Date().toDateString();
     return transactions
       .filter((t) => new Date(t.createdAt).toDateString() === today)
       .reduce((sum, t) => sum + (t.total || 0), 0);
-  }
+  }, [transactions]);
 
-  function getWeeklyData() {
+  const getWeeklyData = useCallback(() => {
     const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const now = new Date();
-    const dayOfWeek = now.getDay();
     const startOfWeek = new Date(now);
-    startOfWeek.setDate(now.getDate() - ((dayOfWeek + 6) % 7));
+    startOfWeek.setDate(now.getDate() - ((now.getDay() + 6) % 7));
 
     return days.map((day, i) => {
       const date = new Date(startOfWeek);
@@ -266,9 +277,9 @@ export function AppProvider({ children }) {
         .reduce((sum, t) => sum + ((t.total || 0) - (t.taxAmount || 0)), 0);
       return { day, total, isToday: date.toDateString() === now.toDateString() };
     });
-  }
+  }, [transactions]);
 
-  function getProductSalesData() {
+  const getProductSalesData = useCallback(() => {
     const map = {};
     transactions.forEach((tx) => {
       (tx.items || []).forEach((item) => {
@@ -279,7 +290,7 @@ export function AppProvider({ children }) {
       });
     });
     return Object.values(map).sort((a, b) => b.revenue - a.revenue);
-  }
+  }, [transactions]);
 
   return (
     <AppContext.Provider
@@ -293,6 +304,7 @@ export function AppProvider({ children }) {
         customers,
         addTransaction,
         deleteTransaction,
+        voidTransaction,
         addProduct,
         updateProduct,
         deleteProduct,

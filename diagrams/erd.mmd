@@ -1,84 +1,120 @@
 erDiagram
     USERS {
-        UUID    id PK
-        VARCHAR first_name
-        VARCHAR last_name
-        VARCHAR email
-        VARCHAR password_hash
-        VARCHAR business_name
-        VARCHAR business_email
-        VARCHAR phone_number
-        VARCHAR city
-        TEXT    business_logo
-        VARCHAR role
-        VARCHAR country
-        VARCHAR currency
-        BOOLEAN tax_enabled
-        VARCHAR tax_label
-        NUMERIC tax_rate
+        UUID        id PK
+        VARCHAR     first_name
+        VARCHAR     last_name
+        VARCHAR     email
+        VARCHAR     password_hash
+        VARCHAR     business_name
+        VARCHAR     business_email
+        VARCHAR     phone_number
+        VARCHAR     city
+        VARCHAR     country
+        VARCHAR     currency
+        TEXT        business_logo
+        TEXT        avatar
+        BOOLEAN     tax_enabled
+        VARCHAR     tax_label
+        NUMERIC     tax_rate
+        VARCHAR     role
         TIMESTAMPTZ created_at
     }
 
     TEAM_MEMBERS {
-        UUID    id PK
-        UUID    owner_id FK
-        VARCHAR first_name
-        VARCHAR last_name
-        VARCHAR email
-        VARCHAR password_hash
-        VARCHAR role
-        VARCHAR status
+        UUID        id PK
+        UUID        owner_id FK
+        VARCHAR     first_name
+        VARCHAR     last_name
+        VARCHAR     email
+        VARCHAR     password_hash
+        TEXT        avatar
+        VARCHAR     role
+        VARCHAR     status
         TIMESTAMPTZ added_on
     }
 
+    CUSTOMERS {
+        UUID        id PK
+        UUID        owner_id FK
+        VARCHAR     name
+        VARCHAR     phone
+        TIMESTAMPTZ created_at
+    }
+
     TRANSACTIONS {
-        UUID    id PK
-        UUID    owner_id FK
-        VARCHAR receipt_number
-        VARCHAR customer
-        JSONB   items
-        NUMERIC total
-        NUMERIC tax_amount
-        VARCHAR tax_label
-        VARCHAR payment_method
-        VARCHAR added_by
-        VARCHAR status
-        VARCHAR void_reason
+        UUID        id PK
+        UUID        owner_id FK
+        UUID        customer_id FK
+        VARCHAR     receipt_number
+        VARCHAR     customer
+        JSONB       items
+        NUMERIC     total
+        NUMERIC     tax_amount
+        VARCHAR     tax_label
+        VARCHAR     payment_method
+        VARCHAR     payment_status
+        NUMERIC     amount_paid
+        VARCHAR     added_by
+        VARCHAR     status
+        VARCHAR     void_reason
         TIMESTAMPTZ voided_at
         TIMESTAMPTZ created_at
     }
 
+    DEBT_PAYMENTS {
+        UUID        id PK
+        UUID        transaction_id FK
+        UUID        owner_id FK
+        NUMERIC     amount
+        VARCHAR     note
+        VARCHAR     recorded_by
+        TIMESTAMPTZ created_at
+    }
+
     PRODUCTS {
-        UUID    id PK
-        UUID    owner_id FK
-        VARCHAR name
-        NUMERIC price
-        NUMERIC cost_price
-        VARCHAR category
+        UUID        id PK
+        UUID        owner_id FK
+        VARCHAR     name
+        NUMERIC     price
+        NUMERIC     cost_price
+        VARCHAR     category
         TIMESTAMPTZ created_at
     }
 
     EXPENSES {
-        UUID    id PK
-        UUID    owner_id FK
-        VARCHAR description
-        NUMERIC amount
-        VARCHAR category
-        VARCHAR added_by
+        UUID        id PK
+        UUID        owner_id FK
+        VARCHAR     description
+        NUMERIC     amount
+        VARCHAR     category
+        VARCHAR     added_by
         TIMESTAMPTZ created_at
     }
 
     STOCK {
-        UUID    id PK
-        UUID    owner_id FK
-        VARCHAR name
-        INTEGER quantity
-        INTEGER low_stock_threshold
+        UUID        id PK
+        UUID        owner_id FK
+        VARCHAR     name
+        INTEGER     quantity
+        INTEGER     low_stock_threshold
         TIMESTAMPTZ added_on
     }
 
-    USERS ||--o{ TEAM_MEMBERS   : "has"
-    USERS ||--o{ TRANSACTIONS   : "owns"
-    USERS ||--o{ PRODUCTS       : "owns"
-    USERS ||--o{ EXPENSES       : "owns"
-    USERS ||--o{ STOCK          : "owns"
+    PASSWORD_RESET_TOKENS {
+        UUID        id PK
+        UUID        user_id FK
+        VARCHAR     token_hash
+        TIMESTAMPTZ expires_at
+        TIMESTAMPTZ used_at
+        TIMESTAMPTZ created_at
+    }
+
+    USERS         ||--o{ TEAM_MEMBERS          : "has"
+    USERS         ||--o{ CUSTOMERS             : "owns"
+    USERS         ||--o{ TRANSACTIONS          : "owns"
+    USERS         ||--o{ PRODUCTS              : "owns"
+    USERS         ||--o{ EXPENSES              : "owns"
+    USERS         ||--o{ STOCK                 : "owns"
+    USERS         ||--o{ PASSWORD_RESET_TOKENS : "requests"
+    CUSTOMERS     ||--o{ TRANSACTIONS          : "linked to"
+    TRANSACTIONS  ||--o{ DEBT_PAYMENTS         : "has"

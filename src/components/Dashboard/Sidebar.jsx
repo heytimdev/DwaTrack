@@ -90,8 +90,11 @@ export function Sidebar({ open, onClose }) {
         {/* User card at bottom */}
         <div className="px-4 py-4 border-t border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-semibold text-sm shrink-0">
-              {currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}
+            <div className="w-9 h-9 rounded-full bg-teal-100 overflow-hidden flex items-center justify-center text-teal-700 font-semibold text-sm shrink-0">
+              {currentUser?.avatar
+                ? <img src={currentUser.avatar} alt="avatar" className="w-full h-full object-cover" />
+                : <>{currentUser?.firstName?.[0]}{currentUser?.lastName?.[0]}</>
+              }
             </div>
             <div className="min-w-0">
               <p className="text-sm font-medium text-gray-800 m-0 truncate">

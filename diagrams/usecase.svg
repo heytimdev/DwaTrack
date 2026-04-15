@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="2600" height="2000" viewBox="0 0 2600 2000">
+<defs>
+  <filter id="shadow" x="-15%" y="-15%" width="130%" height="130%">
+    <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000018"/>
+  </filter>
+</defs>
+<rect width="2600" height="2000" fill="#f8fafc"/>
+<text x="1300" y="54" text-anchor="middle" font-size="34" fill="#0f172a" font-weight="bold" font-family="Arial, sans-serif">DwaTrack — Use Case Diagram</text>
+<text x="1300" y="90" text-anchor="middle" font-size="18" fill="#64748b" font-weight="normal" font-family="Arial, sans-serif">Dashed lines = actor associations   |   Ellipses = use cases   |   Coloured boxes = system groupings</text>
+<rect x="260" y="120" width="2080" height="1820" rx="20" fill="none" stroke="#0d9488" stroke-width="3" stroke-dasharray="12 6"/><text x="1300" y="142" text-anchor="middle" font-size="20" fill="#0d9488" font-weight="bold" font-family="Arial, sans-serif">DwaTrack System</text>
+  <rect x="780" y="140" width="400" height="412" rx="16" fill="#f0fdf4" stroke="#16a34a" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="796" y="168" text-anchor="start" font-size="16" fill="#16a34a" font-weight="bold" font-family="Arial, sans-serif">Authentication</text>
+  <rect x="780" y="576" width="400" height="354" rx="16" fill="#eff6ff" stroke="#2563eb" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="796" y="604" text-anchor="start" font-size="16" fill="#2563eb" font-weight="bold" font-family="Arial, sans-serif">Account & Settings</text>
+  <rect x="780" y="954" width="400" height="470" rx="16" fill="#fef9c3" stroke="#ca8a04" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="796" y="982" text-anchor="start" font-size="16" fill="#ca8a04" font-weight="bold" font-family="Arial, sans-serif">Sales & Transactions</text>
+  <rect x="780" y="1448" width="400" height="354" rx="16" fill="#fff7ed" stroke="#ea580c" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="796" y="1476" text-anchor="start" font-size="16" fill="#ea580c" font-weight="bold" font-family="Arial, sans-serif">Products & Stock</text>
+  <rect x="1420" y="140" width="400" height="180" rx="16" fill="#fdf4ff" stroke="#9333ea" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="1436" y="168" text-anchor="start" font-size="16" fill="#9333ea" font-weight="bold" font-family="Arial, sans-serif">Expenses</text>
+  <rect x="1420" y="344" width="400" height="238" rx="16" fill="#fff1f2" stroke="#e11d48" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="1436" y="372" text-anchor="start" font-size="16" fill="#e11d48" font-weight="bold" font-family="Arial, sans-serif">Debtors</text>
+  <rect x="1420" y="606" width="400" height="296" rx="16" fill="#f0fdfa" stroke="#0d9488" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="1436" y="634" text-anchor="start" font-size="16" fill="#0d9488" font-weight="bold" font-family="Arial, sans-serif">Reports & Analytics</text>
+  <rect x="1420" y="926" width="400" height="238" rx="16" fill="#1e293b" stroke="#475569" stroke-width="2" stroke-dasharray="8 4"/>
+  <text x="1436" y="954" text-anchor="start" font-size="16" fill="#475569" font-weight="bold" font-family="Arial, sans-serif">AI Assistant</text><line x1="130" y1="580" x2="860" y2="213" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="271" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="271" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="271" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="329" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="329" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="329" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="387" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="387" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="387" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="2470" y1="1200" x2="1100" y2="387" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="445" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="445" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="445" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="2470" y1="1200" x2="1100" y2="445" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="503" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="503" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="503" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="649" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="707" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="765" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="765" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="765" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="823" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="881" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1027" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1027" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="1027" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1085" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1085" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="1085" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1143" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1143" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="1143" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1201" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1201" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="1201" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1259" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1259" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1317" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1375" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1375" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1420" x2="860" y2="1375" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1521" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1521" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1579" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1637" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1637" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1695" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1695" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="860" y2="1753" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="860" y2="1753" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="213" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="271" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="417" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="1500" y2="417" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="475" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="1500" y2="475" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="533" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="1000" x2="1500" y2="533" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="679" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="737" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="795" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="853" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="999" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="2470" y1="780" x2="1740" y2="999" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="1057" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="2470" y1="780" x2="1740" y2="1057" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="130" y1="580" x2="1500" y2="1115" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/><line x1="2470" y1="780" x2="1740" y2="1115" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="6 3"/>
+  <ellipse cx="980" cy="213" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="219" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Sign Up</text>
+  <ellipse cx="980" cy="271" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="277" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Log In</text>
+  <ellipse cx="980" cy="329" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="335" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Log Out</text>
+  <ellipse cx="980" cy="387" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="393" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Forgot Password</text>
+  <ellipse cx="980" cy="445" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="451" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Reset Password</text>
+  <ellipse cx="980" cy="503" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="509" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Auto Session Timeout</text>
+  <ellipse cx="980" cy="649" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="655" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Update Shop Info</text>
+  <ellipse cx="980" cy="707" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="713" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Configure Tax</text>
+  <ellipse cx="980" cy="765" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="771" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Upload Avatar</text>
+  <ellipse cx="980" cy="823" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="829" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Add Team Member</text>
+  <ellipse cx="980" cy="881" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="887" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Deactivate Member</text>
+  <ellipse cx="980" cy="1027" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1033" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Record Cash Sale</text>
+  <ellipse cx="980" cy="1085" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1091" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Record Credit Sale</text>
+  <ellipse cx="980" cy="1143" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1149" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Apply Discount</text>
+  <ellipse cx="980" cy="1201" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1207" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Print Receipt</text>
+  <ellipse cx="980" cy="1259" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1265" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Void Transaction</text>
+  <ellipse cx="980" cy="1317" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1323" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Delete Transaction</text>
+  <ellipse cx="980" cy="1375" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1381" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Search Transactions</text>
+  <ellipse cx="980" cy="1521" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1527" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Add / Edit Product</text>
+  <ellipse cx="980" cy="1579" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1585" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Delete Product</text>
+  <ellipse cx="980" cy="1637" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1643" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Add Stock Item</text>
+  <ellipse cx="980" cy="1695" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1701" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Restock Item</text>
+  <ellipse cx="980" cy="1753" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="980" y="1759" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Low Stock Alerts</text>
+  <ellipse cx="1620" cy="213" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="219" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Record Expense</text>
+  <ellipse cx="1620" cy="271" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="277" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Delete Expense</text>
+  <ellipse cx="1620" cy="417" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="423" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Outstanding Debts</text>
+  <ellipse cx="1620" cy="475" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="481" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Record Debt Payment</text>
+  <ellipse cx="1620" cy="533" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="539" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Payment History</text>
+  <ellipse cx="1620" cy="679" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="685" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Revenue Report</text>
+  <ellipse cx="1620" cy="737" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="743" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Expense Breakdown</text>
+  <ellipse cx="1620" cy="795" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="801" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Sales Heatmap</text>
+  <ellipse cx="1620" cy="853" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="859" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">View Product Analysis</text>
+  <ellipse cx="1620" cy="999" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="1005" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Get Sales Summary</text>
+  <ellipse cx="1620" cy="1057" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="1063" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Get Restock Tips</text>
+  <ellipse cx="1620" cy="1115" rx="120" ry="25" fill="white" stroke="#0d9488" stroke-width="2" filter="url(#shadow)"/>
+  <text x="1620" y="1121" text-anchor="middle" font-size="14" fill="#0f172a" font-family="Arial, sans-serif">Chat with Assistant</text>
+  <!-- head -->
+  <circle cx="80" cy="510" r="22" fill="#1e40af" stroke="white" stroke-width="2"/>
+  <!-- body -->
+  <line x1="80" y1="532" x2="80" y2="600" stroke="#1e40af" stroke-width="4" stroke-linecap="round"/>
+  <!-- arms -->
+  <line x1="36" y1="560" x2="124" y2="560" stroke="#1e40af" stroke-width="4" stroke-linecap="round"/>
+  <!-- left leg -->
+  <line x1="80" y1="600" x2="36" y2="648" stroke="#1e40af" stroke-width="4" stroke-linecap="round"/>
+  <!-- right leg -->
+  <line x1="80" y1="600" x2="124" y2="648" stroke="#1e40af" stroke-width="4" stroke-linecap="round"/>
+  <!-- label -->
+  <text x="80" y="674" text-anchor="middle" font-size="17" fill="#1e40af" font-weight="bold" font-family="Arial, sans-serif">Owner</text>
+  <!-- head -->
+  <circle cx="80" cy="930" r="22" fill="#2563eb" stroke="white" stroke-width="2"/>
+  <!-- body -->
+  <line x1="80" y1="952" x2="80" y2="1020" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+  <!-- arms -->
+  <line x1="36" y1="980" x2="124" y2="980" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+  <!-- left leg -->
+  <line x1="80" y1="1020" x2="36" y2="1068" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+  <!-- right leg -->
+  <line x1="80" y1="1020" x2="124" y2="1068" stroke="#2563eb" stroke-width="4" stroke-linecap="round"/>
+  <!-- label -->
+  <text x="80" y="1094" text-anchor="middle" font-size="17" fill="#2563eb" font-weight="bold" font-family="Arial, sans-serif">Manager</text>
+  <!-- head -->
+  <circle cx="80" cy="1350" r="22" fill="#7c3aed" stroke="white" stroke-width="2"/>
+  <!-- body -->
+  <line x1="80" y1="1372" x2="80" y2="1440" stroke="#7c3aed" stroke-width="4" stroke-linecap="round"/>
+  <!-- arms -->
+  <line x1="36" y1="1400" x2="124" y2="1400" stroke="#7c3aed" stroke-width="4" stroke-linecap="round"/>
+  <!-- left leg -->
+  <line x1="80" y1="1440" x2="36" y2="1488" stroke="#7c3aed" stroke-width="4" stroke-linecap="round"/>
+  <!-- right leg -->
+  <line x1="80" y1="1440" x2="124" y2="1488" stroke="#7c3aed" stroke-width="4" stroke-linecap="round"/>
+  <!-- label -->
+  <text x="80" y="1514" text-anchor="middle" font-size="17" fill="#7c3aed" font-weight="bold" font-family="Arial, sans-serif">Cashier</text>
+  <!-- head -->
+  <circle cx="2520" cy="710" r="22" fill="#1f2937" stroke="white" stroke-width="2"/>
+  <!-- body -->
+  <line x1="2520" y1="732" x2="2520" y2="800" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+  <!-- arms -->
+  <line x1="2476" y1="760" x2="2564" y2="760" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+  <!-- left leg -->
+  <line x1="2520" y1="800" x2="2476" y2="848" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+  <!-- right leg -->
+  <line x1="2520" y1="800" x2="2564" y2="848" stroke="#1f2937" stroke-width="4" stroke-linecap="round"/>
+  <!-- label -->
+  <text x="2520" y="874" text-anchor="middle" font-size="17" fill="#1f2937" font-weight="bold" font-family="Arial, sans-serif">Groq AI</text>
+  <!-- head -->
+  <circle cx="2520" cy="1130" r="22" fill="#be185d" stroke="white" stroke-width="2"/>
+  <!-- body -->
+  <line x1="2520" y1="1152" x2="2520" y2="1220" stroke="#be185d" stroke-width="4" stroke-linecap="round"/>
+  <!-- arms -->
+  <line x1="2476" y1="1180" x2="2564" y2="1180" stroke="#be185d" stroke-width="4" stroke-linecap="round"/>
+  <!-- left leg -->
+  <line x1="2520" y1="1220" x2="2476" y2="1268" stroke="#be185d" stroke-width="4" stroke-linecap="round"/>
+  <!-- right leg -->
+  <line x1="2520" y1="1220" x2="2564" y2="1268" stroke="#be185d" stroke-width="4" stroke-linecap="round"/>
+  <!-- label -->
+  <text x="2520" y="1294" text-anchor="middle" font-size="17" fill="#be185d" font-weight="bold" font-family="Arial, sans-serif">SMTP</text></svg>

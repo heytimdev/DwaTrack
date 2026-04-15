@@ -2,33 +2,33 @@ flowchart TB
     OW["👤 Owner"]
     MG["👤 Manager"]
     CS["👤 Cashier"]
-    GV["🏛️ Government\nTax Authority"]
-    GR["🤖 Groq AI\nService"]
-    GE["📍 Nominatim\nGeolocation API"]
+    GV["🏛️ Tax Authority"]
+    GR["🤖 Groq AI"]
+    SM["📧 SMTP Email\nService"]
 
-    CORE["⬛ DwaTrack\nSystem"]
+    CORE["⬛ DwaTrack\nBusiness Tracking System"]
 
-    OW -- "Signup · Login · Settings\nManage Team · Record Sales\nManage Expenses · View Reports" --> CORE
-    CORE -- "Sales Reports · Net Profit\nExpense Summary · AI Insights" --> OW
+    OW -- "Signup · Login · Settings\nManage Team · Record Sales\nExpenses · Reports · Debtors · Avatar" --> CORE
+    CORE -- "Reports · Net Profit · Receipts\nDebt Summaries · AI Insights" --> OW
 
-    MG -- "Login · Record Sales\nManage Products & Stock" --> CORE
+    MG -- "Login · Record Sales\nManage Products & Stock\nView & Record Debt Payments" --> CORE
     CORE -- "Receipts · Stock Alerts\nDashboard Data" --> MG
 
     CS -- "Login · Record Sales\nView Transactions" --> CORE
     CORE -- "Transaction Receipts\nSales Confirmation" --> CS
 
-    CORE -- "VAT Amount Collected\non Each Sale" --> GV
+    CORE -- "VAT Collected per Sale" --> GV
 
-    CORE -- "Sales · Stock · Expense Data" --> GR
+    CORE -- "Sales · Stock · Expense\nSummary Data" --> GR
     GR -- "AI Insights · Restock Tips\nChat Responses" --> CORE
 
-    CORE -- "Country from Signup" --> GE
-    GE -- "Auto-detected Currency" --> CORE
+    CORE -- "Password Reset\nEmail Request" --> SM
+    SM -- "Reset Link\nDelivered to User" --> OW & MG & CS
 
-    style CORE fill:#0f766e,color:#fff,stroke:#0d9488,stroke-width:4px
-    style OW fill:#1e40af,color:#fff,stroke:none
-    style MG fill:#2563eb,color:#fff,stroke:none
-    style CS fill:#7c3aed,color:#fff,stroke:none
-    style GV fill:#b45309,color:#fff,stroke:none
-    style GR fill:#1f2937,color:#fff,stroke:none
-    style GE fill:#065f46,color:#fff,stroke:none
+    style CORE fill:#0f766e,color:#ffffff,stroke:#0d9488,stroke-width:3px
+    style OW fill:#1e40af,color:#ffffff,stroke:none
+    style MG fill:#2563eb,color:#ffffff,stroke:none
+    style CS fill:#7c3aed,color:#ffffff,stroke:none
+    style GV fill:#b45309,color:#ffffff,stroke:none
+    style GR fill:#1f2937,color:#ffffff,stroke:none
+    style SM fill:#be185d,color:#ffffff,stroke:none

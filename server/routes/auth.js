@@ -42,6 +42,7 @@ function formatOwner(u) {
     country: u.country || 'Ghana',
     currency: u.currency || 'GH₵',
     businessLogo: u.business_logo,
+    avatar: u.avatar || null,
     taxEnabled: u.tax_enabled || false,
     taxLabel: u.tax_label || 'VAT',
     taxRate: parseFloat(u.tax_rate) || 0,
@@ -65,6 +66,7 @@ function formatMember(m) {
     country: m.country || 'Ghana',
     currency: m.currency || 'GH₵',
     businessLogo: m.business_logo,
+    avatar: m.avatar || null,
     taxEnabled: m.tax_enabled || false,
     taxLabel: m.tax_label || 'VAT',
     taxRate: parseFloat(m.tax_rate) || 0,
@@ -206,12 +208,22 @@ router.post('/forgot-password', async (req, res) => {
     if (!email) return res.status(400).json({ error: 'Email is required' });
 
     const emailNorm = email.trim().toLowerCase();
-    const { rows } = await pool.query('SELECT id, first_name FROM users WHERE email = $1', [emailNorm]);
+
+    // Check owners first, then team members
+    let user = null;
+    const ownerRes = await pool.query('SELECT id, first_name FROM users WHERE email = $1', [emailNorm]);
+    if (ownerRes.rows.length) {
+      user = ownerRes.rows[0];
+    } else {
+      const memberRes = await pool.query(
+        'SELECT id, first_name FROM team_members WHERE email = $1 AND status = $2',
+        [emailNorm, 'active']
+      );
+      if (memberRes.rows.length) user = memberRes.rows[0];
+    }
 
     // Always return success so we don't leak whether an email exists
-    if (!rows.length) return res.json({ success: true });
-
-    const user = rows[0];
+    if (!user) return res.json({ success: true });
 
     // Generate a secure random token
     const rawToken  = crypto.randomBytes(32).toString('hex');
@@ -281,7 +293,17 @@ router.post('/reset-password', async (req, res) => {
     const resetRecord = rows[0];
     const passwordHash = await bcrypt.hash(newPassword, 10);
 
-    await pool.query('UPDATE users SET password_hash = $1 WHERE id = $2', [passwordHash, resetRecord.user_id]);
+    // Update whichever table this user belongs to
+    const ownerUpdate = await pool.query(
+      'UPDATE users SET password_hash = $1 WHERE id = $2',
+      [passwordHash, resetRecord.user_id]
+    );
+    if (ownerUpdate.rowCount === 0) {
+      await pool.query(
+        'UPDATE team_members SET password_hash = $1 WHERE id = $2',
+        [passwordHash, resetRecord.user_id]
+      );
+    }
     await pool.query('UPDATE password_reset_tokens SET used_at = NOW() WHERE id = $1', [resetRecord.id]);
 
     res.json({ success: true });

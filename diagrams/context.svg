@@ -1,69 +1,165 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="900" viewBox="0 0 1400 900">
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1500" viewBox="0 0 2400 1500">
   <defs>
-    <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#94a3b8"/>
+    <marker id="arrow" markerWidth="9" markerHeight="9" refX="7" refY="3.5" orient="auto">
+      <path d="M0,0 L0,7 L9,3.5 z" fill="#94a3b8"/>
     </marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="2" stdDeviation="4" flood-color="#00000022"/>
+    </filter>
   </defs>
-  <rect width="1400" height="900" fill="white"/>
+  <rect width="2400" height="1500" fill="#f8fafc"/>
+
   <!-- Title -->
-  <text x="700" y="38" text-anchor="middle" font-size="20" font-weight="bold" fill="#0f172a" font-family="Arial">DwaTrack System — Context Diagram</text>
+  <text x="1200" y="58" text-anchor="middle" font-size="32"
+        font-weight="bold" fill="#0f172a" font-family="Arial, sans-serif">
+    DwaTrack — System Context Diagram
+  </text>
+
+  <!-- System boundary dashed circle -->
+  <ellipse cx="1200" cy="750" rx="400" ry="310"
+           fill="none" stroke="#0d9488" stroke-width="1.5"
+           stroke-dasharray="8 5" opacity="0.4"/>
 
   
-  <line x1="714" y1="132" x2="714" y2="398" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="696" y="251" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="696" dy="0">Signup · Login · Settings</tspan><tspan x="696" dy="14">Manage Team · Record Sales</tspan><tspan x="696" dy="14">Manage Expenses · View Reports</tspan></text>
+  <line x1="1218" y1="210" x2="1218" y2="670"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1034" y="356" width="288" height="98"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1178" y="374"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1178" dy="0">Signup · Login · Settings</tspan><tspan x="1178" dy="22">Manage Team · Record Sales</tspan><tspan x="1178" dy="22">Expenses · Reports · Debtors</tspan><tspan x="1178" dy="22">Avatar Upload</tspan>
+  </text>
+  <line x1="1218" y1="670" x2="1218" y2="210"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1114" y="378" width="288" height="76"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1258" y="396"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1258" dy="0">Reports · Net Profit</tspan><tspan x="1258" dy="22">Debt Summaries · AI Insights</tspan><tspan x="1258" dy="22">Receipts</tspan>
+  </text>
+  <line x1="301.85500464229324" y1="585.12576005821" x2="1123.945743718184" y2="719.3446562338655"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="566.9550982241526" y="629.712523377065" width="279" height="76"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="706.4550982241526" y="647.712523377065"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="706.4550982241526" dy="0">Login · Record Sales</tspan><tspan x="706.4550982241526" dy="22">Manage Products & Stock</tspan><tspan x="706.4550982241526" dy="22">View & Record Debt Payments</tspan>
+  </text>
+  <line x1="1123.945743718184" y1="719.3446562338655" x2="301.85500464229324" y2="585.12576005821"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="597.8456501363248" y="572.7578929150104" width="243" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="719.3456501363248" y="590.7578929150104"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="719.3456501363248" dy="0">Receipts · Stock Alerts</tspan><tspan x="719.3456501363248" dy="22">Dashboard Data</tspan>
+  </text>
+  <line x1="296.0542562818158" y1="879.3446562338655" x2="1118.1449953577066" y2="745.12576005821"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="605.5449017758474" y="811.712523377065" width="216" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="713.5449017758474" y="829.712523377065"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="713.5449017758474" dy="0">Login · Record Sales</tspan><tspan x="713.5449017758474" dy="22">View Transactions</tspan>
+  </text>
+  <line x1="1118.1449953577066" y1="745.12576005821" x2="296.0542562818158" y2="879.3446562338655"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="592.6543498636752" y="732.7578929150104" width="216" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="700.6543498636752" y="750.7578929150104"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="700.6543498636752" dy="0">Transaction Receipts</tspan><tspan x="700.6543498636752" dy="22">Sales Confirmation</tspan>
+  </text>
+  <line x1="1218" y1="830" x2="1218" y2="1290"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1070" y="1020" width="216" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1178" y="1038"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1178" dy="0">VAT Amount Collected</tspan><tspan x="1178" dy="22">on Each Sale</tspan>
+  </text>
+  <line x1="1276.054256281816" y1="719.3446562338655" x2="2098.1449953577066" y2="585.12576005821"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1572.0449017758474" y="651.712523377065" width="243" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1693.5449017758474" y="669.712523377065"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1693.5449017758474" dy="0">Sales · Stock · Expense</tspan><tspan x="1693.5449017758474" dy="22">Summary Data</tspan>
+  </text>
+  <line x1="2098.1449953577066" y1="585.12576005821" x2="1276.054256281816" y2="719.3446562338655"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1545.6543498636752" y="572.7578929150104" width="270" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1680.6543498636752" y="590.7578929150104"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1680.6543498636752" dy="0">AI Insights · Restock Tips</tspan><tspan x="1680.6543498636752" dy="22">Chat Responses</tspan>
+  </text>
+  <line x1="1281.8550046422934" y1="745.12576005821" x2="2103.9457437181845" y2="879.3446562338655"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1586.4550982241528" y="811.712523377065" width="200" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1686.4550982241528" y="829.712523377065"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1686.4550982241528" dy="0">Password Reset</tspan><tspan x="1686.4550982241528" dy="22">Email Request</tspan>
+  </text>
+  <line x1="2103.9457437181845" y1="879.3446562338655" x2="1281.8550046422934" y2="745.12576005821"
+        stroke="#94a3b8" stroke-width="2.5"
+        marker-end="url(#arrow)"/>
+  <rect x="1599.345650136325" y="732.7578929150104" width="200" height="54"
+        rx="6" fill="white" fill-opacity="0.92" stroke="#e2e8f0" stroke-width="1"/>
+  <text x="1699.345650136325" y="750.7578929150104"
+        text-anchor="middle" font-size="15" fill="#1e293b" font-family="Arial, sans-serif">
+    <tspan x="1699.345650136325" dy="0">Reset Link Sent</tspan><tspan x="1699.345650136325" dy="22">to User Inbox</tspan>
+  </text>
   
-  <line x1="714" y1="398" x2="714" y2="132" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="732" y="258" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="732" dy="0">Sales Reports · Net Profit</tspan><tspan x="732" dy="14">Expense Summary · AI Insights</tspan></text>
-  
-  <line x1="173.53176559231966" y1="354.1391065042145" x2="650.7616796429651" y2="428.1920242017285" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="409.3866506806736" y="401.95269561343673" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="409.3866506806736" dy="0">Login · Record Sales</tspan><tspan x="409.3866506806736" dy="14">Manage Products & Stock</tspan></text>
-  
-  <line x1="650.7616796429651" y1="428.1920242017285" x2="173.53176559231966" y2="354.1391065042145" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="414.9067945546111" y="366.37843509250627" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="414.9067945546111" dy="0">Receipts · Stock Alerts</tspan><tspan x="414.9067945546111" dy="14">Dashboard Data</tspan></text>
-  
-  <line x1="169.23832035703495" y1="518.1920242017285" x2="646.4682344076804" y2="444.1391065042145" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="410.6133493193264" y="491.95269561343673" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="410.6133493193264" dy="0">Login · Record Sales</tspan><tspan x="410.6133493193264" dy="14">View Transactions</tspan></text>
-  
-  <line x1="646.4682344076804" y1="444.1391065042145" x2="169.23832035703495" y2="518.1920242017285" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="405.0932054453889" y="456.37843509250627" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="405.0932054453889" dy="0">Transaction Receipts</tspan><tspan x="405.0932054453889" dy="14">Sales Confirmation</tspan></text>
-  
-  <line x1="714" y1="502" x2="714" y2="778" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="696" y="633" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="696" dy="0">VAT Amount Collected</tspan><tspan x="696" dy="14">on Each Sale</tspan></text>
-  
-  <line x1="749.2383203570349" y1="428.1920242017285" x2="1226.4682344076803" y2="354.1391065042145" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="990.6133493193264" y="408.95269561343673" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="990.6133493193264" dy="0">Sales · Stock · Expense Data</tspan></text>
-  
-  <line x1="1226.4682344076803" y1="354.1391065042145" x2="749.2383203570349" y2="428.1920242017285" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="985.0932054453889" y="366.37843509250627" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="985.0932054453889" dy="0">AI Insights · Restock Tips</tspan><tspan x="985.0932054453889" dy="14">Chat Responses</tspan></text>
-  
-  <line x1="753.5317655923196" y1="444.1391065042145" x2="1230.761679642965" y2="518.1920242017285" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="989.3866506806736" y="498.95269561343673" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="989.3866506806736" dy="0">Country from Signup</tspan></text>
-  
-  <line x1="1230.761679642965" y1="518.1920242017285" x2="753.5317655923196" y2="444.1391065042145" stroke="#94a3b8" stroke-width="1.5" marker-end="url(#arrow)"/>
-  <text x="994.9067945546111" y="463.37843509250627" text-anchor="middle" font-size="10" fill="#475569" font-family="Arial"><tspan x="994.9067945546111" dy="0">Auto-detected Currency</tspan></text>
-  
-  
-  <rect x="630" y="58" width="140" height="44" rx="10" fill="#1e40af" />
-  <text x="700" y="85" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="Arial"><tspan x="700" dy="0">👤 Owner</tspan></text>
-  
-  <rect x="50" y="338" width="140" height="44" rx="10" fill="#2563eb" />
-  <text x="120" y="365" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="Arial"><tspan x="120" dy="0">👤 Manager</tspan></text>
-  
-  <rect x="50" y="518" width="140" height="44" rx="10" fill="#7c3aed" />
-  <text x="120" y="545" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="Arial"><tspan x="120" dy="0">👤 Cashier</tspan></text>
-  
-  <rect x="630" y="800" width="140" height="60" rx="10" fill="#b45309" />
-  <text x="700" y="822" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="Arial"><tspan x="700" dy="0">🏛️ Government</tspan><tspan x="700" dy="18">Tax Authority</tspan></text>
-  
-  <rect x="1210" y="330" width="140" height="60" rx="10" fill="#1f2937" />
-  <text x="1280" y="352" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="Arial"><tspan x="1280" dy="0">🤖 Groq AI</tspan><tspan x="1280" dy="18">Service</tspan></text>
-  
-  <rect x="1210" y="510" width="140" height="60" rx="10" fill="#065f46" />
-  <text x="1280" y="532" text-anchor="middle" font-size="13" fill="white" font-weight="bold" font-family="Arial"><tspan x="1280" dy="0">📍 Nominatim</tspan><tspan x="1280" dy="18">Geolocation API</tspan></text>
-  
-  <rect x="620" y="415" width="160" height="70" rx="12" fill="#0f766e" stroke="#0d9488" stroke-width="3"/>
-  <text x="700" y="444" text-anchor="middle" font-size="15" fill="white" font-weight="bold" font-family="Arial">DwaTrack</text>
-  <text x="700" y="464" text-anchor="middle" font-size="13" fill="#ccfbf1" font-family="Arial">System</text>
-
+  <rect x="1085" y="100" width="230" height="60" rx="14"
+        fill="#1e40af" filter="url(#shadow)"/>
+  <text x="1200" y="137.6"
+        text-anchor="middle" font-size="18" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif"><tspan x="1200" dy="0">👤 Owner</tspan></text>
+  <rect x="105" y="560" width="230" height="60" rx="14"
+        fill="#2563eb" filter="url(#shadow)"/>
+  <text x="220" y="597.6"
+        text-anchor="middle" font-size="18" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif"><tspan x="220" dy="0">👤 Manager</tspan></text>
+  <rect x="105" y="880" width="230" height="60" rx="14"
+        fill="#7c3aed" filter="url(#shadow)"/>
+  <text x="220" y="917.6"
+        text-anchor="middle" font-size="18" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif"><tspan x="220" dy="0">👤 Cashier</tspan></text>
+  <rect x="1085" y="1340" width="230" height="60" rx="14"
+        fill="#b45309" filter="url(#shadow)"/>
+  <text x="1200" y="1377.6"
+        text-anchor="middle" font-size="18" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif"><tspan x="1200" dy="0">🏛️ Tax Authority</tspan></text>
+  <rect x="2065" y="560" width="230" height="60" rx="14"
+        fill="#1f2937" filter="url(#shadow)"/>
+  <text x="2180" y="597.6"
+        text-anchor="middle" font-size="18" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif"><tspan x="2180" dy="0">🤖 Groq AI</tspan></text>
+  <rect x="2065" y="880" width="230" height="60" rx="14"
+        fill="#be185d" filter="url(#shadow)"/>
+  <text x="2180" y="917.6"
+        text-anchor="middle" font-size="18" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif"><tspan x="2180" dy="0">📧 SMTP Email</tspan></text>
+  <rect x="1060" y="695"
+        width="280" height="110" rx="18"
+        fill="#0f766e" stroke="#0d9488" stroke-width="4"
+        filter="url(#shadow)"/>
+  <text x="1200" y="736"
+        text-anchor="middle" font-size="24" fill="white"
+        font-weight="bold" font-family="Arial, sans-serif">DwaTrack</text>
+  <text x="1200" y="768"
+        text-anchor="middle" font-size="17" fill="#ccfbf1"
+        font-family="Arial, sans-serif">Business Tracking System</text>
 </svg>

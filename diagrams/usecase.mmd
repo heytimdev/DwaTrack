@@ -1,0 +1,115 @@
+flowchart LR
+    %% ── Actors ───────────────────────────────────────────────────────────────────
+    OW(["👤 Owner"])
+    MG(["👤 Manager"])
+    CS(["👤 Cashier"])
+    GR(["🤖 Groq AI"])
+    SM(["📧 SMTP\nService"])
+
+    %% ── System boundary ──────────────────────────────────────────────────────────
+    subgraph SYS ["  DwaTrack Business Tracking System  "]
+
+        subgraph AUTH ["Authentication"]
+            UC1["Sign Up"]
+            UC2["Log In"]
+            UC3["Log Out"]
+            UC4["Forgot Password"]
+            UC5["Reset Password"]
+            UC6["Auto Session Timeout"]
+        end
+
+        subgraph ACCOUNT ["Account & Settings"]
+            UC7["Update Shop Info"]
+            UC8["Configure Tax"]
+            UC9["Upload Avatar"]
+            UC10["Add Team Member"]
+            UC11["Deactivate Team Member"]
+        end
+
+        subgraph SALES ["Sales & Transactions"]
+            UC12["Record Cash Sale"]
+            UC13["Record Credit Sale"]
+            UC14["Apply Discount"]
+            UC15["Print Receipt"]
+            UC16["Void Transaction"]
+            UC17["Delete Transaction"]
+            UC18["Search Transactions"]
+        end
+
+        subgraph INVENTORY ["Products & Stock"]
+            UC19["Add Product"]
+            UC20["Edit Product"]
+            UC21["Delete Product"]
+            UC22["Add Stock Item"]
+            UC23["Restock Item"]
+            UC24["View Low Stock Alerts"]
+        end
+
+        subgraph EXPENSES ["Expenses"]
+            UC25["Record Expense"]
+            UC26["Delete Expense"]
+        end
+
+        subgraph DEBTORS ["Debtors"]
+            UC27["View Outstanding Debts"]
+            UC28["Record Debt Payment"]
+            UC29["View Payment History"]
+        end
+
+        subgraph REPORTS ["Reports & Analytics"]
+            UC30["View Revenue Report"]
+            UC31["View Expense Breakdown"]
+            UC32["View Sales Heatmap"]
+            UC33["View Payment Methods"]
+            UC34["View Product Analysis"]
+        end
+
+        subgraph AI ["AI Assistant"]
+            UC35["Get Sales Summary"]
+            UC36["Get Restock Tips"]
+            UC37["Chat with Assistant"]
+        end
+
+    end
+
+    %% ── Owner use cases ──────────────────────────────────────────────────────────
+    OW --- UC1 & UC2 & UC3 & UC4 & UC5 & UC6
+    OW --- UC7 & UC8 & UC9 & UC10 & UC11
+    OW --- UC12 & UC13 & UC14 & UC15 & UC16 & UC17 & UC18
+    OW --- UC19 & UC20 & UC21 & UC22 & UC23 & UC24
+    OW --- UC25 & UC26
+    OW --- UC27 & UC28 & UC29
+    OW --- UC30 & UC31 & UC32 & UC33 & UC34
+    OW --- UC35 & UC36 & UC37
+
+    %% ── Manager use cases ────────────────────────────────────────────────────────
+    MG --- UC2 & UC3 & UC4 & UC5 & UC6
+    MG --- UC9
+    MG --- UC12 & UC13 & UC14 & UC15 & UC16 & UC18
+    MG --- UC19 & UC20 & UC22 & UC23 & UC24
+    MG --- UC27 & UC28 & UC29
+
+    %% ── Cashier use cases ────────────────────────────────────────────────────────
+    CS --- UC2 & UC3 & UC4 & UC5 & UC6
+    CS --- UC9
+    CS --- UC12 & UC13 & UC14 & UC15 & UC18
+
+    %% ── External system interactions ─────────────────────────────────────────────
+    UC35 & UC36 & UC37 --- GR
+    UC4 & UC5 --- SM
+
+    %% ── Styles ───────────────────────────────────────────────────────────────────
+    style OW fill:#1e40af,color:#fff,stroke:none
+    style MG fill:#2563eb,color:#fff,stroke:none
+    style CS fill:#7c3aed,color:#fff,stroke:none
+    style GR fill:#1f2937,color:#fff,stroke:none
+    style SM fill:#be185d,color:#fff,stroke:none
+
+    style AUTH    fill:#f0fdf4,stroke:#86efac,color:#14532d
+    style ACCOUNT fill:#eff6ff,stroke:#93c5fd,color:#1e3a8a
+    style SALES   fill:#fef9c3,stroke:#fde047,color:#713f12
+    style INVENTORY fill:#fff7ed,stroke:#fdba74,color:#7c2d12
+    style EXPENSES fill:#fdf4ff,stroke:#e879f9,color:#581c87
+    style DEBTORS  fill:#fff1f2,stroke:#fda4af,color:#881337
+    style REPORTS  fill:#f0fdfa,stroke:#5eead4,color:#134e4a
+    style AI       fill:#1f2937,stroke:#374151,color:#f9fafb

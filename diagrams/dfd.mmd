@@ -1,0 +1,105 @@
+flowchart TD
+    %% ── External Entities ────────────────────────────────────────────────────────
+    U_OW(["👤 Owner"])
+    U_MG(["👤 Manager"])
+    U_CS(["👤 Cashier"])
+    U_CU(["👥 Customer"])
+    U_GR(["🤖 Groq AI"])
+    U_SM(["📧 SMTP Service"])
+
+    %% ── Data Stores ──────────────────────────────────────────────────────────────
+    DS1[("D1: Users &\nTeam Members")]
+    DS2[("D2: Transactions\n& Receipts")]
+    DS3[("D3: Products\n& Stock")]
+    DS4[("D4: Expenses")]
+    DS5[("D5: Customers\n& Debts")]
+    DS6[("D6: Password\nReset Tokens")]
+
+    %% ── Processes ────────────────────────────────────────────────────────────────
+    P1["1.0\nAuthenticate\nUser"]
+    P2["2.0\nRecord\nSale"]
+    P3["3.0\nManage\nInventory"]
+    P4["4.0\nManage\nExpenses"]
+    P5["5.0\nGenerate\nReports"]
+    P6["6.0\nManage\nDebtors"]
+    P7["7.0\nAI\nAssistant"]
+    P8["8.0\nReset\nPassword"]
+
+    %% ── Auth flows ───────────────────────────────────────────────────────────────
+    U_OW -- "Credentials / Signup" --> P1
+    U_MG -- "Credentials" --> P1
+    U_CS -- "Credentials" --> P1
+    P1 -- "Read / Write User Record" --> DS1
+    P1 -- "JWT Token + Session" --> U_OW & U_MG & U_CS
+
+    %% ── Record Sale ──────────────────────────────────────────────────────────────
+    U_OW & U_MG & U_CS -- "Sale Items · Payment · Customer" --> P2
+    P2 -- "Read Prices" --> DS3
+    P2 -- "Write Transaction" --> DS2
+    P2 -- "Deduct Stock Qty" --> DS3
+    P2 -- "Write Credit Debt" --> DS5
+    P2 -- "Receipt" --> U_OW & U_MG & U_CS
+    U_CU -- "Name · Phone\n(Credit Sales)" --> P2
+
+    %% ── Inventory ────────────────────────────────────────────────────────────────
+    U_OW & U_MG -- "Add / Edit / Restock" --> P3
+    P3 -- "Read / Write" --> DS3
+    P3 -- "Low Stock Alert" --> U_OW & U_MG
+
+    %% ── Expenses ─────────────────────────────────────────────────────────────────
+    U_OW -- "Expense Details" --> P4
+    P4 -- "Write Expense" --> DS4
+    P4 -- "Confirmation" --> U_OW
+
+    %% ── Reports ──────────────────────────────────────────────────────────────────
+    U_OW -- "Report Request" --> P5
+    P5 -- "Read Sales" --> DS2
+    P5 -- "Read Expenses" --> DS4
+    P5 -- "Read Stock" --> DS3
+    P5 -- "Revenue · Profit\nHeatmap · Charts" --> U_OW
+
+    %% ── Debtors ──────────────────────────────────────────────────────────────────
+    U_OW & U_MG -- "View / Record Payment" --> P6
+    P6 -- "Read / Write Debt & Payments" --> DS5
+    P6 -- "Read Credit Transactions" --> DS2
+    P6 -- "Update Payment Status" --> DS2
+    P6 -- "Debt Summary" --> U_OW & U_MG
+
+    %% ── AI Assistant ─────────────────────────────────────────────────────────────
+    U_OW -- "Chat / Query" --> P7
+    P7 -- "Read Sales · Stock · Expenses" --> DS2 & DS3 & DS4
+    P7 -- "Summarised Data" --> U_GR
+    U_GR -- "AI Response" --> P7
+    P7 -- "Insights · Tips" --> U_OW
+
+    %% ── Password Reset ───────────────────────────────────────────────────────────
+    U_OW & U_MG & U_CS -- "Email Address" --> P8
+    P8 -- "Read User" --> DS1
+    P8 -- "Write Reset Token" --> DS6
+    P8 -- "Reset Email Request" --> U_SM
+    U_SM -- "Reset Link" --> U_OW & U_MG & U_CS
+    P8 -- "New Password Hash" --> DS1
+
+    %% ── Styles ───────────────────────────────────────────────────────────────────
+    style P1 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P2 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P3 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P4 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P5 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P6 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P7 fill:#0f766e,color:#fff,stroke:#0d9488
+    style P8 fill:#0f766e,color:#fff,stroke:#0d9488
+
+    style U_OW fill:#1e40af,color:#fff,stroke:none
+    style U_MG fill:#2563eb,color:#fff,stroke:none
+    style U_CS fill:#7c3aed,color:#fff,stroke:none
+    style U_CU fill:#0891b2,color:#fff,stroke:none
+    style U_GR fill:#1f2937,color:#fff,stroke:none
+    style U_SM fill:#be185d,color:#fff,stroke:none
+
+    style DS1 fill:#fef3c7,color:#92400e,stroke:#f59e0b
+    style DS2 fill:#fef3c7,color:#92400e,stroke:#f59e0b
+    style DS3 fill:#fef3c7,color:#92400e,stroke:#f59e0b
+    style DS4 fill:#fef3c7,color:#92400e,stroke:#f59e0b
+    style DS5 fill:#fef3c7,color:#92400e,stroke:#f59e0b
+    style DS6 fill:#fef3c7,color:#92400e,stroke:#f59e0b

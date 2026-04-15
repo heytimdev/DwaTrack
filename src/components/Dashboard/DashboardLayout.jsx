@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
-import { Outlet, useNavigate } from "react-router-dom";
-import { Menu, Bell, Search, LogOut, Clock } from "lucide-react";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
+import { Menu, Bell, Search, LogOut, Clock, Download, X } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "../../context/AuthContext";
 
@@ -44,17 +44,75 @@ function SessionWarning({ secondsLeft, onStay, onLogout }) {
   );
 }
 
+// ── PWA Install Banner ────────────────────────────────────────────────────────
+function InstallBanner() {
+  const [prompt, setPrompt] = useState(null);
+  const [show,   setShow]   = useState(false);
+
+  useEffect(() => {
+    function handler(e) {
+      e.preventDefault();
+      setPrompt(e);
+      setShow(true);
+    }
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  async function handleInstall() {
+    if (!prompt) return;
+    prompt.prompt();
+    const { outcome } = await prompt.userChoice;
+    if (outcome === 'accepted') setShow(false);
+  }
+
+  if (!show) return null;
+
+  return (
+    <div className="fixed bottom-4 left-1/2 -translate-x-1/2 z-50 w-full max-w-sm px-4">
+      <div className="bg-gray-900 text-white rounded-2xl shadow-2xl px-4 py-3 flex items-center gap-3">
+        <div className="w-9 h-9 bg-teal-500 rounded-xl flex items-center justify-center shrink-0">
+          <Download size={16} className="text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <p className="text-sm font-semibold m-0">Install DwaTrack</p>
+          <p className="text-xs text-gray-400 m-0">Works offline, loads instantly</p>
+        </div>
+        <button
+          onClick={handleInstall}
+          className="bg-teal-500 hover:bg-teal-400 text-white text-xs font-semibold px-3 py-1.5 rounded-lg border-none cursor-pointer shrink-0"
+        >
+          Install
+        </button>
+        <button
+          onClick={() => setShow(false)}
+          className="text-gray-400 hover:text-white border-none bg-transparent cursor-pointer shrink-0"
+        >
+          <X size={16} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ── Main Layout ───────────────────────────────────────────────────────────────
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [showWarning, setShowWarning] = useState(false);
   const [secondsLeft, setSecondsLeft] = useState(60);
 
+  const [searchQuery, setSearchQuery] = useState("");
+
   const { currentUser, logout } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  const inactiveTimer = useRef(null);
+  const inactiveTimer  = useRef(null);
   const countdownTimer = useRef(null);
+  const showWarningRef = useRef(false); // ref mirror so resetTimers never stales
+
+  // Keep ref in sync with state
+  useEffect(() => { showWarningRef.current = showWarning; }, [showWarning]);
 
   function handleLogout() {
     logout();
@@ -62,15 +120,15 @@ export function DashboardLayout() {
   }
 
   const resetTimers = useCallback(() => {
-    // If warning is showing, don't reset on mouse moves
-    if (showWarning) return;
+    // Don't reset the inactivity timer while the warning is visible
+    if (showWarningRef.current) return;
 
     clearTimeout(inactiveTimer.current);
-    clearInterval(countdownTimer.current);
 
     inactiveTimer.current = setTimeout(() => {
       setSecondsLeft(60);
       setShowWarning(true);
+      showWarningRef.current = true;
 
       countdownTimer.current = setInterval(() => {
         setSecondsLeft((s) => {
@@ -84,16 +142,30 @@ export function DashboardLayout() {
         });
       }, 1000);
     }, INACTIVE_MS);
-  }, [showWarning, logout, navigate]);
+  }, [logout, navigate]); // no showWarning dependency — uses ref instead
+
+  // Clear search input when navigating away from transactions
+  useEffect(() => {
+    if (!location.pathname.includes("/transactions")) {
+      setSearchQuery("");
+    }
+  }, [location.pathname]);
+
+  function handleSearch(e) {
+    if (e.key === "Enter" && searchQuery.trim()) {
+      navigate("/dashboard/transactions", { state: { search: searchQuery.trim() } });
+    }
+  }
 
   function handleStay() {
     clearInterval(countdownTimer.current);
     setShowWarning(false);
+    showWarningRef.current = false;
     setSecondsLeft(60);
     resetTimers();
   }
 
-  // Start tracking activity
+  // Start tracking activity — only runs once on mount
   useEffect(() => {
     const events = ["mousemove", "mousedown", "keydown", "touchstart", "scroll"];
     events.forEach((e) => window.addEventListener(e, resetTimers, { passive: true }));
@@ -122,6 +194,7 @@ export function DashboardLayout() {
 
   return (
     <div className="flex h-screen bg-gray-50 overflow-hidden">
+      <InstallBanner />
       {showWarning && (
         <SessionWarning
           secondsLeft={secondsLeft}
@@ -155,7 +228,18 @@ export function DashboardLayout() {
             <input
               className="bg-transparent border-none outline-none text-sm text-gray-600 w-full"
               placeholder="Search transactions..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              onKeyDown={handleSearch}
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery("")}
+                className="text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer p-0 shrink-0"
+              >
+                <X size={14} />
+              </button>
+            )}
           </div>
 
           <button className="relative text-gray-500 hover:text-gray-700 border-none bg-transparent cursor-pointer">

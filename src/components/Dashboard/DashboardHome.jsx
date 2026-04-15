@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, memo } from "react";
 import {
   TrendingUp,
   ArrowLeftRight,
@@ -16,7 +16,7 @@ import { useAuth } from "../../context/AuthContext";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 function getToken() { return localStorage.getItem("dwatrack_token"); }
 
-function StatCard({ title, value, sub, subColor, icon: Icon, iconBg }) {
+const StatCard = memo(function StatCard({ title, value, sub, subColor, icon: Icon, iconBg }) {
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex items-start justify-between">
       <div>
@@ -29,7 +29,7 @@ function StatCard({ title, value, sub, subColor, icon: Icon, iconBg }) {
       </div>
     </div>
   );
-}
+});
 
 function WeeklyBarChart({ data, currency }) {
   const max = Math.max(...data.map((d) => d.total), 1);
@@ -155,15 +155,26 @@ export function DashboardHome() {
   const { canAddTransactions, currency } = useAuth();
 
   const todayStr = new Date().toDateString();
-  const todayTx = transactions.filter((t) => {
-    return new Date(t.createdAt).toDateString() === todayStr;
-  });
-  const todaySales = todayTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0);
-  const totalTx = transactions.length;
-  const pending = transactions.filter((t) => t.status === "pending").length;
-  const weeklyData = getWeeklyData();
-  const bestDay = [...weeklyData].sort((a, b) => b.total - a.total)[0];
-  const recent = transactions.slice(0, 5);
+
+  const todayTx = useMemo(
+    () => transactions.filter((t) => new Date(t.createdAt).toDateString() === todayStr),
+    [transactions, todayStr]
+  );
+  const todaySales = useMemo(
+    () => todayTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0),
+    [todayTx]
+  );
+  const totalTx  = transactions.length;
+  const pending  = useMemo(
+    () => transactions.filter((t) => t.status === "pending").length,
+    [transactions]
+  );
+  const weeklyData = useMemo(() => getWeeklyData(), [transactions]);
+  const bestDay    = useMemo(
+    () => [...weeklyData].sort((a, b) => b.total - a.total)[0],
+    [weeklyData]
+  );
+  const recent = useMemo(() => transactions.slice(0, 5), [transactions]);
 
 
   return (

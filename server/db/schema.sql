@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS users (
   country          VARCHAR(100)  NOT NULL DEFAULT 'Ghana',
   currency         VARCHAR(20)   NOT NULL DEFAULT 'GH₵',
   business_logo    TEXT,          -- stored as base64 data URI
+  avatar           TEXT,          -- stored as base64 data URI
   tax_enabled      BOOLEAN       NOT NULL DEFAULT FALSE,
   tax_label        VARCHAR(50)   NOT NULL DEFAULT 'VAT',
   tax_rate         NUMERIC(5,2)  NOT NULL DEFAULT 0,
@@ -35,6 +36,7 @@ CREATE TABLE IF NOT EXISTS team_members (
   last_name     VARCHAR(100) NOT NULL,
   email         VARCHAR(255) NOT NULL,
   password_hash VARCHAR(255) NOT NULL,
+  avatar        TEXT,
   role          VARCHAR(20)  NOT NULL CHECK (role IN ('manager', 'cashier')),
   status        VARCHAR(20)  NOT NULL DEFAULT 'active'
                   CHECK (status IN ('active', 'inactive')),
@@ -165,3 +167,5 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_t
 -- ALTER TABLE transactions ADD COLUMN IF NOT EXISTS amount_paid    NUMERIC(12,2) NOT NULL DEFAULT 0;
 -- ALTER TABLE products ADD COLUMN IF NOT EXISTS cost_price NUMERIC(12,2) NOT NULL DEFAULT 0;
 -- CREATE TABLE IF NOT EXISTS password_reset_tokens (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, token_hash VARCHAR(255) NOT NULL, expires_at TIMESTAMPTZ NOT NULL, used_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
+ALTER TABLE users        ADD COLUMN IF NOT EXISTS avatar TEXT;
+ALTER TABLE team_members ADD COLUMN IF NOT EXISTS avatar TEXT;
