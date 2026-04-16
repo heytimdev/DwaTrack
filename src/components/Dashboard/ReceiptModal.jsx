@@ -140,7 +140,6 @@ export function ReceiptModal({ transaction, onClose }) {
     <div style="font-size:11px;color:#555;margin-bottom:6px;">Thank you for your patronage!</div>
     <div style="display:inline-block;border-top:1px solid #e5e7eb;padding-top:6px;width:100%;">
       <div style="font-size:10px;color:#888;">Managed with <strong style="color:#0f766e;">DwaTrack</strong></div>
-      <div style="font-size:10px;color:#0f766e;">dwatrack.netlify.app</div>
     </div>
   </div>
 
@@ -304,7 +303,6 @@ export function ReceiptModal({ transaction, onClose }) {
               <p className="text-xs text-gray-500 m-0 mb-2">Thank you for your patronage!</p>
               <div className="border-t border-gray-100 pt-2">
                 <p className="text-xs text-gray-400 m-0">Managed with <span className="text-teal-600 font-semibold">DwaTrack</span></p>
-                <p className="text-xs text-teal-600 m-0">dwatrack.netlify.app</p>
               </div>
             </div>
           </div>
