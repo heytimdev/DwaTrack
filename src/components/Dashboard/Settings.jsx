@@ -153,7 +153,7 @@ export function Settings() {
                 </div>
                 <label className="absolute -bottom-1 -right-1 w-6 h-6 bg-teal-500 hover:bg-teal-600 rounded-full flex items-center justify-center cursor-pointer">
                   <Camera size={12} className="text-white" />
-                  <input type="file" accept="image/*" onChange={handleLogoChange} className="hidden" />
+                  <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/svg+xml" onChange={handleLogoChange} className="hidden" />
                 </label>
               </div>
               <div>
