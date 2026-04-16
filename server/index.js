@@ -12,6 +12,7 @@ const settingsRoutes    = require('./routes/settings');
 const aiRoutes          = require('./routes/ai');
 const customerRoutes    = require('./routes/customers');
 const debtorRoutes      = require('./routes/debtors');
+const adminRoutes       = require('./routes/admin');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
@@ -46,6 +47,7 @@ app.use('/api/settings',     settingsRoutes);
 app.use('/api/ai',           aiRoutes);
 app.use('/api/customers',    customerRoutes);
 app.use('/api/debtors',      debtorRoutes);
+app.use('/api/admin',        adminRoutes);
 
 app.get('/', (_req, res) => res.json({ message: 'DwaTrack API is running' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

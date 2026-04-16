@@ -148,6 +148,15 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
 
 CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_tokens(user_id);
 
+-- ── Admins (platform-level super users) ──────────────────────────────────────
+CREATE TABLE IF NOT EXISTS admins (
+  id            UUID         PRIMARY KEY DEFAULT gen_random_uuid(),
+  email         VARCHAR(255) NOT NULL UNIQUE,
+  password_hash VARCHAR(255) NOT NULL,
+  name          VARCHAR(255) NOT NULL,
+  created_at    TIMESTAMPTZ  NOT NULL DEFAULT NOW()
+);
+
 -- ── Upgrade scripts (run against an existing database) ────────────────────────
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS country       VARCHAR(100)  NOT NULL DEFAULT 'Ghana';
 -- ALTER TABLE users ADD COLUMN IF NOT EXISTS currency      VARCHAR(20)   NOT NULL DEFAULT 'GH₵';
@@ -169,3 +178,4 @@ CREATE INDEX IF NOT EXISTS idx_password_reset_tokens_user_id ON password_reset_t
 -- CREATE TABLE IF NOT EXISTS password_reset_tokens (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE, token_hash VARCHAR(255) NOT NULL, expires_at TIMESTAMPTZ NOT NULL, used_at TIMESTAMPTZ, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());
 ALTER TABLE users        ADD COLUMN IF NOT EXISTS avatar TEXT;
 ALTER TABLE team_members ADD COLUMN IF NOT EXISTS avatar TEXT;
+CREATE TABLE IF NOT EXISTS admins (id UUID PRIMARY KEY DEFAULT gen_random_uuid(), email VARCHAR(255) NOT NULL UNIQUE, password_hash VARCHAR(255) NOT NULL, name VARCHAR(255) NOT NULL, created_at TIMESTAMPTZ NOT NULL DEFAULT NOW());

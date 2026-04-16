@@ -18,6 +18,14 @@ import { Settings } from "./components/Dashboard/Settings.jsx";
 import { Stock } from "./components/Dashboard/Stock.jsx";
 import { AIAssistant } from "./components/Dashboard/AIAssistant.jsx";
 import { Debtors } from "./components/Dashboard/Debtors.jsx";
+import AdminLogin from "./components/Admin/AdminLogin.jsx";
+import AdminDashboard from "./components/Admin/AdminDashboard.jsx";
+
+function AdminRoute({ children }) {
+  const token = localStorage.getItem('dwatrack_admin_token');
+  if (!token) return <Navigate to="/admin" replace />;
+  return children;
+}
 
 function ProtectedRoute({ children }) {
   const { currentUser, authLoading } = useAuth();
@@ -39,6 +47,10 @@ function AppRoutes() {
       <Route path="/login" element={<Login />} />
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
+
+      {/* Admin panel */}
+      <Route path="/admin" element={<AdminLogin />} />
+      <Route path="/admin/dashboard" element={<AdminRoute><AdminDashboard /></AdminRoute>} />
 
       <Route
         path="/dashboard"
