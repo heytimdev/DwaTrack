@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Outlet, useNavigate, useLocation } from "react-router-dom";
-import { Menu, Bell, Search, LogOut, Clock, Download, X } from "lucide-react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
+import { Menu, Bell, Search, LogOut, Clock, Download, X, AlertTriangle, CreditCard, Package } from "lucide-react";
 import { Sidebar } from "./Sidebar";
 import { useAuth } from "../../context/AuthContext";
+import { useApp } from "../../context/AppContext";
 
 const INACTIVE_MS = 15 * 60 * 1000; // 15 minutes
 const WARN_MS     = 60 * 1000;       // 60 seconds to respond
@@ -95,6 +96,111 @@ function InstallBanner() {
   );
 }
 
+// ── Notification Bell ─────────────────────────────────────────────────────────
+function NotificationBell({ stock, transactions, currency }) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef(null);
+
+  // Close when clicking outside
+  useEffect(() => {
+    function handler(e) {
+      if (ref.current && !ref.current.contains(e.target)) setOpen(false);
+    }
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  const notifications = useMemo(() => {
+    const items = [];
+
+    // Low / out-of-stock alerts
+    (stock || []).forEach((s) => {
+      if (s.quantity === 0) {
+        items.push({ id: `stock-out-${s.id}`, type: "out", icon: Package, label: `${s.name} is out of stock`, link: "/dashboard/stock" });
+      } else if (s.quantity <= s.lowStockThreshold) {
+        items.push({ id: `stock-low-${s.id}`, type: "low", icon: AlertTriangle, label: `${s.name} is running low (${s.quantity} left)`, link: "/dashboard/stock" });
+      }
+    });
+
+    // Unpaid credit / partial transactions
+    const unpaid = (transactions || []).filter(
+      (t) => t.paymentStatus === "credit" || t.paymentStatus === "partial"
+    );
+    if (unpaid.length > 0) {
+      const total = unpaid.reduce((s, t) => s + ((t.total || 0) - (t.amountPaid || 0)), 0);
+      items.push({
+        id: "unpaid",
+        type: "credit",
+        icon: CreditCard,
+        label: `${unpaid.length} unpaid sale${unpaid.length !== 1 ? "s" : ""} — ${currency}${total.toFixed(2)} outstanding`,
+        link: "/dashboard/debtors",
+      });
+    }
+
+    return items;
+  }, [stock, transactions, currency]);
+
+  const count = notifications.length;
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setOpen((o) => !o)}
+        className="relative text-gray-500 hover:text-gray-700 border-none bg-transparent cursor-pointer p-1"
+      >
+        <Bell size={20} />
+        {count > 0 && (
+          <span className="absolute -top-0.5 -right-0.5 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center leading-none">
+            {count > 9 ? "9+" : count}
+          </span>
+        )}
+      </button>
+
+      {open && (
+        <div className="absolute right-0 top-full mt-2 w-80 bg-white rounded-xl shadow-xl border border-gray-100 z-50 overflow-hidden">
+          <div className="px-4 py-3 border-b border-gray-100 flex items-center justify-between">
+            <p className="text-sm font-semibold text-gray-800 m-0">Notifications</p>
+            {count > 0 && (
+              <span className="text-xs bg-red-100 text-red-600 font-semibold px-2 py-0.5 rounded-full">{count} new</span>
+            )}
+          </div>
+
+          {count === 0 ? (
+            <div className="px-4 py-8 text-center text-gray-400">
+              <Bell size={28} className="mx-auto mb-2 opacity-30" />
+              <p className="text-sm m-0">All clear — no alerts right now</p>
+            </div>
+          ) : (
+            <div className="divide-y divide-gray-50 max-h-72 overflow-y-auto">
+              {notifications.map((n) => (
+                <Link
+                  key={n.id}
+                  to={n.link}
+                  onClick={() => setOpen(false)}
+                  className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 no-underline transition-colors"
+                >
+                  <div className={`w-8 h-8 rounded-lg flex items-center justify-center shrink-0 mt-0.5 ${
+                    n.type === "out" ? "bg-red-100" :
+                    n.type === "low" ? "bg-amber-100" :
+                    "bg-blue-100"
+                  }`}>
+                    <n.icon size={15} className={
+                      n.type === "out" ? "text-red-500" :
+                      n.type === "low" ? "text-amber-500" :
+                      "text-blue-500"
+                    } />
+                  </div>
+                  <p className="text-sm text-gray-700 m-0 leading-snug">{n.label}</p>
+                </Link>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ── Main Layout ───────────────────────────────────────────────────────────────
 export function DashboardLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -104,6 +210,7 @@ export function DashboardLayout() {
   const [searchQuery, setSearchQuery] = useState("");
 
   const { currentUser, logout } = useAuth();
+  const { stock, transactions } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -242,9 +349,7 @@ export function DashboardLayout() {
             )}
           </div>
 
-          <button className="relative text-gray-500 hover:text-gray-700 border-none bg-transparent cursor-pointer">
-            <Bell size={20} />
-          </button>
+          <NotificationBell stock={stock} transactions={transactions} currency={currentUser?.currency || "GH₵"} />
 
           <button
             onClick={handleLogout}

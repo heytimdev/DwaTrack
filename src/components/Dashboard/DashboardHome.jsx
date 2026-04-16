@@ -5,7 +5,6 @@ import {
   ArrowLeftRight,
   FileText,
   Plus,
-  Zap,
   Eye,
   Sparkles,
   RefreshCw,
@@ -187,22 +186,13 @@ export function DashboardHome() {
           <p className="text-sm text-gray-500 m-0">Track your business health and record new activity.</p>
         </div>
         {canAddTransactions && (
-          <div className="flex gap-3">
-            <Link
-              to="/dashboard/transactions"
-              state={{ openAdd: true }}
-              className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg no-underline transition-colors"
-            >
-              <Plus size={16} /> Record New Sale
-            </Link>
-            <Link
-              to="/dashboard/transactions"
-              state={{ openAdd: true }}
-              className="flex items-center gap-2 bg-white border border-gray-200 hover:bg-gray-50 text-gray-700 text-sm font-medium px-4 py-2.5 rounded-lg no-underline transition-colors"
-            >
-              <Zap size={16} /> Quick Entry
-            </Link>
-          </div>
+          <Link
+            to="/dashboard/transactions"
+            state={{ openAdd: true }}
+            className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg no-underline transition-colors"
+          >
+            <Plus size={16} /> Record New Sale
+          </Link>
         )}
       </div>
 
