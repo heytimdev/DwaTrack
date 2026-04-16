@@ -82,10 +82,11 @@ export function ReceiptModal({ transaction, onClose }) {
 <html>
 <head>
   <meta charset="UTF-8"/>
-  <title>Receipt — ${transaction.receiptNumber}</title>
+  <title></title>
   <style>
     @page { margin: 0; size: 80mm auto; }
-    body { margin:0; padding:12mm 10mm; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#111; background:#fff; }
+    @page { marks: none; }
+    body { margin:0; padding:12mm 10mm 8mm; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#111; background:#fff; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
     * { box-sizing:border-box; }
     hr { border:none; border-top:1px dashed #ccc; margin:10px 0; }
   </style>
@@ -136,8 +137,11 @@ export function ReceiptModal({ transaction, onClose }) {
 
   <!-- Footer -->
   <div style="text-align:center;margin-top:8px;">
-    <div style="font-size:11px;color:#555;margin-bottom:2px;">Thank you for your patronage!</div>
-    <div style="font-size:10px;color:#aaa;">Powered by DwaTrack</div>
+    <div style="font-size:11px;color:#555;margin-bottom:6px;">Thank you for your patronage!</div>
+    <div style="display:inline-block;border-top:1px solid #e5e7eb;padding-top:6px;width:100%;">
+      <div style="font-size:10px;color:#888;">Managed with <strong style="color:#0f766e;">DwaTrack</strong></div>
+      <div style="font-size:10px;color:#0f766e;">dwatrack.netlify.app</div>
+    </div>
   </div>
 
 </div>
@@ -171,7 +175,7 @@ export function ReceiptModal({ transaction, onClose }) {
       <div className="bg-white rounded-xl shadow-2xl w-full max-w-xs flex flex-col max-h-[90vh]">
 
         {/* Modal header */}
-        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 flex-shrink-0">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100 shrink-0">
           <h2 className="text-base font-semibold text-gray-800 m-0">Receipt Preview</h2>
           <div className="flex items-center gap-2">
             <button onClick={handlePrint}
@@ -297,8 +301,11 @@ export function ReceiptModal({ transaction, onClose }) {
 
             {/* Footer */}
             <div className="text-center">
-              <p className="text-xs text-gray-500 m-0">Thank you for your patronage!</p>
-              <p className="text-xs text-gray-300 mt-1 m-0">Powered by DwaTrack</p>
+              <p className="text-xs text-gray-500 m-0 mb-2">Thank you for your patronage!</p>
+              <div className="border-t border-gray-100 pt-2">
+                <p className="text-xs text-gray-400 m-0">Managed with <span className="text-teal-600 font-semibold">DwaTrack</span></p>
+                <p className="text-xs text-teal-600 m-0">dwatrack.netlify.app</p>
+              </div>
             </div>
           </div>
         </div>
