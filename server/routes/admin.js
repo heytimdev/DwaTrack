@@ -131,6 +131,7 @@ router.get('/businesses', requireAdmin, async (req, res) => {
         u.country,
         u.currency,
         u.city,
+        u.status,
         u.created_at,
         COUNT(DISTINCT t.id) FILTER (WHERE t.status = 'completed')           AS transaction_count,
         COALESCE(SUM(t.total) FILTER (WHERE t.status = 'completed'), 0)      AS total_revenue,
@@ -163,6 +164,7 @@ router.get('/businesses', requireAdmin, async (req, res) => {
       totalExpenses:    parseFloat(r.total_expenses),
       teamCount:        parseInt(r.team_count),
       lastTransactionAt: r.last_transaction_at,
+      status:           r.status || 'active',
     })));
   } catch (err) {
     console.error('Admin businesses error:', err);
@@ -176,7 +178,7 @@ router.get('/businesses/:id', requireAdmin, async (req, res) => {
   try {
     const { id } = req.params;
 
-    const [ownerRes, teamRes, txRes, expRes, stockRes] = await Promise.all([
+    const [ownerRes, teamRes, txRes, expRes, stockRes, productsRes] = await Promise.all([
       pool.query(
         `SELECT u.*,
           COUNT(DISTINCT t.id) FILTER (WHERE t.status = 'completed') AS transaction_count,
@@ -214,6 +216,16 @@ router.get('/businesses/:id', requireAdmin, async (req, res) => {
          FROM stock WHERE owner_id = $1`,
         [id]
       ),
+      pool.query(
+        `SELECT p.id, p.name, p.price, p.cost_price, p.category,
+                COALESCE(s.quantity, 0) AS stock_qty,
+                COALESCE(s.low_stock_threshold, 0) AS threshold
+         FROM products p
+         LEFT JOIN stock s ON s.owner_id = p.owner_id AND LOWER(s.name) = LOWER(p.name)
+         WHERE p.owner_id = $1
+         ORDER BY p.name`,
+        [id]
+      ),
     ]);
 
     if (!ownerRes.rows.length) {
@@ -242,6 +254,7 @@ router.get('/businesses/:id', requireAdmin, async (req, res) => {
         netProfit:        parseFloat(u.total_revenue) - parseFloat(u.total_expenses),
         stockTotal:       parseInt(stockRes.rows[0]?.total || 0),
         stockLow:         parseInt(stockRes.rows[0]?.low   || 0),
+        status:           u.status || 'active',
       },
       team: teamRes.rows.map(m => ({
         id:        m.id,
@@ -253,9 +266,163 @@ router.get('/businesses/:id', requireAdmin, async (req, res) => {
       })),
       recentTransactions: txRes.rows,
       recentExpenses:     expRes.rows,
+      products: productsRes.rows.map(p => ({
+        id:        p.id,
+        name:      p.name,
+        price:     parseFloat(p.price),
+        costPrice: parseFloat(p.cost_price),
+        category:  p.category,
+        stockQty:  parseInt(p.stock_qty),
+        threshold: parseInt(p.threshold),
+      })),
     });
   } catch (err) {
     console.error('Admin business detail error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── PATCH /api/admin/businesses/:id/status ────────────────────────────────────
+router.patch('/businesses/:id/status', requireAdmin, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { status } = req.body;
+    if (!['active', 'suspended'].includes(status)) {
+      return res.status(400).json({ error: 'status must be active or suspended' });
+    }
+    const { rows } = await pool.query(
+      `UPDATE users SET status = $1 WHERE id = $2 RETURNING id, status`,
+      [status, id]
+    );
+    if (!rows.length) return res.status(404).json({ error: 'Business not found' });
+    res.json({ id: rows[0].id, status: rows[0].status });
+  } catch (err) {
+    console.error('Admin status update error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── GET /api/admin/insights ───────────────────────────────────────────────────
+router.get('/insights', requireAdmin, async (req, res) => {
+  try {
+    const [signupsRes, topRevenueRes, dormantRes, revenueByMonthRes] = await Promise.all([
+      // Signups per month — last 6 months
+      pool.query(`
+        SELECT TO_CHAR(DATE_TRUNC('month', created_at), 'Mon YYYY') AS month,
+               DATE_TRUNC('month', created_at) AS month_date,
+               COUNT(*) AS count
+        FROM users
+        WHERE created_at >= NOW() - INTERVAL '6 months'
+        GROUP BY month_date, month
+        ORDER BY month_date
+      `),
+      // Top 5 businesses by revenue
+      pool.query(`
+        SELECT u.id, u.business_name, u.first_name, u.last_name, u.currency,
+               COALESCE(SUM(t.total) FILTER (WHERE t.status = 'completed'), 0) AS total_revenue,
+               COUNT(t.id) FILTER (WHERE t.status = 'completed') AS tx_count
+        FROM users u
+        LEFT JOIN transactions t ON t.owner_id = u.id
+        GROUP BY u.id
+        ORDER BY total_revenue DESC
+        LIMIT 5
+      `),
+      // Dormant businesses — no transaction in last 30 days
+      pool.query(`
+        SELECT u.id, u.business_name, u.first_name, u.last_name,
+               MAX(t.created_at) AS last_tx
+        FROM users u
+        LEFT JOIN transactions t ON t.owner_id = u.id
+        GROUP BY u.id
+        HAVING MAX(t.created_at) < NOW() - INTERVAL '30 days'
+            OR MAX(t.created_at) IS NULL
+        ORDER BY last_tx ASC NULLS FIRST
+      `),
+      // Platform revenue by month — last 6 months
+      pool.query(`
+        SELECT TO_CHAR(DATE_TRUNC('month', created_at), 'Mon YYYY') AS month,
+               DATE_TRUNC('month', created_at) AS month_date,
+               COALESCE(SUM(total), 0) AS revenue
+        FROM transactions
+        WHERE status = 'completed'
+          AND created_at >= NOW() - INTERVAL '6 months'
+        GROUP BY month_date, month
+        ORDER BY month_date
+      `),
+    ]);
+
+    res.json({
+      signupsByMonth:   signupsRes.rows.map(r => ({ month: r.month, count: parseInt(r.count) })),
+      topByRevenue:     topRevenueRes.rows.map(r => ({
+        id:           r.id,
+        businessName: r.business_name || 'Unnamed Business',
+        ownerName:    `${r.first_name} ${r.last_name}`,
+        currency:     r.currency,
+        totalRevenue: parseFloat(r.total_revenue),
+        txCount:      parseInt(r.tx_count),
+      })),
+      dormantBusinesses: dormantRes.rows.map(r => ({
+        id:           r.id,
+        businessName: r.business_name || 'Unnamed Business',
+        ownerName:    `${r.first_name} ${r.last_name}`,
+        lastTx:       r.last_tx,
+      })),
+      revenueByMonth: revenueByMonthRes.rows.map(r => ({ month: r.month, revenue: parseFloat(r.revenue) })),
+    });
+  } catch (err) {
+    console.error('Admin insights error:', err);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+// ── GET /api/admin/notifications ──────────────────────────────────────────────
+router.get('/notifications', requireAdmin, async (req, res) => {
+  try {
+    const [newSignupsRes, highVoidRes] = await Promise.all([
+      // New signups in last 7 days
+      pool.query(`
+        SELECT id, first_name, last_name, business_name, email, created_at
+        FROM users
+        WHERE created_at >= NOW() - INTERVAL '7 days'
+        ORDER BY created_at DESC
+      `),
+      // Businesses with high void rate (>= 20% of transactions voided, min 5 transactions)
+      pool.query(`
+        SELECT u.id, u.business_name, u.first_name, u.last_name,
+               COUNT(*) AS total_tx,
+               COUNT(*) FILTER (WHERE t.status = 'voided') AS voided_tx,
+               ROUND(
+                 COUNT(*) FILTER (WHERE t.status = 'voided')::numeric
+                 / NULLIF(COUNT(*), 0) * 100, 1
+               ) AS void_rate
+        FROM users u
+        JOIN transactions t ON t.owner_id = u.id
+        GROUP BY u.id
+        HAVING COUNT(*) >= 5
+           AND (COUNT(*) FILTER (WHERE t.status = 'voided')::numeric / COUNT(*)) >= 0.2
+        ORDER BY void_rate DESC
+      `),
+    ]);
+
+    res.json({
+      newSignups: newSignupsRes.rows.map(r => ({
+        id:           r.id,
+        name:         `${r.first_name} ${r.last_name}`,
+        businessName: r.business_name || 'Unnamed Business',
+        email:        r.email,
+        createdAt:    r.created_at,
+      })),
+      highVoidRate: highVoidRes.rows.map(r => ({
+        id:           r.id,
+        businessName: r.business_name || 'Unnamed Business',
+        ownerName:    `${r.first_name} ${r.last_name}`,
+        totalTx:      parseInt(r.total_tx),
+        voidedTx:     parseInt(r.voided_tx),
+        voidRate:     parseFloat(r.void_rate),
+      })),
+    });
+  } catch (err) {
+    console.error('Admin notifications error:', err);
     res.status(500).json({ error: 'Server error' });
   }
 });

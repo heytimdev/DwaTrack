@@ -138,6 +138,9 @@ router.post('/login', async (req, res) => {
       const u = ownerRes.rows[0];
       const match = await bcrypt.compare(password, u.password_hash);
       if (match) {
+        if (u.status === 'suspended') {
+          return res.status(403).json({ error: 'Your account has been suspended. Please contact support.' });
+        }
         const token = makeToken({ id: u.id, role: u.role, ownerId: u.id });
         return res.json({ token, user: formatOwner(u) });
       }
@@ -152,7 +155,7 @@ router.post('/login', async (req, res) => {
               u.country,       u.currency
        FROM   team_members tm
        JOIN   users u ON u.id = tm.owner_id
-       WHERE  tm.email = $1 AND tm.status = 'active'
+       WHERE  tm.email = $1 AND tm.status = 'active' AND u.status = 'active'
        LIMIT  1`,
       [emailNorm]
     );
