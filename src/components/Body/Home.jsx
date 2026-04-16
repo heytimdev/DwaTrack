@@ -8,6 +8,7 @@ import {
   listData7,
 } from "../data.js";
 import { useState, useEffect } from "react";
+import { usePageTitle } from "../../hooks/usePageTitle";
 import { BodyCoreConcept1 } from "./BodyCoreConcept1.jsx";
 import { BodyCoreConcept2 } from "./BodyCoreConcept2.jsx";
 import { BodyCoreConcept3 } from "./BodyCoreConcept3.jsx";
@@ -22,6 +23,7 @@ import { Body } from "./Body.jsx";
 import { BackToTop } from "./BackToTop.jsx";
 
 export function Home() {
+  usePageTitle("Business Tracking App for Small Businesses in Ghana & Africa");
   const [openFaq, setOpenFaq] = useState(null);
 
   useEffect(() => {

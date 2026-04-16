@@ -4,8 +4,10 @@ import { useState } from "react";
 import { MapPin, Loader, Eye, EyeOff, CheckCircle } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
 import { COUNTRIES, currencyForCountry } from "../../utils/currency";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export function SignUp() {
+  usePageTitle("Create a Free Account");
   const { signup } = useAuth();
   const navigate = useNavigate();
   const [error, setError] = useState("");

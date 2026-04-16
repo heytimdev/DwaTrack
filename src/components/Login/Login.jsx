@@ -3,8 +3,10 @@ import { Link, useNavigate } from "react-router-dom";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
 import { Eye, EyeOff, Loader } from "lucide-react";
+import { usePageTitle } from "../../hooks/usePageTitle";
 
 export function Login() {
+  usePageTitle("Log In");
   const { login } = useAuth();
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
