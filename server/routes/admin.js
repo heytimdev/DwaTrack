@@ -133,17 +133,33 @@ router.get('/businesses', requireAdmin, async (req, res) => {
         u.city,
         u.status,
         u.created_at,
-        COUNT(DISTINCT t.id) FILTER (WHERE t.status = 'completed')           AS transaction_count,
-        COALESCE(SUM(t.total) FILTER (WHERE t.status = 'completed'), 0)      AS total_revenue,
-        COUNT(DISTINCT e.id)                                                  AS expense_count,
-        COALESCE(SUM(e.amount), 0)                                            AS total_expenses,
-        COUNT(DISTINCT tm.id)                                                 AS team_count,
-        MAX(t.created_at)                                                     AS last_transaction_at
+        COALESCE(t.transaction_count, 0)    AS transaction_count,
+        COALESCE(t.total_revenue, 0)        AS total_revenue,
+        COALESCE(e.expense_count, 0)        AS expense_count,
+        COALESCE(e.total_expenses, 0)       AS total_expenses,
+        COALESCE(tm.team_count, 0)          AS team_count,
+        t.last_transaction_at
       FROM users u
-      LEFT JOIN transactions  t  ON t.owner_id  = u.id
-      LEFT JOIN expenses      e  ON e.owner_id  = u.id
-      LEFT JOIN team_members  tm ON tm.owner_id = u.id
-      GROUP BY u.id
+      LEFT JOIN (
+        SELECT owner_id,
+          COUNT(id) FILTER (WHERE status = 'completed')        AS transaction_count,
+          SUM(total) FILTER (WHERE status = 'completed')       AS total_revenue,
+          MAX(created_at)                                       AS last_transaction_at
+        FROM transactions
+        GROUP BY owner_id
+      ) t ON t.owner_id = u.id
+      LEFT JOIN (
+        SELECT owner_id,
+          COUNT(id)   AS expense_count,
+          SUM(amount) AS total_expenses
+        FROM expenses
+        GROUP BY owner_id
+      ) e ON e.owner_id = u.id
+      LEFT JOIN (
+        SELECT owner_id, COUNT(id) AS team_count
+        FROM team_members
+        GROUP BY owner_id
+      ) tm ON tm.owner_id = u.id
       ORDER BY u.created_at DESC
     `);
 
@@ -181,14 +197,23 @@ router.get('/businesses/:id', requireAdmin, async (req, res) => {
     const [ownerRes, teamRes, txRes, expRes, stockRes, productsRes] = await Promise.all([
       pool.query(
         `SELECT u.*,
-          COUNT(DISTINCT t.id) FILTER (WHERE t.status = 'completed') AS transaction_count,
-          COALESCE(SUM(t.total) FILTER (WHERE t.status = 'completed'), 0) AS total_revenue,
-          COALESCE(SUM(e.amount), 0) AS total_expenses
+          COALESCE(t.transaction_count, 0) AS transaction_count,
+          COALESCE(t.total_revenue, 0)     AS total_revenue,
+          COALESCE(e.total_expenses, 0)    AS total_expenses
          FROM users u
-         LEFT JOIN transactions t ON t.owner_id = u.id
-         LEFT JOIN expenses     e ON e.owner_id = u.id
-         WHERE u.id = $1
-         GROUP BY u.id`,
+         LEFT JOIN (
+           SELECT owner_id,
+             COUNT(id) FILTER (WHERE status = 'completed')  AS transaction_count,
+             SUM(total) FILTER (WHERE status = 'completed') AS total_revenue
+           FROM transactions
+           GROUP BY owner_id
+         ) t ON t.owner_id = u.id
+         LEFT JOIN (
+           SELECT owner_id, SUM(amount) AS total_expenses
+           FROM expenses
+           GROUP BY owner_id
+         ) e ON e.owner_id = u.id
+         WHERE u.id = $1`,
         [id]
       ),
       pool.query(
