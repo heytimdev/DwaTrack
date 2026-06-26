@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
-import { ShieldCheck, ChevronLeft, ChevronRight, Filter, X } from "lucide-react";
+import { ShieldCheck, ChevronLeft, ChevronRight, Filter, X, AlertCircle, RefreshCw } from "lucide-react";
 import api from "../../api";
 
 const ACTION_LABELS = {
@@ -55,9 +55,11 @@ export function AuditLog() {
   const [page,     setPage]     = useState(1);
   const [loading,  setLoading]  = useState(false);
   const [filter,   setFilter]   = useState("");
+  const [error,    setError]    = useState(null);
 
   const fetchPage = useCallback(async (p, actionFilter) => {
     setLoading(true);
+    setError(null);
     try {
       const params = new URLSearchParams({ page: p, limit: 50 });
       if (actionFilter) params.set("action", actionFilter);
@@ -66,8 +68,9 @@ export function AuditLog() {
       setTotal(data.total);
       setPages(data.pages);
       setPage(data.page);
-    } catch {
+    } catch (err) {
       setEntries([]);
+      setError(err.message || "Failed to load audit log");
     } finally {
       setLoading(false);
     }
@@ -121,6 +124,18 @@ export function AuditLog() {
           <div className="flex items-center justify-center py-16 text-gray-400">
             <div className="w-5 h-5 border-2 border-gray-200 border-t-teal-400 rounded-full animate-spin mr-2" />
             Loading…
+          </div>
+        ) : error ? (
+          <div className="text-center py-16">
+            <AlertCircle size={36} className="mx-auto mb-2 text-red-300" />
+            <p className="text-sm text-red-500 m-0 font-medium">Failed to load audit log</p>
+            <p className="text-xs text-gray-400 m-0 mt-1">{error}</p>
+            <button
+              onClick={() => fetchPage(1, filter)}
+              className="mt-4 inline-flex items-center gap-1.5 text-xs text-teal-600 hover:text-teal-700 border border-teal-200 bg-white px-3 py-1.5 rounded-lg cursor-pointer"
+            >
+              <RefreshCw size={12} /> Try again
+            </button>
           </div>
         ) : entries.length === 0 ? (
           <div className="text-center py-16 text-gray-400">

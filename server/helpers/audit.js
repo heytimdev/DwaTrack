@@ -31,7 +31,7 @@ async function logAction(req, action, entityType, entityId, detail) {
         ownerId, id, actorName || null, role,
         action, entityType || null,
         entityId || null,
-        detail ? JSON.stringify(detail) : null,
+        detail || null,
       ]
     );
   } catch (err) {
