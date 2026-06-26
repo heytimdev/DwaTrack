@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { Package, Plus, Trash2, RefreshCw, AlertTriangle, X } from "lucide-react";
+import { ConfirmModal } from "./ConfirmModal";
 
 function AddStockModal({ onClose, onAdd }) {
   const [form, setForm] = useState({ name: "", quantity: "", unit: "pcs", lowStockThreshold: "5" });
@@ -163,6 +164,7 @@ export function Stock() {
   const [search, setSearch] = useState("");
 
   const isOwnerOrManager = canManageExpenses;
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const filtered = stock.filter((s) =>
     s.name?.toLowerCase().includes(search.toLowerCase())
@@ -303,7 +305,8 @@ export function Stock() {
                               Restock
                             </button>
                             <button
-                              onClick={() => deleteStockItem(item.id)}
+                              onClick={() => setDeleteTarget(item)}
+                              aria-label={`Delete ${item.name}`}
                               className="p-1.5 text-gray-400 hover:text-red-500 bg-transparent border-none cursor-pointer rounded-lg hover:bg-red-50"
                             >
                               <Trash2 size={14} />
@@ -326,6 +329,15 @@ export function Stock() {
           item={restockTarget}
           onClose={() => setRestockTarget(null)}
           onRestock={restockItem}
+        />
+      )}
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete Stock Item"
+          message={`Remove "${deleteTarget.name}" from your inventory? This cannot be undone.`}
+          confirmLabel="Delete"
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => { deleteStockItem(deleteTarget.id); setDeleteTarget(null); }}
         />
       )}
     </div>

@@ -8,6 +8,7 @@ import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { AddTransactionModal } from "./AddTransactionModal";
 import { ReceiptModal } from "./ReceiptModal";
+import { ConfirmModal } from "./ConfirmModal";
 
 const PAGE_SIZE = 25;
 
@@ -106,10 +107,12 @@ export function Transactions() {
   const location = useLocation();
   const navigate  = useNavigate();
 
-  const [showAdd,    setShowAdd]    = useState(false);
-  const [receiptTx,  setReceiptTx]  = useState(null);
-  const [voidTx,     setVoidTx]     = useState(null);
-  const [search,     setSearch]     = useState("");
+  const [showAdd,             setShowAdd]             = useState(false);
+  const [receiptTx,           setReceiptTx]           = useState(null);
+  const [voidTx,              setVoidTx]              = useState(null);
+  const [deleteTxTarget,      setDeleteTxTarget]      = useState(null);
+  const [deleteProductTarget, setDeleteProductTarget] = useState(null);
+  const [search,              setSearch]              = useState("");
   const [tab,        setTab]        = useState("transactions");
   const [datePreset, setDatePreset] = useState("all");
   const [dateFrom,   setDateFrom]   = useState("");
@@ -371,19 +374,19 @@ export function Transactions() {
                           <td className="px-4 py-3 text-right">
                             <div className="flex items-center justify-end gap-2">
                               {!isVoided && (
-                                <button onClick={() => setReceiptTx(tx)} title="Print receipt"
+                                <button onClick={() => setReceiptTx(tx)} title="Print receipt" aria-label="Print receipt"
                                   className="text-gray-400 hover:text-teal-600 border-none bg-transparent cursor-pointer">
                                   <Printer size={16} />
                                 </button>
                               )}
                               {canDeleteTransactions && !isVoided && (
-                                <button onClick={() => setVoidTx(tx)} title="Void transaction"
+                                <button onClick={() => setVoidTx(tx)} title="Void transaction" aria-label="Void transaction"
                                   className="text-gray-400 hover:text-amber-500 border-none bg-transparent cursor-pointer">
                                   <Ban size={15} />
                                 </button>
                               )}
                               {canDeleteTransactions && (
-                                <button onClick={() => deleteTransaction(tx.id)} title="Delete permanently"
+                                <button onClick={() => setDeleteTxTarget(tx)} title="Delete permanently" aria-label="Delete transaction permanently"
                                   className="text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer">
                                   <Trash2 size={16} />
                                 </button>
@@ -526,7 +529,7 @@ export function Transactions() {
                             )}
                           </div>
                           {canManageProducts && (
-                            <button onClick={() => deleteProduct(p.id)}
+                            <button onClick={() => setDeleteProductTarget(p)} aria-label={`Delete ${p.name}`}
                               className="text-gray-300 hover:text-red-500 border-none bg-transparent cursor-pointer">
                               <Trash2 size={15} />
                             </button>
@@ -542,9 +545,27 @@ export function Transactions() {
         </div>
       )}
 
-      {showAdd  && <AddTransactionModal onClose={() => setShowAdd(false)} onSuccess={handleAddSuccess} />}
+      {showAdd   && <AddTransactionModal onClose={() => setShowAdd(false)} onSuccess={handleAddSuccess} />}
       {receiptTx && <ReceiptModal transaction={receiptTx} onClose={() => setReceiptTx(null)} />}
-      {voidTx   && <VoidModal tx={voidTx} currency={currency} onClose={() => setVoidTx(null)} onVoided={handleVoided} />}
+      {voidTx    && <VoidModal tx={voidTx} currency={currency} onClose={() => setVoidTx(null)} onVoided={handleVoided} />}
+      {deleteTxTarget && (
+        <ConfirmModal
+          title="Delete Transaction"
+          message={`Permanently delete receipt ${deleteTxTarget.receiptNumber}? This cannot be undone.`}
+          confirmLabel="Delete"
+          onCancel={() => setDeleteTxTarget(null)}
+          onConfirm={() => { deleteTransaction(deleteTxTarget.id); setDeleteTxTarget(null); }}
+        />
+      )}
+      {deleteProductTarget && (
+        <ConfirmModal
+          title="Delete Product"
+          message={`Remove "${deleteProductTarget.name}" from your product catalogue?`}
+          confirmLabel="Delete"
+          onCancel={() => setDeleteProductTarget(null)}
+          onConfirm={() => { deleteProduct(deleteProductTarget.id); setDeleteProductTarget(null); }}
+        />
+      )}
     </div>
   );
 }

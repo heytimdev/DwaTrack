@@ -1,9 +1,10 @@
 import { useState, useRef } from "react";
-import { UserPlus, UserX, Shield, User, Briefcase, Save, Camera } from "lucide-react";
+import { UserPlus, UserX, Shield, User, Briefcase, Save, Camera, Loader } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import ktLogo from "../../assets/logo.svg";
 import { COUNTRIES, currencyForCountry } from "../../utils/currency";
+import { ConfirmModal } from "./ConfirmModal";
 
 const ROLE_LABELS = {
   manager: { label: "Manager", color: "bg-blue-100 text-blue-700", icon: Briefcase },
@@ -71,8 +72,10 @@ export function Settings() {
     password: "",
     role: "cashier",
   });
-  const [teamError, setTeamError] = useState("");
-  const [teamSuccess, setTeamSuccess] = useState("");
+  const [teamError,        setTeamError]        = useState("");
+  const [teamSuccess,      setTeamSuccess]      = useState("");
+  const [teamSaving,       setTeamSaving]       = useState(false);
+  const [removeTarget,     setRemoveTarget]     = useState(null);
 
   function handleLogoChange(e) {
     const file = e.target.files?.[0];
@@ -92,7 +95,7 @@ export function Settings() {
     setTimeout(() => setShopSaved(false), 2500);
   }
 
-  function handleAddMember(e) {
+  async function handleAddMember(e) {
     e.preventDefault();
     setTeamError("");
     setTeamSuccess("");
@@ -100,13 +103,15 @@ export function Settings() {
       setTeamError("First name, email, and password are required.");
       return;
     }
-    const result = addTeamMember({ ...memberForm });
+    setTeamSaving(true);
+    const result = await addTeamMember({ ...memberForm });
+    setTeamSaving(false);
     if (result.success) {
       setMemberForm({ firstName: "", lastName: "", email: "", password: "", role: "cashier" });
       setTeamSuccess(`${memberForm.firstName} added successfully.`);
       setTimeout(() => setTeamSuccess(""), 3000);
     } else {
-      setTeamError(result.error);
+      setTeamError(result.error || "Failed to add team member.");
     }
   }
 
@@ -367,9 +372,10 @@ export function Settings() {
 
               <button
                 type="submit"
-                className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors"
+                disabled={teamSaving}
+                className="flex items-center gap-2 bg-teal-500 hover:bg-teal-600 text-white px-4 py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors disabled:opacity-60"
               >
-                <UserPlus size={15} /> Add Member
+                {teamSaving ? <><Loader size={14} className="animate-spin" /> Adding…</> : <><UserPlus size={15} /> Add Member</>}
               </button>
             </form>
           </div>
@@ -406,8 +412,9 @@ export function Settings() {
                           {roleInfo?.label || member.role}
                         </span>
                         <button
-                          onClick={() => removeTeamMember(member.id)}
+                          onClick={() => setRemoveTarget(member)}
                           title="Remove member"
+                          aria-label={`Remove ${member.firstName} ${member.lastName}`}
                           className="text-gray-300 hover:text-red-500 border-none bg-transparent cursor-pointer"
                         >
                           <UserX size={16} />
@@ -496,6 +503,15 @@ export function Settings() {
             </div>
           </div>
         </div>
+      )}
+      {removeTarget && (
+        <ConfirmModal
+          title="Remove Team Member"
+          message={`Remove ${removeTarget.firstName} ${removeTarget.lastName} from your team? They will no longer be able to log in.`}
+          confirmLabel="Remove"
+          onCancel={() => setRemoveTarget(null)}
+          onConfirm={() => { removeTeamMember(removeTarget.id); setRemoveTarget(null); }}
+        />
       )}
     </div>
   );

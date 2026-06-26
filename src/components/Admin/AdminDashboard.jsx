@@ -660,7 +660,7 @@ export default function AdminDashboard() {
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <StatCard icon={Building2}    label="Total Businesses"   value={stats.totalBusinesses}   color="bg-teal-600" />
                 <StatCard icon={ShoppingCart} label="Total Transactions" value={stats.totalTransactions} color="bg-indigo-600" />
-                <StatCard icon={TrendingUp}   label="Platform Revenue"   value={`GH₵${Number(stats.totalRevenue).toLocaleString('en-GH', { minimumFractionDigits: 2 })}`} color="bg-emerald-600" />
+                <StatCard icon={TrendingUp}   label="Platform Revenue"   value={fmt(null, stats.totalRevenue)} color="bg-emerald-600" />
                 <StatCard icon={Users}        label="Total Staff"        value={stats.totalTeamMembers}  color="bg-violet-600" />
               </div>
             )}

@@ -1,7 +1,8 @@
 import { useState } from "react";
-import { Plus, Trash2, Receipt } from "lucide-react";
+import { Plus, Trash2, Receipt, Loader } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
+import { ConfirmModal } from "./ConfirmModal";
 
 const CATEGORIES = ["Rent", "Utilities", "Salaries", "Inventory", "Transport", "Marketing", "Equipment", "Other"];
 
@@ -9,8 +10,10 @@ export function Expenses() {
   const { expenses, addExpense, deleteExpense } = useApp();
   const { canManageExpenses, canDeleteTransactions, currency } = useAuth();
 
-  const [form, setForm] = useState({ description: "", amount: "", category: "Other" });
-  const [error, setError] = useState("");
+  const [form,         setForm]         = useState({ description: "", amount: "", category: "Other" });
+  const [error,        setError]        = useState("");
+  const [saving,       setSaving]       = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState(null);
 
   const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
 
@@ -19,15 +22,19 @@ export function Expenses() {
     return acc;
   }, {});
 
-  function handleSubmit(ev) {
+  async function handleSubmit(ev) {
     ev.preventDefault();
     if (!form.description || !form.amount) {
       setError("Description and amount are required.");
       return;
     }
-    addExpense({ description: form.description, amount: parseFloat(form.amount), category: form.category });
-    setForm({ description: "", amount: "", category: "Other" });
-    setError("");
+    setSaving(true);
+    const result = await addExpense({ description: form.description, amount: parseFloat(form.amount), category: form.category });
+    setSaving(false);
+    if (result) {
+      setForm({ description: "", amount: "", category: "Other" });
+      setError("");
+    }
   }
 
 
@@ -97,9 +104,10 @@ export function Expenses() {
               </div>
               <button
                 type="submit"
-                className="w-full bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors"
+                disabled={saving}
+                className="w-full bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
-                Add Expense
+                {saving ? <><Loader size={14} className="animate-spin" /> Saving…</> : "Add Expense"}
               </button>
             </form>
           </div>
@@ -131,7 +139,8 @@ export function Expenses() {
                       <span className="text-sm font-semibold text-red-500">-{currency}{Number(exp.amount).toFixed(2)}</span>
                       {canDeleteTransactions && (
                         <button
-                          onClick={() => deleteExpense(exp.id)}
+                          onClick={() => setDeleteTarget(exp)}
+                          aria-label={`Delete expense: ${exp.description}`}
                           className="text-gray-300 hover:text-red-500 border-none bg-transparent cursor-pointer"
                         >
                           <Trash2 size={15} />
@@ -145,6 +154,15 @@ export function Expenses() {
           </div>
         </div>
       </div>
+      {deleteTarget && (
+        <ConfirmModal
+          title="Delete Expense"
+          message={`Delete "${deleteTarget.description}" (${currency}${Number(deleteTarget.amount).toFixed(2)})? This cannot be undone.`}
+          confirmLabel="Delete"
+          onCancel={() => setDeleteTarget(null)}
+          onConfirm={() => { deleteExpense(deleteTarget.id); setDeleteTarget(null); }}
+        />
+      )}
     </div>
   );
 }
