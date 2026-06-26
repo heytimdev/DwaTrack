@@ -23,7 +23,7 @@ router.post('/daily-summary', requireAuth, async (req, res) => {
 
     const [txResult, userResult] = await Promise.all([
       pool.query(
-        'SELECT * FROM transactions WHERE owner_id = $1 AND created_at >= $2 ORDER BY created_at',
+        "SELECT * FROM transactions WHERE owner_id = $1 AND created_at >= $2 AND status != 'voided' ORDER BY created_at",
         [ownerId, today]
       ),
       pool.query('SELECT business_name, currency FROM users WHERE id = $1', [ownerId]),
@@ -100,7 +100,7 @@ router.post('/restock', requireAuth, async (req, res) => {
     const [stockResult, txResult, userResult] = await Promise.all([
       pool.query('SELECT * FROM stock WHERE owner_id = $1', [ownerId]),
       pool.query(
-        'SELECT items FROM transactions WHERE owner_id = $1 AND created_at >= $2',
+        "SELECT items FROM transactions WHERE owner_id = $1 AND created_at >= $2 AND status != 'voided'",
         [ownerId, thirtyDaysAgo]
       ),
       pool.query('SELECT currency FROM users WHERE id = $1', [ownerId]),
@@ -180,22 +180,80 @@ router.post('/chat', requireAuth, async (req, res) => {
     const currency = userResult.rows[0]?.currency || 'GH₵';
     const shopName = userResult.rows[0]?.business_name || 'this shop';
 
-    const txs = txResult.rows;
-    const totalRevenue = txs.reduce((s, t) => s + (parseFloat(t.total) - parseFloat(t.tax_amount || 0)), 0);
+    const allTxs  = txResult.rows;
+    const txs     = allTxs.filter((t) => t.status !== 'voided');
+    const voidedCount = allTxs.length - txs.length;
+
+    const totalRevenue  = txs.reduce((s, t) => s + (parseFloat(t.total) - parseFloat(t.tax_amount || 0)), 0);
     const totalExpenses = expenseResult.rows.reduce((s, e) => s + parseFloat(e.amount), 0);
 
-    const todayStr = new Date().toDateString();
-    const todayTxs = txs.filter((t) => new Date(t.created_at).toDateString() === todayStr);
+    // Today
+    const todayStr    = new Date().toDateString();
+    const todayTxs    = txs.filter((t) => new Date(t.created_at).toDateString() === todayStr);
     const todayRevenue = todayTxs.reduce((s, t) => s + (parseFloat(t.total) - parseFloat(t.tax_amount || 0)), 0);
 
+    // Month-over-month
+    const now            = new Date();
+    const thisMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const lastMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+    const lastMonthEnd   = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+    const thisMonthTxs = txs.filter((t) => new Date(t.created_at) >= thisMonthStart);
+    const lastMonthTxs = txs.filter((t) => {
+      const d = new Date(t.created_at);
+      return d >= lastMonthStart && d <= lastMonthEnd;
+    });
+    const thisMonthRevenue = thisMonthTxs.reduce((s, t) => s + (parseFloat(t.total) - parseFloat(t.tax_amount || 0)), 0);
+    const lastMonthRevenue = lastMonthTxs.reduce((s, t) => s + (parseFloat(t.total) - parseFloat(t.tax_amount || 0)), 0);
+
+    // Day-of-week breakdown
+    const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+    const dayMap = {};
+    txs.forEach((t) => {
+      const day = DAY_NAMES[new Date(t.created_at).getDay()];
+      if (!dayMap[day]) dayMap[day] = { revenue: 0, count: 0 };
+      dayMap[day].revenue += parseFloat(t.total) - parseFloat(t.tax_amount || 0);
+      dayMap[day].count++;
+    });
+    const bestDay = Object.entries(dayMap).sort((a, b) => b[1].revenue - a[1].revenue)[0];
+    const dayBreakdown = DAY_NAMES
+      .filter((d) => dayMap[d])
+      .map((d) => `${d}: ${dayMap[d].count} sales, ${currency}${dayMap[d].revenue.toFixed(2)}`)
+      .join('; ');
+
+    // Payment method breakdown
+    const payMap = {};
+    txs.forEach((t) => {
+      const rev = parseFloat(t.total) - parseFloat(t.tax_amount || 0);
+      const m   = t.payment_method || 'cash';
+      payMap[m] = (payMap[m] || 0) + rev;
+    });
+    const paymentBreakdown = Object.entries(payMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([m, v]) => `${m}: ${currency}${v.toFixed(2)}`)
+      .join('; ');
+
+    // All-time product map
     const productMap = {};
     txs.forEach((t) => {
       const items = typeof t.items === 'string' ? JSON.parse(t.items) : (t.items || []);
       items.forEach((item) => {
         const name = item.productName || 'Unknown';
         if (!productMap[name]) productMap[name] = { qty: 0, revenue: 0 };
-        productMap[name].qty += item.qty || 0;
+        productMap[name].qty     += item.qty || 0;
         productMap[name].revenue += (item.price || 0) * (item.qty || 0);
+      });
+    });
+
+    // This month's product map
+    const thisMonthProductMap = {};
+    thisMonthTxs.forEach((t) => {
+      const items = typeof t.items === 'string' ? JSON.parse(t.items) : (t.items || []);
+      items.forEach((item) => {
+        const name = item.productName || 'Unknown';
+        if (!thisMonthProductMap[name]) thisMonthProductMap[name] = { qty: 0, revenue: 0 };
+        thisMonthProductMap[name].qty     += item.qty || 0;
+        thisMonthProductMap[name].revenue += (item.price || 0) * (item.qty || 0);
       });
     });
 
@@ -205,12 +263,30 @@ router.post('/chat', requireAuth, async (req, res) => {
       .map(([name, d]) => `${name}: ${d.qty} sold, ${currency}${d.revenue.toFixed(2)}`)
       .join('; ');
 
+    const thisMonthTopProducts = Object.entries(thisMonthProductMap)
+      .sort((a, b) => b[1].revenue - a[1].revenue)
+      .slice(0, 5)
+      .map(([name, d]) => `${name}: ${d.qty} sold, ${currency}${d.revenue.toFixed(2)}`)
+      .join('; ');
+
+    // Expense categories
+    const expCatMap = {};
+    expenseResult.rows.forEach((e) => {
+      expCatMap[e.category] = (expCatMap[e.category] || 0) + parseFloat(e.amount);
+    });
+    const expenseCategories = Object.entries(expCatMap)
+      .sort((a, b) => b[1] - a[1])
+      .map(([cat, amt]) => `${cat}: ${currency}${amt.toFixed(2)}`)
+      .join('; ');
+
     const lowStock = stockResult.rows
       .filter((s) => s.quantity <= s.low_stock_threshold)
       .map((s) => `${s.name} (${s.quantity} left)`);
 
-    const today = new Date();
+    const today   = new Date();
     const dateStr = today.toLocaleDateString('en-GH', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    const thisMonthName = today.toLocaleDateString('en-GH', { month: 'long' });
+    const lastMonthName = new Date(today.getFullYear(), today.getMonth() - 1).toLocaleDateString('en-GH', { month: 'long' });
 
     const systemPrompt = `You are Kemi, the AI business assistant built into DwaTrack — a business tracking app used by small businesses in Ghana and across Africa. You were created to help business owners understand their numbers, make smarter decisions, and run better businesses.
 
@@ -223,25 +299,53 @@ Your personality:
 - Use ${currency} whenever you mention money
 
 How to handle different types of messages:
-- Greetings ("hello", "hi", "good morning", etc.) → Greet back warmly, introduce yourself briefly as Kemi the DwaTrack assistant, and invite them to ask about their business. Mention today's date naturally.
-- Small talk or personal questions → Respond briefly and naturally, then gently steer back to business if appropriate
-- Business questions → Answer using the real data provided below. Be specific with numbers
-- Questions you cannot answer from the data → Be honest that you don't have enough data, and suggest what they could do
-- Rude or irrelevant messages → Respond calmly and professionally, redirect to how you can help
+- Greetings → Greet back warmly, introduce yourself as Kemi the DwaTrack assistant, invite them to ask about their business, mention today's date naturally
+- Small talk or personal questions → Respond briefly, then steer back to business
+- Business questions → Answer using the exact data below. Be specific with numbers
+- Questions you cannot answer from the data → Be honest, suggest what they could track to get the answer
+- Rude or irrelevant messages → Respond calmly, redirect to how you can help
 
 Today is ${dateStr}.
-The business you are advising is "${shopName}".
+Business: "${shopName}"
 
-Live business data (use this to answer questions):
-- Total transactions recorded: ${txs.length}
+=== BUSINESS DATA ===
+
+OVERVIEW
+- All-time completed transactions: ${txs.length} (${voidedCount} voided)
 - All-time revenue: ${currency}${totalRevenue.toFixed(2)}
 - All-time expenses: ${currency}${totalExpenses.toFixed(2)}
-- Net profit: ${currency}${(totalRevenue - totalExpenses).toFixed(2)}
-- Today's revenue: ${currency}${todayRevenue.toFixed(2)} from ${todayTxs.length} sale${todayTxs.length !== 1 ? 's' : ''} today
-- Products in catalogue: ${productResult.rows.length}
-- Stock items tracked: ${stockResult.rows.length}
+- Net profit (all-time): ${currency}${(totalRevenue - totalExpenses).toFixed(2)}
+- Profit margin: ${totalRevenue > 0 ? (((totalRevenue - totalExpenses) / totalRevenue) * 100).toFixed(1) : 0}%
+
+TODAY
+- Revenue today: ${currency}${todayRevenue.toFixed(2)} from ${todayTxs.length} sale${todayTxs.length !== 1 ? 's' : ''}
+
+MONTH-OVER-MONTH
+- ${thisMonthName} revenue: ${currency}${thisMonthRevenue.toFixed(2)} from ${thisMonthTxs.length} sales
+- ${lastMonthName} revenue: ${currency}${lastMonthRevenue.toFixed(2)} from ${lastMonthTxs.length} sales
+- Change: ${lastMonthRevenue > 0 ? (((thisMonthRevenue - lastMonthRevenue) / lastMonthRevenue) * 100).toFixed(1) + '%' : 'no comparison available'}
+
+SALES BY DAY OF WEEK (all-time)
+- ${dayBreakdown || 'Not enough data yet'}
+- Busiest day: ${bestDay ? `${bestDay[0]} (${bestDay[1].count} sales, ${currency}${bestDay[1].revenue.toFixed(2)})` : 'Not enough data'}
+
+PAYMENT METHODS (all-time revenue)
+- ${paymentBreakdown || 'No sales recorded yet'}
+
+PRODUCTS — THIS MONTH
+- ${thisMonthTopProducts || 'No sales this month'}
+
+PRODUCTS — ALL TIME (top 8)
+- ${topProducts || 'No sales recorded yet'}
+
+EXPENSES
+- Total expenses: ${currency}${totalExpenses.toFixed(2)}
+- By category: ${expenseCategories || 'No expenses recorded'}
+
+STOCK
+- Items tracked: ${stockResult.rows.length}
 - Low stock alerts: ${lowStock.length > 0 ? lowStock.join(', ') : 'None'}
-- Top selling products: ${topProducts || 'No sales recorded yet'}`;
+- Products in catalogue: ${productResult.rows.length}`;
 
     // Streaming SSE
     res.setHeader('Content-Type', 'text/event-stream');
@@ -257,7 +361,7 @@ Live business data (use this to answer questions):
 
     const stream = await getClient().chat.completions.create({
       model: MODEL,
-      max_tokens: 600,
+      max_tokens: 800,
       messages,
       stream: true,
     });

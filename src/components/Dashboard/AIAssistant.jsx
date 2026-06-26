@@ -7,7 +7,7 @@ import {
   Package,
   ChevronDown,
   ChevronUp,
-  Bot,
+  Trash2,
   User,
 } from "lucide-react";
 import { useAuth } from "../../context/AuthContext";
@@ -93,11 +93,12 @@ function ChatBubble({ role, content, streaming }) {
 
 // ── Suggested Questions ───────────────────────────────────────────────────────
 const SUGGESTED = [
+  "How did this month compare to last month?",
   "What were my best-selling products this month?",
-  "How is my profit looking?",
   "Which day of the week do I sell the most?",
-  "What expenses should I watch out for?",
-  "Am I making more than I'm spending?",
+  "Where am I spending the most money?",
+  "What is my profit margin?",
+  "Do I have any items that need restocking?",
 ];
 
 // ── Main Component ────────────────────────────────────────────────────────────
@@ -320,7 +321,18 @@ export function AIAssistant() {
               <Sparkles size={11} className="text-teal-400" />
             </div>
             <span className="text-sm font-semibold text-white">Business Advisor</span>
-            <span className="ml-auto text-[10px] text-gray-400 bg-white/10 px-2 py-0.5 rounded-full">Groq AI</span>
+            <span className="text-[10px] text-gray-400 bg-white/10 px-2 py-0.5 rounded-full">Groq AI</span>
+            {chatHistory.length > 0 && (
+              <button
+                onClick={() => setChatHistory([])}
+                disabled={chatLoading}
+                title="Clear conversation"
+                className="ml-auto p-1.5 rounded-lg text-white/50 hover:text-white hover:bg-white/10 transition-colors border-none bg-transparent cursor-pointer disabled:opacity-30"
+              >
+                <Trash2 size={13} />
+              </button>
+            )}
+            {chatHistory.length === 0 && <span className="ml-auto" />}
           </div>
 
           {/* Messages */}
