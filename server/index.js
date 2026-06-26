@@ -21,21 +21,31 @@ const app  = express();
 const PORT = process.env.PORT || 5000;
 
 // ── Auto-migrate audit_log table ───────────────────────────────────────────────
-pool.query(`
-  CREATE TABLE IF NOT EXISTS audit_log (
-    id          SERIAL       PRIMARY KEY,
-    owner_id    INTEGER      NOT NULL,
-    actor_id    INTEGER      NOT NULL,
-    actor_name  TEXT,
-    actor_role  TEXT,
-    action      TEXT         NOT NULL,
-    entity_type TEXT,
-    entity_id   INTEGER,
-    detail      JSONB,
-    created_at  TIMESTAMPTZ  DEFAULT NOW()
-  );
-  CREATE INDEX IF NOT EXISTS idx_audit_log_owner ON audit_log (owner_id, created_at DESC);
-`).catch((err) => console.error('audit_log migration failed:', err.message));
+(async () => {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS audit_log (
+        id          SERIAL       PRIMARY KEY,
+        owner_id    INTEGER      NOT NULL,
+        actor_id    INTEGER      NOT NULL,
+        actor_name  TEXT,
+        actor_role  TEXT,
+        action      TEXT         NOT NULL,
+        entity_type TEXT,
+        entity_id   INTEGER,
+        detail      JSONB,
+        created_at  TIMESTAMPTZ  DEFAULT NOW()
+      )
+    `);
+    await pool.query(`
+      CREATE INDEX IF NOT EXISTS idx_audit_log_owner
+        ON audit_log (owner_id, created_at DESC)
+    `);
+    console.log('audit_log table ready');
+  } catch (err) {
+    console.error('audit_log migration failed:', err.message);
+  }
+})();
 
 // ── Middleware ─────────────────────────────────────────────────────────────────
 const allowedOrigins = [

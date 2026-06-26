@@ -13,9 +13,14 @@ router.get('/', requireAuth, requireRole('owner'), async (req, res) => {
     const offset = (page - 1) * limit;
     const action = req.query.action || null;
 
+    // Main query: $1=ownerId, $2=limit, $3=offset, $4=action (if filtered)
     const params  = [req.user.ownerId, limit, offset];
     const filter  = action ? `AND action = $4` : '';
     if (action) params.push(action);
+
+    // Count query: $1=ownerId, $2=action (if filtered) — separate numbering
+    const countFilter = action ? `AND action = $2` : '';
+    const countParams = action ? [req.user.ownerId, action] : [req.user.ownerId];
 
     const [rows, countRow] = await Promise.all([
       pool.query(
@@ -26,8 +31,8 @@ router.get('/', requireAuth, requireRole('owner'), async (req, res) => {
         params
       ),
       pool.query(
-        `SELECT COUNT(*) FROM audit_log WHERE owner_id = $1 ${filter}`,
-        action ? [req.user.ownerId, action] : [req.user.ownerId]
+        `SELECT COUNT(*) FROM audit_log WHERE owner_id = $1 ${countFilter}`,
+        countParams
       ),
     ]);
 
