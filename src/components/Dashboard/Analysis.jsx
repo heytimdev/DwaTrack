@@ -55,19 +55,7 @@ export function Analysis() {
   const revenueTrend = getTrend(statsA, statsB, "revenue");
   const qtyTrend = getTrend(statsA, statsB, "qty");
 
-  // Build daily trend data for selected products
-  const dailyMap = {};
-  transactions.forEach((tx) => {
-    const d = new Date(tx.createdAt);
-    const dateStr = d.toLocaleDateString("en-GH", { month: "short", day: "numeric" });
-    if (!dailyMap[dateStr]) dailyMap[dateStr] = { date: dateStr };
-    (tx.items || []).forEach((item) => {
-      if (!dailyMap[dateStr][item.productName]) dailyMap[dateStr][item.productName] = 0;
-      dailyMap[dateStr][item.productName] += item.qty * item.price;
-    });
-  });
-
-  const allProductNames = [...new Set(transactions.flatMap((tx) => tx.items?.map((i) => i.productName) || []))];
+  const allProductNames = productSales.map((p) => p.name);
 
   // Profit margin data — only products with cost price set
   const marginData = products
@@ -128,7 +116,7 @@ export function Analysis() {
             </div>
 
             {statsA && statsB && compareA && compareB && (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
                 {/* Revenue comparison */}
                 <div className="bg-gray-50 rounded-xl p-4">
                   <p className="text-xs text-gray-500 font-medium uppercase tracking-wide m-0 mb-3">Revenue</p>
@@ -186,6 +174,41 @@ export function Analysis() {
                       {qtyTrend > 0 ? <TrendingUp size={14} /> : qtyTrend < 0 ? <TrendingDown size={14} /> : <Minus size={14} />}
                       {compareA} sells {Math.abs(qtyTrend).toFixed(1)}% {qtyTrend > 0 ? "more" : "fewer"} units than {compareB}
                     </div>
+                  )}
+                </div>
+                {/* Avg revenue per unit */}
+                <div className="bg-gray-50 rounded-xl p-4">
+                  <p className="text-xs text-gray-500 font-medium uppercase tracking-wide m-0 mb-3">Avg Revenue / Unit</p>
+                  <div className="space-y-3">
+                    {[statsA, statsB].map((s, i) => {
+                      const avg = s.qty > 0 ? s.revenue / s.qty : 0;
+                      return (
+                        <div key={i}>
+                          <div className="flex justify-between text-xs mb-1">
+                            <span className="font-medium text-gray-700">{s.name}</span>
+                            <span className={`font-semibold ${i === 0 ? "text-teal-600" : "text-blue-500"}`}>
+                              {s.qty > 0 ? `${currency}${avg.toFixed(2)}` : "—"}
+                            </span>
+                          </div>
+                          <div className="h-3 bg-gray-200 rounded-full overflow-hidden">
+                            <div
+                              className={`h-full rounded-full ${i === 0 ? "bg-teal-500" : "bg-blue-400"}`}
+                              style={{ width: `${s.qty > 0 ? Math.min((avg / Math.max(statsA.qty > 0 ? statsA.revenue / statsA.qty : 0, statsB.qty > 0 ? statsB.revenue / statsB.qty : 0, 1)) * 100, 100) : 0}%` }}
+                            />
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                  {statsA.qty > 0 && statsB.qty > 0 && (
+                    <p className="text-xs text-gray-400 mt-3 m-0">
+                      {(() => {
+                        const avgA = statsA.revenue / statsA.qty;
+                        const avgB = statsB.revenue / statsB.qty;
+                        const diff = ((avgA - avgB) / avgB) * 100;
+                        return `${compareA} earns ${currency}${Math.abs(avgA - avgB).toFixed(2)} ${diff >= 0 ? "more" : "less"} per unit than ${compareB}`;
+                      })()}
+                    </p>
                   )}
                 </div>
               </div>

@@ -282,6 +282,7 @@ export function AppProvider({ children }) {
   const getProductSalesData = useCallback(() => {
     const map = {};
     transactions.forEach((tx) => {
+      if (tx.status === "voided") return;
       (tx.items || []).forEach((item) => {
         if (!map[item.productName])
           map[item.productName] = { name: item.productName, qty: 0, revenue: 0 };
