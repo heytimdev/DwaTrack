@@ -1,13 +1,10 @@
 import { Link } from "react-router-dom";
 import { useState, useEffect, useMemo, memo } from "react";
 import {
-  TrendingUp,
-  ArrowLeftRight,
-  FileText,
-  Plus,
-  Eye,
-  Sparkles,
-  RefreshCw,
+  TrendingUp, TrendingDown, Minus,
+  ArrowLeftRight, DollarSign,
+  Plus, Eye, Sparkles, RefreshCw,
+  Target, Edit2, Check, X,
 } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
@@ -15,13 +12,19 @@ import { useAuth } from "../../context/AuthContext";
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 function getToken() { return localStorage.getItem("dwatrack_token"); }
 
-const StatCard = memo(function StatCard({ title, value, sub, subColor, icon: Icon, iconBg }) {
+// ── Stat Card ─────────────────────────────────────────────────────────────────
+const StatCard = memo(function StatCard({ title, value, sub, subColor, icon: Icon, iconBg, trend }) {
   return (
     <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100 flex items-start justify-between">
       <div>
         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide m-0 mb-2">{title}</p>
         <p className="text-2xl font-bold text-gray-900 m-0 mb-1">{value}</p>
-        <p className={`text-xs font-medium m-0 ${subColor || "text-gray-400"}`}>{sub}</p>
+        <div className={`flex items-center gap-1 text-xs font-medium m-0 ${subColor || "text-gray-400"}`}>
+          {trend === "up"   && <TrendingUp size={11} />}
+          {trend === "down" && <TrendingDown size={11} />}
+          {trend === "flat" && <Minus size={11} />}
+          <span>{sub}</span>
+        </div>
       </div>
       <div className={`w-11 h-11 rounded-xl flex items-center justify-center shrink-0 ${iconBg}`}>
         <Icon size={22} className="text-white" />
@@ -30,14 +33,14 @@ const StatCard = memo(function StatCard({ title, value, sub, subColor, icon: Ico
   );
 });
 
+// ── Weekly Bar Chart ──────────────────────────────────────────────────────────
 function WeeklyBarChart({ data, currency }) {
-  const max = Math.max(...data.map((d) => d.total), 1);
-  const weekTotal = data.reduce((s, d) => s + d.total, 0);
+  const max        = Math.max(...data.map((d) => d.total), 1);
+  const weekTotal  = data.reduce((s, d) => s + d.total, 0);
   const activeDays = data.filter((d) => d.total > 0).length;
 
   return (
     <div>
-      {/* Summary row */}
       <div className="flex items-center justify-between mt-1 mb-4">
         <div>
           <p className="text-xl font-bold text-gray-900 m-0">{currency}{weekTotal.toFixed(2)}</p>
@@ -46,41 +49,29 @@ function WeeklyBarChart({ data, currency }) {
         <span className="text-xs text-gray-400 bg-gray-100 px-2.5 py-1 rounded-full">This week</span>
       </div>
 
-      {/* Bars */}
       <div className="flex items-end gap-1.5" style={{ height: 140 }}>
         {data.map((d) => {
           const heightPct = d.total > 0 ? Math.max((d.total / max) * 85, 8) : 0;
-          const isEmpty = d.total === 0;
+          const isEmpty   = d.total === 0;
           return (
             <div key={d.day} className="flex flex-col items-center flex-1 gap-1 h-full justify-end group relative">
-              {/* Tooltip on hover */}
               {!isEmpty && (
                 <div className="absolute bottom-full mb-1.5 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-[10px] font-semibold px-2 py-1 rounded whitespace-nowrap opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
                   {currency}{d.total.toFixed(2)}
                   <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900" />
                 </div>
               )}
-
-              {/* Amount label above bar */}
               {!isEmpty && (
                 <p className="text-[9px] font-semibold text-teal-600 m-0 leading-none mb-0.5 truncate max-w-full px-0.5 text-center">
                   {d.total >= 1000 ? `${(d.total / 1000).toFixed(1)}k` : d.total.toFixed(0)}
                 </p>
               )}
-
-              {/* Bar */}
               <div
                 className={`w-full rounded-t-lg transition-all duration-500 ${
-                  isEmpty
-                    ? "bg-gray-100"
-                    : d.isToday
-                    ? "bg-teal-500 shadow-sm shadow-teal-200"
-                    : "bg-teal-200 group-hover:bg-teal-300"
+                  isEmpty ? "bg-gray-100" : d.isToday ? "bg-teal-500 shadow-sm shadow-teal-200" : "bg-teal-200 group-hover:bg-teal-300"
                 }`}
                 style={{ height: isEmpty ? 4 : `${heightPct}%` }}
               />
-
-              {/* Day label */}
               <p className={`text-[11px] font-medium m-0 mt-1 ${d.isToday ? "text-teal-600" : "text-gray-400"}`}>
                 {d.day}
               </p>
@@ -93,14 +84,97 @@ function WeeklyBarChart({ data, currency }) {
   );
 }
 
+// ── Monthly Revenue Target ────────────────────────────────────────────────────
+function MonthlyTarget({ thisMonthRevenue, currency, userId }) {
+  const storageKey = `dwatrack_target_${userId}`;
+  const [target,   setTarget]   = useState(() => Number(localStorage.getItem(storageKey)) || 0);
+  const [editing,  setEditing]  = useState(false);
+  const [draft,    setDraft]    = useState("");
+
+  function saveTarget() {
+    const val = parseFloat(draft);
+    if (!isNaN(val) && val > 0) {
+      setTarget(val);
+      localStorage.setItem(storageKey, val);
+    }
+    setEditing(false);
+  }
+
+  const pct          = target > 0 ? Math.min((thisMonthRevenue / target) * 100, 100) : 0;
+  const monthName    = new Date().toLocaleDateString("en-GH", { month: "long" });
+  const remaining    = Math.max(target - thisMonthRevenue, 0);
+  const barColor     = pct >= 100 ? "bg-green-500" : pct >= 70 ? "bg-teal-500" : pct >= 40 ? "bg-amber-400" : "bg-red-400";
+
+  return (
+    <div className="bg-white rounded-xl p-5 shadow-sm border border-gray-100">
+      <div className="flex items-center justify-between mb-3">
+        <div className="flex items-center gap-2">
+          <Target size={15} className="text-teal-500" />
+          <h3 className="text-sm font-semibold text-gray-800 m-0">{monthName} Revenue Target</h3>
+        </div>
+        {editing ? (
+          <div className="flex items-center gap-1">
+            <button onClick={saveTarget} className="p-1 text-teal-500 hover:text-teal-700 border-none bg-transparent cursor-pointer"><Check size={14} /></button>
+            <button onClick={() => setEditing(false)} className="p-1 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer"><X size={14} /></button>
+          </div>
+        ) : (
+          <button onClick={() => { setDraft(target || ""); setEditing(true); }} className="p-1 text-gray-400 hover:text-gray-600 border-none bg-transparent cursor-pointer">
+            <Edit2 size={13} />
+          </button>
+        )}
+      </div>
+
+      {editing ? (
+        <input
+          autoFocus
+          type="number"
+          min="0"
+          step="100"
+          value={draft}
+          onChange={(e) => setDraft(e.target.value)}
+          onKeyDown={(e) => { if (e.key === "Enter") saveTarget(); if (e.key === "Escape") setEditing(false); }}
+          placeholder={`Set target in ${currency}`}
+          className="w-full border border-teal-300 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400 mb-2"
+        />
+      ) : target === 0 ? (
+        <button
+          onClick={() => { setDraft(""); setEditing(true); }}
+          className="w-full border-2 border-dashed border-gray-200 rounded-lg py-3 text-xs text-gray-400 hover:border-teal-300 hover:text-teal-500 transition-colors cursor-pointer bg-transparent"
+        >
+          + Set a monthly target
+        </button>
+      ) : (
+        <>
+          <div className="flex justify-between text-xs text-gray-500 mb-1.5">
+            <span>{currency}{thisMonthRevenue.toFixed(2)} earned</span>
+            <span className="font-semibold text-gray-700">{pct.toFixed(0)}%</span>
+          </div>
+          <div className="h-2.5 bg-gray-100 rounded-full overflow-hidden mb-2">
+            <div className={`h-full ${barColor} rounded-full transition-all duration-700`} style={{ width: `${pct}%` }} />
+          </div>
+          <p className="text-xs text-gray-400 m-0">
+            {pct >= 100
+              ? <span className="text-green-600 font-semibold">Target reached! 🎉</span>
+              : <>{currency}{remaining.toFixed(2)} to go · Target: {currency}{target.toFixed(2)}</>
+            }
+          </p>
+        </>
+      )}
+    </div>
+  );
+}
+
+// ── AI Summary Banner ─────────────────────────────────────────────────────────
 function AISummaryBanner() {
+  const { canUseAI } = useAuth();
   const [summary, setSummary] = useState(null);
   const [loading, setLoading] = useState(false);
 
   async function load() {
+    if (!canUseAI) return;
     setLoading(true);
     try {
-      const res = await fetch(`${API_URL}/ai/daily-summary`, {
+      const res  = await fetch(`${API_URL}/ai/daily-summary`, {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${getToken()}` },
       });
@@ -113,9 +187,9 @@ function AISummaryBanner() {
     }
   }
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => { load(); }, [canUseAI]);
 
-  if (!loading && !summary) return null;
+  if (!canUseAI || (!loading && !summary)) return null;
 
   return (
     <div className="bg-linear-to-r from-teal-50 to-cyan-50 border border-teal-100 rounded-xl p-4 mb-6 flex gap-3">
@@ -149,36 +223,72 @@ function AISummaryBanner() {
   );
 }
 
+// ── Main ──────────────────────────────────────────────────────────────────────
 export function DashboardHome() {
   const { transactions, getWeeklyData } = useApp();
-  const { canAddTransactions, currency } = useAuth();
+  const { canAddTransactions, canViewReports, currency, currentUser } = useAuth();
 
-  const todayStr = new Date().toDateString();
+  const now      = new Date();
+  const todayStr = now.toDateString();
+
+  const yesterdayStr = useMemo(() => {
+    const d = new Date(now);
+    d.setDate(d.getDate() - 1);
+    return d.toDateString();
+  }, []);
+
+  const completedTx = useMemo(() => transactions.filter((t) => t.status !== "voided"), [transactions]);
 
   const todayTx = useMemo(
-    () => transactions.filter((t) => new Date(t.createdAt).toDateString() === todayStr),
-    [transactions, todayStr]
+    () => completedTx.filter((t) => new Date(t.createdAt).toDateString() === todayStr),
+    [completedTx, todayStr]
   );
   const todaySales = useMemo(
     () => todayTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0),
     [todayTx]
   );
-  const totalTx  = transactions.length;
-  const pending  = useMemo(
-    () => transactions.filter((t) => t.status === "pending").length,
-    [transactions]
-  );
-  const weeklyData = useMemo(() => getWeeklyData(), [transactions]);
-  const bestDay    = useMemo(
-    () => [...weeklyData].sort((a, b) => b.total - a.total)[0],
-    [weeklyData]
-  );
-  const recent = useMemo(() => transactions.slice(0, 5), [transactions]);
 
+  const yesterdayTx = useMemo(
+    () => completedTx.filter((t) => new Date(t.createdAt).toDateString() === yesterdayStr),
+    [completedTx, yesterdayStr]
+  );
+  const yesterdaySales = useMemo(
+    () => yesterdayTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0),
+    [yesterdayTx]
+  );
+
+  const todayVsYesterday = useMemo(() => {
+    if (yesterdaySales === 0 && todaySales === 0) return null;
+    if (yesterdaySales === 0) return { label: "No sales yesterday", trend: "flat" };
+    const diff = ((todaySales - yesterdaySales) / yesterdaySales) * 100;
+    return {
+      label: `${Math.abs(diff).toFixed(0)}% ${diff >= 0 ? "vs yesterday" : "below yesterday"}`,
+      trend: diff > 0 ? "up" : diff < 0 ? "down" : "flat",
+      color: diff > 0 ? "text-green-500" : diff < 0 ? "text-red-500" : "text-gray-400",
+    };
+  }, [todaySales, yesterdaySales]);
+
+  const thisMonthTx = useMemo(
+    () => completedTx.filter((t) => {
+      const d = new Date(t.createdAt);
+      return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
+    }),
+    [completedTx]
+  );
+  const thisMonthRevenue = useMemo(
+    () => thisMonthTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0),
+    [thisMonthTx]
+  );
+
+  const weeklyData = useMemo(() => getWeeklyData(), [transactions]);
+  const bestDay    = useMemo(() => [...weeklyData].sort((a, b) => b.total - a.total)[0], [weeklyData]);
+  const recent     = useMemo(() => transactions.slice(0, 5), [transactions]);
+  const monthName  = now.toLocaleDateString("en-GH", { month: "long" });
 
   return (
     <div className="max-w-6xl mx-auto">
       <AISummaryBanner />
+
       {/* Action buttons */}
       <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
         <div>
@@ -201,32 +311,36 @@ export function DashboardHome() {
         <StatCard
           title="Today's Sales"
           value={`${currency}${todaySales.toFixed(2)}`}
-          sub={todayTx.length > 0 ? `${todayTx.length} transaction(s) today` : "No sales yet today"}
-          subColor="text-teal-600"
+          sub={
+            todayVsYesterday
+              ? todayVsYesterday.label
+              : todayTx.length > 0 ? `${todayTx.length} transaction(s) today` : "No sales yet today"
+          }
+          subColor={todayVsYesterday?.color || "text-gray-400"}
+          trend={todayVsYesterday?.trend}
           icon={TrendingUp}
           iconBg="bg-teal-500"
         />
         <StatCard
-          title="Total Transactions"
-          value={totalTx}
-          sub={totalTx > 0 ? "All time" : "No transactions yet"}
+          title={`${monthName} Revenue`}
+          value={`${currency}${thisMonthRevenue.toFixed(2)}`}
+          sub={`${thisMonthTx.length} sale${thisMonthTx.length !== 1 ? "s" : ""} this month`}
           subColor="text-blue-500"
-          icon={ArrowLeftRight}
+          icon={DollarSign}
           iconBg="bg-blue-400"
         />
         <StatCard
-          title="Pending Receipts"
-          value={pending}
-          sub={pending > 0 ? "Needs attention" : "All clear"}
-          subColor={pending > 0 ? "text-amber-500" : "text-green-500"}
-          icon={FileText}
-          iconBg={pending > 0 ? "bg-amber-400" : "bg-gray-300"}
+          title="Total Transactions"
+          value={completedTx.length}
+          sub={completedTx.length > 0 ? "Completed, all time" : "No transactions yet"}
+          subColor="text-gray-400"
+          icon={ArrowLeftRight}
+          iconBg="bg-gray-400"
         />
       </div>
 
       {/* Charts + Recent */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4">
-        {/* Weekly trend */}
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 mb-4">
         <div className="lg:col-span-2 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <h3 className="text-sm font-semibold text-gray-800 m-0">Weekly Sales</h3>
           <WeeklyBarChart data={weeklyData} currency={currency} />
@@ -238,7 +352,6 @@ export function DashboardHome() {
           )}
         </div>
 
-        {/* Recent transactions */}
         <div className="lg:col-span-3 bg-white rounded-xl p-5 shadow-sm border border-gray-100">
           <div className="flex items-center justify-between mb-4">
             <h3 className="text-sm font-semibold text-gray-800 m-0">Recent Transactions</h3>
@@ -293,6 +406,15 @@ export function DashboardHome() {
           )}
         </div>
       </div>
+
+      {/* Monthly target — owners and managers only */}
+      {canViewReports && (
+        <MonthlyTarget
+          thisMonthRevenue={thisMonthRevenue}
+          currency={currency}
+          userId={currentUser?.id}
+        />
+      )}
     </div>
   );
 }

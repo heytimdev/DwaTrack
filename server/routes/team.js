@@ -1,7 +1,8 @@
-const express = require('express');
-const bcrypt = require('bcryptjs');
-const pool = require('../db');
+const express   = require('express');
+const bcrypt    = require('bcryptjs');
+const pool      = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const logAction = require('../helpers/audit');
 
 const router = express.Router();
 
@@ -62,7 +63,13 @@ router.post('/', requireAuth, requireRole('owner'), async (req, res) => {
        VALUES ($1,$2,$3,$4,$5,$6) RETURNING *`,
       [req.user.ownerId, firstName, lastName, emailNorm, passwordHash, role]
     );
-    res.status(201).json(format(rows[0]));
+    const m = rows[0];
+    logAction(req, 'team.add', 'team_member', m.id, {
+      name: `${firstName} ${lastName}`,
+      email: emailNorm,
+      role,
+    });
+    res.status(201).json(format(m));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -78,6 +85,7 @@ router.patch('/:id/status', requireAuth, requireRole('owner'), async (req, res) 
       [req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Team member not found' });
+    logAction(req, 'team.deactivate', 'team_member', parseInt(req.params.id));
     res.json(format(rows[0]));
   } catch (err) {
     console.error(err);

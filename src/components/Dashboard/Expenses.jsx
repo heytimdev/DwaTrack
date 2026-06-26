@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Plus, Trash2, Receipt, Loader } from "lucide-react";
+import { Plus, Trash2, Receipt, Loader, Download } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { ConfirmModal } from "./ConfirmModal";
@@ -22,6 +22,27 @@ export function Expenses() {
     return acc;
   }, {});
 
+  function exportCSV() {
+    const headers = ["Date", "Description", "Category", `Amount (${currency})`, "Added By"];
+    const rows = expenses.map((e) => [
+      e.date || "",
+      e.description,
+      e.category || "",
+      Number(e.amount).toFixed(2),
+      e.addedBy || "",
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `expenses-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   async function handleSubmit(ev) {
     ev.preventDefault();
     if (!form.description || !form.amount) {
@@ -40,9 +61,19 @@ export function Expenses() {
 
   return (
     <div className="max-w-5xl mx-auto">
-      <div className="mb-5">
-        <h2 className="text-lg font-semibold text-gray-800 m-0">Expenses</h2>
-        <p className="text-sm text-gray-500 m-0">Track your business costs and outgoings.</p>
+      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+        <div>
+          <h2 className="text-lg font-semibold text-gray-800 m-0">Expenses</h2>
+          <p className="text-sm text-gray-500 m-0">Track your business costs and outgoings.</p>
+        </div>
+        {expenses.length > 0 && (
+          <button
+            onClick={exportCSV}
+            className="flex items-center gap-2 bg-white hover:bg-gray-50 text-gray-600 text-sm font-medium px-4 py-2.5 rounded-lg border border-gray-200 cursor-pointer transition-colors"
+          >
+            <Download size={15} /> Export CSV
+          </button>
+        )}
       </div>
 
       {/* Summary */}

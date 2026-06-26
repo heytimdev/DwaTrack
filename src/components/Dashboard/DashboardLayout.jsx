@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { Outlet, useNavigate, useLocation, Link } from "react-router-dom";
 import { Menu, Bell, Search, LogOut, Clock, Download, X, AlertTriangle, CreditCard, Package } from "lucide-react";
 import { Sidebar } from "./Sidebar";
+import { ErrorBoundary } from "./ErrorBoundary";
 import { useAuth } from "../../context/AuthContext";
 import { useApp } from "../../context/AppContext";
 
@@ -218,42 +219,85 @@ export function DashboardLayout() {
   const navigate = useNavigate();
   const location = useLocation();
 
-  const inactiveTimer  = useRef(null);
-  const countdownTimer = useRef(null);
-  const showWarningRef = useRef(false); // ref mirror so resetTimers never stales
+  const inactiveTimer   = useRef(null);
+  const countdownTimer  = useRef(null);
+  const showWarningRef  = useRef(false); // ref mirror so resetTimers never stales
+  const warningShownAt  = useRef(null);  // wall-clock timestamp when warning appeared
+  const lastActivityRef = useRef(Date.now());
 
   // Keep ref in sync with state
   useEffect(() => { showWarningRef.current = showWarning; }, [showWarning]);
 
-  function handleLogout() {
+  const doLogout = useCallback(() => {
+    clearTimeout(inactiveTimer.current);
+    clearInterval(countdownTimer.current);
+    warningShownAt.current = null;
     logout();
     navigate("/login");
-  }
+  }, [logout, navigate]);
 
   const resetTimers = useCallback(() => {
     // Don't reset the inactivity timer while the warning is visible
     if (showWarningRef.current) return;
 
+    lastActivityRef.current = Date.now();
     clearTimeout(inactiveTimer.current);
 
     inactiveTimer.current = setTimeout(() => {
-      setSecondsLeft(60);
+      warningShownAt.current = Date.now();
+      setSecondsLeft(WARN_MS / 1000);
       setShowWarning(true);
       showWarningRef.current = true;
 
+      // Poll at 500 ms using wall-clock time — accurate even in throttled background tabs
       countdownTimer.current = setInterval(() => {
-        setSecondsLeft((s) => {
-          if (s <= 1) {
-            clearInterval(countdownTimer.current);
-            logout();
-            navigate("/login");
-            return 0;
-          }
-          return s - 1;
-        });
-      }, 1000);
+        const elapsed  = Date.now() - warningShownAt.current;
+        const remaining = Math.ceil((WARN_MS - elapsed) / 1000);
+        if (remaining <= 0) {
+          doLogout();
+        } else {
+          setSecondsLeft(remaining);
+        }
+      }, 500);
     }, INACTIVE_MS);
-  }, [logout, navigate]); // no showWarning dependency — uses ref instead
+  }, [doLogout]); // no showWarning dependency — uses ref instead
+
+  // Page Visibility API: force-logout the moment the tab regains focus
+  // if either the full timeout or the warning period has already expired.
+  useEffect(() => {
+    function onVisibilityChange() {
+      if (document.visibilityState !== "visible") return;
+
+      const now = Date.now();
+
+      // Warning was shown and the 60-second grace period has passed
+      if (warningShownAt.current && now - warningShownAt.current >= WARN_MS) {
+        doLogout();
+        return;
+      }
+
+      // Warning not yet shown but the inactivity period has already elapsed
+      if (!showWarningRef.current && now - lastActivityRef.current >= INACTIVE_MS) {
+        warningShownAt.current = now;
+        setSecondsLeft(WARN_MS / 1000);
+        setShowWarning(true);
+        showWarningRef.current = true;
+
+        countdownTimer.current = setInterval(() => {
+          const elapsed   = Date.now() - warningShownAt.current;
+          const remaining = Math.ceil((WARN_MS - elapsed) / 1000);
+          if (remaining <= 0) {
+            doLogout();
+          } else {
+            setSecondsLeft(remaining);
+          }
+        }, 500);
+      }
+    }
+
+    document.addEventListener("visibilitychange", onVisibilityChange);
+    return () => document.removeEventListener("visibilitychange", onVisibilityChange);
+  }, [doLogout]);
 
   // Clear search input when navigating away from transactions
   useEffect(() => {
@@ -270,9 +314,10 @@ export function DashboardLayout() {
 
   function handleStay() {
     clearInterval(countdownTimer.current);
+    warningShownAt.current = null;
     setShowWarning(false);
     showWarningRef.current = false;
-    setSecondsLeft(60);
+    setSecondsLeft(WARN_MS / 1000);
     resetTimers();
   }
 
@@ -310,7 +355,7 @@ export function DashboardLayout() {
         <SessionWarning
           secondsLeft={secondsLeft}
           onStay={handleStay}
-          onLogout={handleLogout}
+          onLogout={doLogout}
         />
       )}
 
@@ -362,7 +407,7 @@ export function DashboardLayout() {
           />
 
           <button
-            onClick={handleLogout}
+            onClick={doLogout}
             title="Logout"
             className="text-gray-500 hover:text-red-500 border-none bg-transparent cursor-pointer"
           >
@@ -372,7 +417,9 @@ export function DashboardLayout() {
 
         {/* Page content */}
         <main className="flex-1 overflow-y-auto p-4 lg:p-6">
-          <Outlet />
+          <ErrorBoundary>
+            <Outlet />
+          </ErrorBoundary>
         </main>
       </div>
     </div>

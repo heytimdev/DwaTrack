@@ -1,6 +1,7 @@
-const express = require('express');
-const pool = require('../db');
+const express    = require('express');
+const pool       = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const logAction  = require('../helpers/audit');
 
 const router = express.Router();
 
@@ -95,7 +96,14 @@ router.post('/', requireAuth, async (req, res) => {
       }
     }
 
-    res.status(201).json(format(rows[0]));
+    const tx = rows[0];
+    logAction(req, 'transaction.add', 'transaction', tx.id, {
+      receiptNumber: tx.receipt_number,
+      customer: tx.customer,
+      total: tx.total,
+      paymentMethod: tx.payment_method,
+    });
+    res.status(201).json(format(tx));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -117,6 +125,7 @@ router.patch('/:id/void', requireAuth, async (req, res) => {
       [reason.trim(), req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Transaction not found or already voided' });
+    logAction(req, 'transaction.void', 'transaction', parseInt(req.params.id), { reason });
     res.json(format(rows[0]));
   } catch (err) {
     console.error(err);
@@ -132,6 +141,7 @@ router.delete('/:id', requireAuth, requireRole('owner'), async (req, res) => {
       [req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Transaction not found' });
+    logAction(req, 'transaction.delete', 'transaction', parseInt(req.params.id));
     res.json({ success: true });
   } catch (err) {
     console.error(err);

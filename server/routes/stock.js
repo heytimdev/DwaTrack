@@ -1,6 +1,7 @@
-const express = require('express');
-const pool = require('../db');
+const express   = require('express');
+const pool      = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const logAction = require('../helpers/audit');
 
 const router = express.Router();
 
@@ -41,7 +42,9 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
        VALUES ($1,$2,$3,$4) RETURNING *`,
       [req.user.ownerId, name, Number(quantity) || 0, Number(lowStockThreshold) || 5]
     );
-    res.status(201).json(format(rows[0]));
+    const s = rows[0];
+    logAction(req, 'stock.add', 'stock', s.id, { name: s.name, quantity: s.quantity });
+    res.status(201).json(format(s));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -59,6 +62,7 @@ router.put('/:id', requireAuth, requireRole('owner', 'manager'), async (req, res
        req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Stock item not found' });
+    logAction(req, 'stock.update', 'stock', parseInt(req.params.id), { name, quantity, lowStockThreshold });
     res.json(format(rows[0]));
   } catch (err) {
     console.error(err);
@@ -79,6 +83,7 @@ router.patch('/:id/restock', requireAuth, requireRole('owner', 'manager'), async
       [Number(addQty), req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Stock item not found' });
+    logAction(req, 'stock.restock', 'stock', parseInt(req.params.id), { addQty: Number(addQty) });
     res.json(format(rows[0]));
   } catch (err) {
     console.error(err);
@@ -94,6 +99,7 @@ router.delete('/:id', requireAuth, requireRole('owner', 'manager'), async (req, 
       [req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Stock item not found' });
+    logAction(req, 'stock.delete', 'stock', parseInt(req.params.id));
     res.json({ success: true });
   } catch (err) {
     console.error(err);

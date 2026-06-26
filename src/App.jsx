@@ -17,6 +17,7 @@ import { Analysis } from "./components/Dashboard/Analysis.jsx";
 import { Settings } from "./components/Dashboard/Settings.jsx";
 import { Stock } from "./components/Dashboard/Stock.jsx";
 import { AIAssistant } from "./components/Dashboard/AIAssistant.jsx";
+import { AuditLog } from "./components/Dashboard/AuditLog.jsx";
 import { Debtors } from "./components/Dashboard/Debtors.jsx";
 import AdminLogin from "./components/Admin/AdminLogin.jsx";
 import AdminDashboard from "./components/Admin/AdminDashboard.jsx";
@@ -78,6 +79,7 @@ function AppRoutes() {
         <Route path="analysis"  element={<RoleRoute perm="canViewAnalysis"><Analysis /></RoleRoute>} />
         <Route path="settings"  element={<Settings />} />
         <Route path="ai"        element={<RoleRoute perm="canUseAI"><AIAssistant /></RoleRoute>} />
+        <Route path="audit"     element={<RoleRoute perm="canManageTeam"><AuditLog /></RoleRoute>} />
       </Route>
     </Routes>
   );

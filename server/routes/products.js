@@ -1,6 +1,7 @@
-const express = require('express');
-const pool = require('../db');
+const express   = require('express');
+const pool      = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const logAction = require('../helpers/audit');
 
 const router = express.Router();
 
@@ -40,7 +41,9 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [req.user.ownerId, name, price || 0, costPrice || 0, category || null]
     );
-    res.status(201).json(format(rows[0]));
+    const p = rows[0];
+    logAction(req, 'product.add', 'product', p.id, { name: p.name, price: p.price });
+    res.status(201).json(format(p));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -57,6 +60,7 @@ router.put('/:id', requireAuth, requireRole('owner', 'manager'), async (req, res
       [name, price, costPrice || 0, category || null, req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Product not found' });
+    logAction(req, 'product.update', 'product', parseInt(req.params.id), { name, price, costPrice });
     res.json(format(rows[0]));
   } catch (err) {
     console.error(err);
@@ -72,6 +76,7 @@ router.delete('/:id', requireAuth, requireRole('owner', 'manager'), async (req, 
       [req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Product not found' });
+    logAction(req, 'product.delete', 'product', parseInt(req.params.id));
     res.json({ success: true });
   } catch (err) {
     console.error(err);

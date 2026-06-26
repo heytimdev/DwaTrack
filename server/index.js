@@ -13,9 +13,29 @@ const aiRoutes          = require('./routes/ai');
 const customerRoutes    = require('./routes/customers');
 const debtorRoutes      = require('./routes/debtors');
 const adminRoutes       = require('./routes/admin');
+const auditRoutes       = require('./routes/audit');
+
+const pool = require('./db');
 
 const app  = express();
 const PORT = process.env.PORT || 5000;
+
+// ── Auto-migrate audit_log table ───────────────────────────────────────────────
+pool.query(`
+  CREATE TABLE IF NOT EXISTS audit_log (
+    id          SERIAL       PRIMARY KEY,
+    owner_id    INTEGER      NOT NULL,
+    actor_id    INTEGER      NOT NULL,
+    actor_name  TEXT,
+    actor_role  TEXT,
+    action      TEXT         NOT NULL,
+    entity_type TEXT,
+    entity_id   INTEGER,
+    detail      JSONB,
+    created_at  TIMESTAMPTZ  DEFAULT NOW()
+  );
+  CREATE INDEX IF NOT EXISTS idx_audit_log_owner ON audit_log (owner_id, created_at DESC);
+`).catch((err) => console.error('audit_log migration failed:', err.message));
 
 // ── Middleware ─────────────────────────────────────────────────────────────────
 const allowedOrigins = [
@@ -48,6 +68,7 @@ app.use('/api/ai',           aiRoutes);
 app.use('/api/customers',    customerRoutes);
 app.use('/api/debtors',      debtorRoutes);
 app.use('/api/admin',        adminRoutes);
+app.use('/api/audit',        auditRoutes);
 
 app.get('/', (_req, res) => res.json({ message: 'DwaTrack API is running' }));
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));

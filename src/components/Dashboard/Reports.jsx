@@ -1,13 +1,16 @@
 import { useMemo, useState } from "react";
+import { Download } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 
-const PERIOD_LABELS = { week: "This Week", month: "This Month", all: "All Time" };
+const PERIOD_LABELS = { week: "This Week", month: "This Month", all: "All Time", custom: "Custom" };
 
 export function Reports() {
   const { transactions, expenses } = useApp();
   const { currency } = useAuth();
-  const [period, setPeriod] = useState("month");
+  const [period,    setPeriod]    = useState("month");
+  const [dateFrom,  setDateFrom]  = useState("");
+  const [dateTo,    setDateTo]    = useState("");
 
   // ── Period-filtered slices (summary cards) ────────────────────────────────────
   const { filteredTx, filteredExp } = useMemo(() => {
@@ -22,6 +25,11 @@ export function Reports() {
         startOfWeek.setHours(0, 0, 0, 0);
         return d >= startOfWeek;
       }
+      if (period === "custom") {
+        if (dateFrom && d < new Date(dateFrom + "T00:00:00")) return false;
+        if (dateTo   && d > new Date(dateTo   + "T23:59:59")) return false;
+        return true;
+      }
       return d.getMonth() === now.getMonth() && d.getFullYear() === now.getFullYear();
     }
 
@@ -29,7 +37,7 @@ export function Reports() {
       filteredTx:  transactions.filter((tx)  => tx.status !== "voided" && inPeriod(tx.createdAt)),
       filteredExp: expenses.filter((exp) => inPeriod(exp.createdAt || exp.date)),
     };
-  }, [transactions, expenses, period]);
+  }, [transactions, expenses, period, dateFrom, dateTo]);
 
   const totalRevenue  = useMemo(
     () => filteredTx.reduce((s, t) => s + ((t.total || 0) - (t.taxAmount || 0)), 0),
@@ -145,25 +153,79 @@ export function Reports() {
 
   const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 
+  function exportCSV() {
+    const periodLabel = PERIOD_LABELS[period] || period;
+    const headers = ["Receipt #", "Date", "Customer", "Items", "Payment", `Revenue (${currency})`, "Status"];
+    const rows = filteredTx.map((tx) => [
+      tx.receiptNumber || "",
+      tx.date || "",
+      tx.customer || "",
+      (tx.items || []).map((i) => `${i.productName} x${i.qty}`).join("; "),
+      tx.paymentMethod || "",
+      ((tx.total || 0) - (tx.taxAmount || 0)).toFixed(2),
+      tx.status || "completed",
+    ]);
+    const csv = [headers, ...rows]
+      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(","))
+      .join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url  = URL.createObjectURL(blob);
+    const a    = document.createElement("a");
+    a.href     = url;
+    a.download = `report-${periodLabel.toLowerCase().replace(/\s+/g, "-")}-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="max-w-5xl mx-auto">
       {/* Header + period selector */}
-      <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
+      <div className="flex items-start justify-between mb-5 flex-wrap gap-3">
         <div>
           <h2 className="text-lg font-semibold text-gray-800 m-0">Reports</h2>
           <p className="text-sm text-gray-500 m-0">Financial summary and business performance.</p>
         </div>
-        <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-          {["week", "month", "all"].map((p) => (
-            <button
-              key={p}
-              onClick={() => setPeriod(p)}
-              className={`px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors
-                ${period === p ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-gray-500 hover:text-gray-700"}`}
-            >
-              {PERIOD_LABELS[p]}
-            </button>
-          ))}
+        <div className="flex flex-col items-end gap-2">
+          <div className="flex items-center gap-2">
+            {filteredTx.length > 0 && (
+              <button
+                onClick={exportCSV}
+                className="flex items-center gap-1.5 bg-white hover:bg-gray-50 text-gray-600 text-xs font-medium px-3 py-1.5 rounded-lg border border-gray-200 cursor-pointer transition-colors"
+              >
+                <Download size={13} /> Export CSV
+              </button>
+            )}
+            <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+              {["week", "month", "all", "custom"].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPeriod(p)}
+                  className={`px-3 py-1.5 rounded-md text-xs font-medium border-none cursor-pointer transition-colors
+                    ${period === p ? "bg-white text-gray-900 shadow-sm" : "bg-transparent text-gray-500 hover:text-gray-700"}`}
+                >
+                  {PERIOD_LABELS[p]}
+                </button>
+              ))}
+            </div>
+          </div>
+          {period === "custom" && (
+            <div className="flex items-center gap-2">
+              <input
+                type="date"
+                value={dateFrom}
+                onChange={(e) => setDateFrom(e.target.value)}
+                className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-teal-400 bg-white"
+              />
+              <span className="text-xs text-gray-400">to</span>
+              <input
+                type="date"
+                value={dateTo}
+                min={dateFrom}
+                onChange={(e) => setDateTo(e.target.value)}
+                className="border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs outline-none focus:border-teal-400 bg-white"
+              />
+            </div>
+          )}
         </div>
       </div>
 

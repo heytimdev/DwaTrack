@@ -1,6 +1,7 @@
-const express = require('express');
-const pool = require('../db');
+const express   = require('express');
+const pool      = require('../db');
 const { requireAuth, requireRole } = require('../middleware/auth');
+const logAction = require('../helpers/audit');
 
 const router = express.Router();
 
@@ -44,7 +45,13 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
        VALUES ($1,$2,$3,$4,$5) RETURNING *`,
       [req.user.ownerId, description, amount || 0, category || null, addedBy]
     );
-    res.status(201).json(format(rows[0]));
+    const exp = rows[0];
+    logAction(req, 'expense.add', 'expense', exp.id, {
+      description: exp.description,
+      amount: exp.amount,
+      category: exp.category,
+    });
+    res.status(201).json(format(exp));
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'Server error' });
@@ -59,6 +66,7 @@ router.delete('/:id', requireAuth, requireRole('owner', 'manager'), async (req, 
       [req.params.id, req.user.ownerId]
     );
     if (!rowCount) return res.status(404).json({ error: 'Expense not found' });
+    logAction(req, 'expense.delete', 'expense', parseInt(req.params.id));
     res.json({ success: true });
   } catch (err) {
     console.error(err);

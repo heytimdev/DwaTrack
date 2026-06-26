@@ -9,6 +9,7 @@ import {
   Package,
   Sparkles,
   BookOpen,
+  ShieldCheck,
   X,
 } from "lucide-react";
 import logo from "../../assets/logo.svg";
@@ -22,8 +23,9 @@ const navItems = [
   { to: "/dashboard/debtors", label: "Debtors", icon: BookOpen, perm: "canManageDebtors" },
   { to: "/dashboard/reports", label: "Reports", icon: BarChart2, perm: "canViewReports" },
   { to: "/dashboard/analysis", label: "Analysis", icon: TrendingUp, perm: "canViewAnalysis" },
-  { to: "/dashboard/ai", label: "AI Assistant", icon: Sparkles, perm: "canUseAI" },
-  { to: "/dashboard/settings", label: "Settings", icon: Settings },
+  { to: "/dashboard/ai",       label: "AI Assistant", icon: Sparkles,     perm: "canUseAI" },
+  { to: "/dashboard/audit",    label: "Audit Log",    icon: ShieldCheck,  perm: "canManageTeam" },
+  { to: "/dashboard/settings", label: "Settings",     icon: Settings },
 ];
 
 export function Sidebar({ open, onClose }) {
@@ -35,6 +37,7 @@ export function Sidebar({ open, onClose }) {
     canViewReports,
     canViewAnalysis,
     canUseAI,
+    canManageTeam,
   } = useAuth();
 
   const perms = {
@@ -44,6 +47,7 @@ export function Sidebar({ open, onClose }) {
     canViewReports,
     canViewAnalysis,
     canUseAI,
+    canManageTeam,
   };
 
   const visibleItems = navItems.filter((item) => {
