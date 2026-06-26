@@ -47,10 +47,11 @@ export default defineConfig({
       workbox: {
         // Cache the app shell and static assets
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
-        navigateFallback: null, // let the SPA router handle navigation
+        navigateFallback: '/index.html',
+        navigateFallbackDenylist: [/^\/api\//],
         offlineGoogleAnalytics: false,
-        skipWaiting: false,    // don't forcibly reload tabs on SW update
-        clientsClaim: false,   // don't hijack existing tabs
+        skipWaiting: false,
+        clientsClaim: false,
         // Network-first for API calls — always try fresh data, fall back to cache
         runtimeCaching: [
           {

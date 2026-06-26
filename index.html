@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="en">
+<html lang="en-GH">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -9,6 +9,7 @@
     <meta name="description" content="DwaTrack helps small businesses and microentrepreneurs in Ghana and Africa track sales, manage stock, record expenses, and generate professional receipts — all for free." />
     <meta name="keywords" content="business tracking app Ghana, sales tracker Africa, small business management Ghana, digital receipt app, shop management app Africa, microenterprise app Ghana, expense tracker Ghana, stock management app Africa, DwaTrack" />
     <meta name="author" content="DwaTrack" />
+    <meta name="theme-color" content="#0d9488" />
     <link rel="canonical" href="https://dwatrack.netlify.app/" />
 
     <!-- Open Graph (Facebook, WhatsApp, LinkedIn) -->
@@ -19,6 +20,7 @@
     <meta property="og:image" content="https://dwatrack.netlify.app/og-image.png" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="DwaTrack dashboard — sales, stock, and expenses at a glance" />
     <meta property="og:site_name" content="DwaTrack" />
     <meta property="og:locale" content="en_GH" />
 
@@ -31,6 +33,11 @@
     <!-- Favicon -->
     <link rel="icon" type="image/svg+xml" href="/logo.svg" />
     <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+
+    <!-- iOS PWA -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="DwaTrack" />
 
     <!-- Structured Data — SoftwareApplication -->
     <script type="application/ld+json">
@@ -46,11 +53,6 @@
         "@type": "Offer",
         "price": "0",
         "priceCurrency": "GHS"
-      },
-      "aggregateRating": {
-        "@type": "AggregateRating",
-        "ratingValue": "4.8",
-        "reviewCount": "120"
       },
       "featureList": [
         "Sales tracking",
@@ -77,13 +79,18 @@
       "name": "DwaTrack",
       "url": "https://dwatrack.netlify.app",
       "logo": "https://dwatrack.netlify.app/logo.svg",
-      "description": "Business tracking software built for small businesses and microentrepreneurs across Ghana and Africa.",
-      "sameAs": []
+      "description": "Business tracking software built for small businesses and microentrepreneurs across Ghana and Africa."
     }
     </script>
   </head>
   <body>
     <div id="root"></div>
+    <noscript>
+      <div style="font-family:sans-serif;text-align:center;padding:60px 24px;color:#374151">
+        <h1 style="font-size:20px;margin-bottom:8px">JavaScript is required</h1>
+        <p style="color:#6b7280">Please enable JavaScript in your browser to use DwaTrack.</p>
+      </div>
+    </noscript>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
