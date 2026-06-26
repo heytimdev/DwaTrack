@@ -158,12 +158,12 @@ function RestockModal({ item, onClose, onRestock }) {
 
 export function Stock() {
   const { stock, addStockItem, deleteStockItem, restockItem } = useApp();
-  const { canManageExpenses } = useAuth();
+  const { canManageStock } = useAuth();
   const [showAdd, setShowAdd] = useState(false);
   const [restockTarget, setRestockTarget] = useState(null);
   const [search, setSearch] = useState("");
 
-  const isOwnerOrManager = canManageExpenses;
+  const isOwnerOrManager = canManageStock;
   const [deleteTarget, setDeleteTarget] = useState(null);
 
   const filtered = stock.filter((s) =>

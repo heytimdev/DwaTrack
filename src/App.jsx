@@ -39,6 +39,13 @@ function ProtectedRoute({ children }) {
   return children;
 }
 
+// Redirects to /dashboard if the user lacks the required permission flag.
+function RoleRoute({ children, perm }) {
+  const auth = useAuth();
+  if (!auth[perm]) return <Navigate to="/dashboard" replace />;
+  return children;
+}
+
 function AppRoutes() {
   return (
     <Routes>
@@ -64,13 +71,13 @@ function AppRoutes() {
       >
         <Route index element={<DashboardHome />} />
         <Route path="transactions" element={<Transactions />} />
-        <Route path="expenses" element={<Expenses />} />
-        <Route path="stock" element={<Stock />} />
-        <Route path="debtors" element={<Debtors />} />
-        <Route path="reports" element={<Reports />} />
-        <Route path="analysis" element={<Analysis />} />
-        <Route path="settings" element={<Settings />} />
-        <Route path="ai" element={<AIAssistant />} />
+        <Route path="expenses"  element={<RoleRoute perm="canManageExpenses"><Expenses /></RoleRoute>} />
+        <Route path="stock"     element={<RoleRoute perm="canManageStock"><Stock /></RoleRoute>} />
+        <Route path="debtors"   element={<RoleRoute perm="canManageDebtors"><Debtors /></RoleRoute>} />
+        <Route path="reports"   element={<RoleRoute perm="canViewReports"><Reports /></RoleRoute>} />
+        <Route path="analysis"  element={<RoleRoute perm="canViewAnalysis"><Analysis /></RoleRoute>} />
+        <Route path="settings"  element={<Settings />} />
+        <Route path="ai"        element={<RoleRoute perm="canUseAI"><AIAssistant /></RoleRoute>} />
       </Route>
     </Routes>
   );

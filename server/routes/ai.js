@@ -1,7 +1,7 @@
 const express = require('express');
 const Groq = require('groq-sdk');
 const pool = require('../db');
-const { requireAuth } = require('../middleware/auth');
+const { requireAuth, requireRole } = require('../middleware/auth');
 
 const router = express.Router();
 
@@ -13,8 +13,8 @@ function getClient() {
 
 const MODEL = 'llama-3.3-70b-versatile';
 
-// ── POST /api/ai/daily-summary ────────────────────────────────────────────────
-router.post('/daily-summary', requireAuth, async (req, res) => {
+// ── POST /api/ai/daily-summary  (owner or manager) ───────────────────────────
+router.post('/daily-summary', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
     const ownerId = req.user.ownerId;
 
@@ -89,8 +89,8 @@ router.post('/daily-summary', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/ai/restock ──────────────────────────────────────────────────────
-router.post('/restock', requireAuth, async (req, res) => {
+// ── POST /api/ai/restock  (owner or manager) ─────────────────────────────────
+router.post('/restock', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
     const ownerId = req.user.ownerId;
 
@@ -153,8 +153,8 @@ router.post('/restock', requireAuth, async (req, res) => {
   }
 });
 
-// ── POST /api/ai/chat  (streaming SSE) ───────────────────────────────────────
-router.post('/chat', requireAuth, async (req, res) => {
+// ── POST /api/ai/chat  (streaming SSE, owner or manager) ─────────────────────
+router.post('/chat', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   const ownerId = req.user.ownerId;
   const { message, history = [] } = req.body;
 

@@ -97,7 +97,7 @@ function InstallBanner() {
 }
 
 // ── Notification Bell ─────────────────────────────────────────────────────────
-function NotificationBell({ stock, transactions, currency }) {
+function NotificationBell({ stock, transactions, currency, canManageStock, canManageDebtors }) {
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
 
@@ -113,32 +113,36 @@ function NotificationBell({ stock, transactions, currency }) {
   const notifications = useMemo(() => {
     const items = [];
 
-    // Low / out-of-stock alerts
-    (stock || []).forEach((s) => {
-      if (s.quantity === 0) {
-        items.push({ id: `stock-out-${s.id}`, type: "out", icon: Package, label: `${s.name} is out of stock`, link: "/dashboard/stock" });
-      } else if (s.quantity <= s.lowStockThreshold) {
-        items.push({ id: `stock-low-${s.id}`, type: "low", icon: AlertTriangle, label: `${s.name} is running low (${s.quantity} left)`, link: "/dashboard/stock" });
-      }
-    });
-
-    // Unpaid credit / partial transactions
-    const unpaid = (transactions || []).filter(
-      (t) => t.paymentStatus === "credit" || t.paymentStatus === "partial"
-    );
-    if (unpaid.length > 0) {
-      const total = unpaid.reduce((s, t) => s + ((t.total || 0) - (t.amountPaid || 0)), 0);
-      items.push({
-        id: "unpaid",
-        type: "credit",
-        icon: CreditCard,
-        label: `${unpaid.length} unpaid sale${unpaid.length !== 1 ? "s" : ""} — ${currency}${total.toFixed(2)} outstanding`,
-        link: "/dashboard/debtors",
+    // Low / out-of-stock alerts — only shown to users who can access the stock page
+    if (canManageStock) {
+      (stock || []).forEach((s) => {
+        if (s.quantity === 0) {
+          items.push({ id: `stock-out-${s.id}`, type: "out", icon: Package, label: `${s.name} is out of stock`, link: "/dashboard/stock" });
+        } else if (s.quantity <= s.lowStockThreshold) {
+          items.push({ id: `stock-low-${s.id}`, type: "low", icon: AlertTriangle, label: `${s.name} is running low (${s.quantity} left)`, link: "/dashboard/stock" });
+        }
       });
     }
 
+    // Unpaid credit / partial transactions — only shown to users who can access debtors
+    if (canManageDebtors) {
+      const unpaid = (transactions || []).filter(
+        (t) => t.paymentStatus === "credit" || t.paymentStatus === "partial"
+      );
+      if (unpaid.length > 0) {
+        const total = unpaid.reduce((s, t) => s + ((t.total || 0) - (t.amountPaid || 0)), 0);
+        items.push({
+          id: "unpaid",
+          type: "credit",
+          icon: CreditCard,
+          label: `${unpaid.length} unpaid sale${unpaid.length !== 1 ? "s" : ""} — ${currency}${total.toFixed(2)} outstanding`,
+          link: "/dashboard/debtors",
+        });
+      }
+    }
+
     return items;
-  }, [stock, transactions, currency]);
+  }, [stock, transactions, currency, canManageStock, canManageDebtors]);
 
   const count = notifications.length;
 
@@ -209,7 +213,7 @@ export function DashboardLayout() {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const { currentUser, logout } = useAuth();
+  const { currentUser, logout, canManageStock, canManageDebtors } = useAuth();
   const { stock, transactions } = useApp();
   const navigate = useNavigate();
   const location = useLocation();
@@ -349,7 +353,13 @@ export function DashboardLayout() {
             )}
           </div>
 
-          <NotificationBell stock={stock} transactions={transactions} currency={currentUser?.currency || "GH₵"} />
+          <NotificationBell
+            stock={stock}
+            transactions={transactions}
+            currency={currentUser?.currency || "GH₵"}
+            canManageStock={canManageStock}
+            canManageDebtors={canManageDebtors}
+          />
 
           <button
             onClick={handleLogout}

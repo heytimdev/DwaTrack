@@ -17,19 +17,34 @@ import { useAuth } from "../../context/AuthContext";
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: LayoutDashboard, end: true },
   { to: "/dashboard/transactions", label: "Transactions", icon: ArrowLeftRight },
-  { to: "/dashboard/expenses", label: "Expenses", icon: Receipt },
-  { to: "/dashboard/stock", label: "Stock", icon: Package },
+  { to: "/dashboard/expenses", label: "Expenses", icon: Receipt, perm: "canManageExpenses" },
+  { to: "/dashboard/stock", label: "Stock", icon: Package, perm: "canManageStock" },
   { to: "/dashboard/debtors", label: "Debtors", icon: BookOpen, perm: "canManageDebtors" },
-  { to: "/dashboard/reports", label: "Reports", icon: BarChart2 },
-  { to: "/dashboard/analysis", label: "Analysis", icon: TrendingUp },
-  { to: "/dashboard/ai", label: "AI Assistant", icon: Sparkles },
+  { to: "/dashboard/reports", label: "Reports", icon: BarChart2, perm: "canViewReports" },
+  { to: "/dashboard/analysis", label: "Analysis", icon: TrendingUp, perm: "canViewAnalysis" },
+  { to: "/dashboard/ai", label: "AI Assistant", icon: Sparkles, perm: "canUseAI" },
   { to: "/dashboard/settings", label: "Settings", icon: Settings },
 ];
 
 export function Sidebar({ open, onClose }) {
-  const { currentUser, canViewReports, canManageExpenses, canManageStock, canManageDebtors } = useAuth();
+  const {
+    currentUser,
+    canManageExpenses,
+    canManageStock,
+    canManageDebtors,
+    canViewReports,
+    canViewAnalysis,
+    canUseAI,
+  } = useAuth();
 
-  const perms = { canViewReports, canManageExpenses, canManageStock, canManageDebtors };
+  const perms = {
+    canManageExpenses,
+    canManageStock,
+    canManageDebtors,
+    canViewReports,
+    canViewAnalysis,
+    canUseAI,
+  };
 
   const visibleItems = navItems.filter((item) => {
     if (item.perm && !perms[item.perm]) return false;

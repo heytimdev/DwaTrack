@@ -17,8 +17,8 @@ function format(e) {
   };
 }
 
-// GET /api/expenses
-router.get('/', requireAuth, async (req, res) => {
+// GET /api/expenses  (owner or manager)
+router.get('/', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
     const { rows } = await pool.query(
       'SELECT * FROM expenses WHERE owner_id = $1 ORDER BY created_at DESC',
