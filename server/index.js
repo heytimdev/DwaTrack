@@ -59,20 +59,25 @@ app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 // ── Migrate then start ─────────────────────────────────────────────────────────
 (async () => {
   try {
+    // Create table with correct TEXT types for UUID-based IDs
     await pool.query(`
       CREATE TABLE IF NOT EXISTS audit_log (
         id          SERIAL       PRIMARY KEY,
-        owner_id    INTEGER      NOT NULL,
-        actor_id    INTEGER      NOT NULL,
+        owner_id    TEXT         NOT NULL,
+        actor_id    TEXT         NOT NULL,
         actor_name  TEXT,
         actor_role  TEXT,
         action      TEXT         NOT NULL,
         entity_type TEXT,
-        entity_id   INTEGER,
+        entity_id   TEXT,
         detail      JSONB,
         created_at  TIMESTAMPTZ  DEFAULT NOW()
       )
     `);
+    // Fix column types if the table was previously created with INTEGER columns
+    await pool.query(`ALTER TABLE audit_log ALTER COLUMN owner_id  TYPE TEXT USING owner_id::TEXT`);
+    await pool.query(`ALTER TABLE audit_log ALTER COLUMN actor_id  TYPE TEXT USING actor_id::TEXT`);
+    await pool.query(`ALTER TABLE audit_log ALTER COLUMN entity_id TYPE TEXT USING entity_id::TEXT`);
     await pool.query(`
       CREATE INDEX IF NOT EXISTS idx_audit_log_owner
         ON audit_log (owner_id, created_at DESC)

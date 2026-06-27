@@ -55,7 +55,7 @@ router.get('/', requireAuth, requireRole('owner'), async (req, res) => {
     });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: err.message });
+    res.status(500).json({ error: 'Server error' });
   }
 });
 
