@@ -11,7 +11,8 @@ function getClient() {
   return groq;
 }
 
-const MODEL = 'llama-3.3-70b-versatile';
+const MODEL        = 'llama-3.3-70b-versatile';
+const VISION_MODEL = 'llama-3.2-11b-vision-preview';
 
 // ── POST /api/ai/daily-summary  (owner or manager) ───────────────────────────
 router.post('/daily-summary', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
@@ -383,6 +384,59 @@ STOCK
       res.write(`data: ${JSON.stringify({ error: 'Stream error' })}\n\n`);
       res.end();
     }
+  }
+});
+
+// ── POST /api/ai/ocr-receipt  (owner or manager) ─────────────────────────────
+router.post('/ocr-receipt', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
+  const { image } = req.body;
+  if (!image) return res.status(400).json({ error: 'No image provided' });
+
+  try {
+    const completion = await getClient().chat.completions.create({
+      model: VISION_MODEL,
+      max_tokens: 200,
+      messages: [
+        {
+          role: 'user',
+          content: [
+            { type: 'image_url', image_url: { url: image } },
+            {
+              type: 'text',
+              text: `You are extracting expense data from a receipt image for a small business in Ghana.
+Return ONLY a valid JSON object — no explanation, no markdown, just the raw JSON:
+{
+  "description": "short description of what was purchased or paid for",
+  "amount": 0.00,
+  "category": "exactly one of: Rent, Utilities, Salaries, Inventory, Transport, Marketing, Equipment, Other",
+  "date": "YYYY-MM-DD if a date is visible, otherwise empty string"
+}
+Rules:
+- amount must be a number (no currency symbols)
+- If multiple amounts appear, use the total/grand total
+- If no amount is legible, use 0
+- Pick the category that best fits the purchase`,
+            },
+          ],
+        },
+      ],
+    });
+
+    const raw   = completion.choices[0].message.content.trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    if (!match) throw new Error('No JSON returned by vision model');
+
+    const data = JSON.parse(match[0]);
+
+    res.json({
+      description: String(data.description || '').trim(),
+      amount:      parseFloat(data.amount)  || 0,
+      category:    String(data.category    || 'Other').trim(),
+      date:        String(data.date        || '').trim(),
+    });
+  } catch (err) {
+    console.error('[AI ocr-receipt]', err.message);
+    res.status(500).json({ error: 'Could not read receipt. Try a clearer photo.' });
   }
 });
 

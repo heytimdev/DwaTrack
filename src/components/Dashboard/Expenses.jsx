@@ -1,8 +1,9 @@
-import { useState } from "react";
-import { Plus, Trash2, Receipt, Loader, Download } from "lucide-react";
+import { useState, useRef } from "react";
+import { Trash2, Receipt, Loader, Download, ScanLine, X, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { ConfirmModal } from "./ConfirmModal";
+import api from "../../api";
 
 const CATEGORIES = ["Rent", "Utilities", "Salaries", "Inventory", "Transport", "Marketing", "Equipment", "Other"];
 
@@ -14,6 +15,11 @@ export function Expenses() {
   const [error,        setError]        = useState("");
   const [saving,       setSaving]       = useState(false);
   const [deleteTarget, setDeleteTarget] = useState(null);
+  const [ocrPreview,   setOcrPreview]   = useState(null);
+  const [ocrLoading,   setOcrLoading]   = useState(false);
+  const [ocrSuccess,   setOcrSuccess]   = useState(false);
+  const [ocrError,     setOcrError]     = useState("");
+  const fileInputRef = useRef(null);
 
   const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
 
@@ -43,6 +49,60 @@ export function Expenses() {
     URL.revokeObjectURL(url);
   }
 
+  function compressImage(file) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 1024;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement("canvas");
+        canvas.width  = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.82));
+      };
+      img.src = URL.createObjectURL(file);
+    });
+  }
+
+  async function handleScanReceipt(ev) {
+    const file = ev.target.files?.[0];
+    if (!file) return;
+    ev.target.value = "";
+
+    setOcrError("");
+    setOcrSuccess(false);
+    setOcrLoading(true);
+
+    try {
+      const dataUrl = await compressImage(file);
+      setOcrPreview(dataUrl);
+
+      const result = await api.post("/ai/ocr-receipt", { image: dataUrl });
+
+      setForm((prev) => ({
+        description: result.description || prev.description,
+        amount:      result.amount > 0 ? String(result.amount) : prev.amount,
+        category:    CATEGORIES.includes(result.category) ? result.category : prev.category,
+      }));
+      setOcrSuccess(true);
+    } catch (err) {
+      setOcrError(err.message || "Could not read receipt. Try a clearer photo.");
+    } finally {
+      setOcrLoading(false);
+    }
+  }
+
+  function clearScan() {
+    setOcrPreview(null);
+    setOcrSuccess(false);
+    setOcrError("");
+  }
+
   async function handleSubmit(ev) {
     ev.preventDefault();
     if (!form.description || !form.amount) {
@@ -55,6 +115,7 @@ export function Expenses() {
     if (result) {
       setForm({ description: "", amount: "", category: "Other" });
       setError("");
+      clearScan();
     }
   }
 
@@ -99,6 +160,58 @@ export function Expenses() {
         {canManageExpenses && (
           <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-5">
             <h3 className="text-sm font-semibold text-gray-800 m-0 mb-4">Add Expense</h3>
+
+            {/* OCR scan area */}
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              capture="environment"
+              className="hidden"
+              onChange={handleScanReceipt}
+            />
+
+            {!ocrPreview ? (
+              <button
+                type="button"
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full mb-4 flex items-center justify-center gap-2 border border-dashed border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-600 text-sm font-medium py-2.5 rounded-lg cursor-pointer transition-colors"
+              >
+                <ScanLine size={15} />
+                Scan Receipt
+              </button>
+            ) : (
+              <div className="mb-4 rounded-lg border border-gray-200 overflow-hidden">
+                <div className="relative">
+                  <img src={ocrPreview} alt="Receipt preview" className="w-full h-32 object-cover" />
+                  <button
+                    type="button"
+                    onClick={clearScan}
+                    className="absolute top-1.5 right-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full p-0.5 border-none cursor-pointer"
+                  >
+                    <X size={13} />
+                  </button>
+                </div>
+                <div className="px-3 py-2 flex items-center gap-2">
+                  {ocrLoading && (
+                    <>
+                      <Loader size={13} className="animate-spin text-teal-500 shrink-0" />
+                      <span className="text-xs text-gray-500">Reading receipt…</span>
+                    </>
+                  )}
+                  {ocrSuccess && !ocrLoading && (
+                    <>
+                      <CheckCircle size={13} className="text-teal-500 shrink-0" />
+                      <span className="text-xs text-teal-600">Fields filled — review and save</span>
+                    </>
+                  )}
+                  {ocrError && !ocrLoading && (
+                    <span className="text-xs text-red-500">{ocrError}</span>
+                  )}
+                </div>
+              </div>
+            )}
+
             <form onSubmit={handleSubmit} className="space-y-3">
               {error && <p className="text-xs text-red-600 bg-red-50 px-3 py-2 rounded-lg m-0">{error}</p>}
               <div>
@@ -135,7 +248,7 @@ export function Expenses() {
               </div>
               <button
                 type="submit"
-                disabled={saving}
+                disabled={saving || ocrLoading}
                 className="w-full bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors disabled:opacity-60 flex items-center justify-center gap-2"
               >
                 {saving ? <><Loader size={14} className="animate-spin" /> Saving…</> : "Add Expense"}
