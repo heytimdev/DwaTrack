@@ -172,7 +172,7 @@ export function Expenses() {
               id="receipt-scan-input"
               type="file"
               accept="image/*,image/heic,image/heif"
-              className="hidden"
+              className="absolute opacity-0 w-0 h-0 overflow-hidden"
               onChange={handleScanReceipt}
             />
 

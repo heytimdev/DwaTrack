@@ -225,15 +225,15 @@ export function Settings() {
                   <p className="text-sm font-medium text-gray-700 m-0">GRA VAT</p>
                   <p className="text-xs text-gray-400 m-0 mt-0.5">Enable if your business is registered for VAT with the Ghana Revenue Authority.</p>
                 </div>
-                <label className="relative inline-flex items-center cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={shopForm.taxEnabled}
-                    onChange={(e) => setShopForm({ ...shopForm, taxEnabled: e.target.checked })}
-                    className="sr-only peer"
-                  />
-                  <div className="w-10 h-5 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-5 peer-checked:bg-teal-500 after:content-[''] after:absolute after:top-0.5 after:left-0.5 after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all" />
-                </label>
+                <button
+                  type="button"
+                  role="switch"
+                  aria-checked={shopForm.taxEnabled}
+                  onClick={() => setShopForm({ ...shopForm, taxEnabled: !shopForm.taxEnabled })}
+                  className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors border-none cursor-pointer ${shopForm.taxEnabled ? "bg-teal-500" : "bg-gray-200"}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${shopForm.taxEnabled ? "translate-x-5" : "translate-x-0.5"}`} />
+                </button>
               </div>
               {shopForm.taxEnabled && (
                 <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
