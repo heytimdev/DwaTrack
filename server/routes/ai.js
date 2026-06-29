@@ -12,7 +12,7 @@ function getClient() {
 }
 
 const MODEL        = 'llama-3.3-70b-versatile';
-const VISION_MODEL = 'llama-3.2-11b-vision-preview';
+const VISION_MODEL = 'meta-llama/llama-4-scout-17b-16e-instruct';
 
 // ── POST /api/ai/daily-summary  (owner or manager) ───────────────────────────
 router.post('/daily-summary', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
@@ -392,10 +392,16 @@ router.post('/ocr-receipt', requireAuth, requireRole('owner', 'manager'), async 
   const { image } = req.body;
   if (!image) return res.status(400).json({ error: 'No image provided' });
 
+  // Accept any data-URL (jpeg, png, webp, gif, heic, etc.)
+  if (!image.startsWith('data:image/')) {
+    return res.status(400).json({ error: 'Invalid image format' });
+  }
+
   try {
     const completion = await getClient().chat.completions.create({
       model: VISION_MODEL,
-      max_tokens: 200,
+      max_tokens: 300,
+      temperature: 0.1,
       messages: [
         {
           role: 'user',
@@ -403,40 +409,57 @@ router.post('/ocr-receipt', requireAuth, requireRole('owner', 'manager'), async 
             { type: 'image_url', image_url: { url: image } },
             {
               type: 'text',
-              text: `You are extracting expense data from a receipt image for a small business in Ghana.
-Return ONLY a valid JSON object — no explanation, no markdown, just the raw JSON:
-{
-  "description": "short description of what was purchased or paid for",
-  "amount": 0.00,
-  "category": "exactly one of: Rent, Utilities, Salaries, Inventory, Transport, Marketing, Equipment, Other",
-  "date": "YYYY-MM-DD if a date is visible, otherwise empty string"
-}
+              text: `Look at this receipt or invoice image and extract the expense details.
+
+Respond with ONLY this JSON (no markdown, no explanation):
+{"description":"<what was bought/paid for>","amount":<number>,"category":"<category>","date":"<YYYY-MM-DD or blank>"}
+
+Category must be exactly one of: Rent, Utilities, Salaries, Inventory, Transport, Marketing, Equipment, Other
+
 Rules:
-- amount must be a number (no currency symbols)
-- If multiple amounts appear, use the total/grand total
-- If no amount is legible, use 0
-- Pick the category that best fits the purchase`,
+- description: short phrase, what the expense is for (e.g. "Electricity bill", "Office rent", "Fuel")
+- amount: the grand total as a plain number, no currency symbol. Use 0 if not readable
+- category: pick the closest match from the list above
+- date: receipt date in YYYY-MM-DD format, or "" if not found
+- If the image is not a receipt, still do your best to extract any visible price and description`,
             },
           ],
         },
       ],
     });
 
-    const raw   = completion.choices[0].message.content.trim();
-    const match = raw.match(/\{[\s\S]*\}/);
-    if (!match) throw new Error('No JSON returned by vision model');
+    const raw = completion.choices[0].message.content.trim();
+    console.log('[AI ocr-receipt] raw response:', raw);
 
-    const data = JSON.parse(match[0]);
+    // Strip markdown code fences if model wrapped output
+    const cleaned = raw.replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/, '').trim();
+
+    // Extract the first JSON object found
+    const match = cleaned.match(/\{[\s\S]*?\}/);
+    if (!match) {
+      console.error('[AI ocr-receipt] no JSON found in:', cleaned);
+      return res.status(422).json({ error: 'Could not parse receipt. Try a clearer or better-lit photo.' });
+    }
+
+    let data;
+    try {
+      data = JSON.parse(match[0]);
+    } catch (parseErr) {
+      console.error('[AI ocr-receipt] JSON parse failed:', match[0]);
+      return res.status(422).json({ error: 'Could not read receipt details. Try a flatter, better-lit photo.' });
+    }
+
+    const VALID_CATEGORIES = ['Rent','Utilities','Salaries','Inventory','Transport','Marketing','Equipment','Other'];
 
     res.json({
       description: String(data.description || '').trim(),
       amount:      parseFloat(data.amount)  || 0,
-      category:    String(data.category    || 'Other').trim(),
-      date:        String(data.date        || '').trim(),
+      category:    VALID_CATEGORIES.includes(data.category) ? data.category : 'Other',
+      date:        String(data.date || '').trim(),
     });
   } catch (err) {
-    console.error('[AI ocr-receipt]', err.message);
-    res.status(500).json({ error: 'Could not read receipt. Try a clearer photo.' });
+    console.error('[AI ocr-receipt] error:', err.message);
+    res.status(500).json({ error: 'Receipt scan failed. Check your connection and try again.' });
   }
 });
 

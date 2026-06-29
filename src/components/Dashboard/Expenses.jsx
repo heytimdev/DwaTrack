@@ -50,10 +50,12 @@ export function Expenses() {
   }
 
   function compressImage(file) {
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
       const img = new Image();
       img.onload = () => {
-        const MAX = 1024;
+        URL.revokeObjectURL(url);
+        const MAX = 1200;
         let { width, height } = img;
         if (width > MAX || height > MAX) {
           if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
@@ -62,10 +64,14 @@ export function Expenses() {
         const canvas = document.createElement("canvas");
         canvas.width  = width;
         canvas.height = height;
-        canvas.getContext("2d").drawImage(img, 0, 0, width, height);
-        resolve(canvas.toDataURL("image/jpeg", 0.82));
+        const ctx = canvas.getContext("2d");
+        ctx.fillStyle = "#ffffff";
+        ctx.fillRect(0, 0, width, height);
+        ctx.drawImage(img, 0, 0, width, height);
+        resolve(canvas.toDataURL("image/jpeg", 0.88));
       };
-      img.src = URL.createObjectURL(file);
+      img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not load image")); };
+      img.src = url;
     });
   }
 
@@ -165,7 +171,7 @@ export function Expenses() {
             <input
               ref={fileInputRef}
               type="file"
-              accept="image/*"
+              accept="image/*,image/heic,image/heif"
               className="hidden"
               onChange={handleScanReceipt}
             />
