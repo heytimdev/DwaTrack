@@ -85,7 +85,9 @@ export function AddTransactionModal({ onClose, onSuccess }) {
 
   const subtotal      = items.reduce((sum, item) => sum + (parseFloat(item.price) || 0) * (parseInt(item.qty) || 0), 0);
   const afterDiscount = Math.max(0, subtotal - (parseFloat(discount) || 0));
-  const taxAmount     = taxEnabled ? parseFloat(((afterDiscount * taxRate) / 100).toFixed(2)) : 0;
+  const isGhanaTax    = taxLabel === "Ghana Tax";
+  const effectiveRate = isGhanaTax ? 20 : taxRate;
+  const taxAmount     = taxEnabled ? parseFloat(((afterDiscount * effectiveRate) / 100).toFixed(2)) : 0;
   const total         = afterDiscount + taxAmount;
   const depositAmt    = isCredit ? Math.min(parseFloat(deposit) || 0, total) : total;
   const stillOwed     = isCredit ? Math.max(0, total - depositAmt) : 0;
@@ -382,10 +384,31 @@ export function AddTransactionModal({ onClose, onSuccess }) {
                 </div>
               )}
               {taxEnabled && taxAmount > 0 && (
-                <div className="flex justify-between text-gray-600 mb-1">
-                  <span>{taxLabel} ({taxRate}%)</span>
-                  <span>{currency}{taxAmount.toFixed(2)}</span>
-                </div>
+                taxLabel === "Ghana Tax" ? (
+                  <>
+                    <div className="flex justify-between text-gray-500 text-xs mb-1">
+                      <span>VAT (15%)</span>
+                      <span>{currency}{(afterDiscount * 0.15).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-500 text-xs mb-1">
+                      <span>NHIL (2.5%)</span>
+                      <span>{currency}{(afterDiscount * 0.025).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-500 text-xs mb-1">
+                      <span>GETFund (2.5%)</span>
+                      <span>{currency}{(afterDiscount * 0.025).toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-gray-600 font-medium mb-1">
+                      <span>Total Tax (20%)</span>
+                      <span>{currency}{taxAmount.toFixed(2)}</span>
+                    </div>
+                  </>
+                ) : (
+                  <div className="flex justify-between text-gray-600 mb-1">
+                    <span>{taxLabel} ({taxRate}%)</span>
+                    <span>{currency}{taxAmount.toFixed(2)}</span>
+                  </div>
+                )
               )}
               <div className="flex justify-between font-bold text-gray-900 text-base mt-2 pt-2 border-t border-teal-200">
                 <span>Total</span>

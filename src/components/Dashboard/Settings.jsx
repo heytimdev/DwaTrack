@@ -238,29 +238,50 @@ export function Settings() {
                 </label>
               </div>
               {shopForm.taxEnabled && (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="min-w-0">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Tax label</label>
-                    <input
-                      type="text"
-                      value={shopForm.taxLabel}
-                      onChange={(e) => setShopForm({ ...shopForm, taxLabel: e.target.value })}
-                      placeholder="e.g. VAT, NHIL, Tax"
-                      className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
-                    />
+                <div className="space-y-3">
+                  {/* Ghana standard preset */}
+                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                    <p className="text-xs font-semibold text-blue-800 m-0 mb-2">Ghana VAT-able Supply — Effective Rate: 20%</p>
+                    <div className="space-y-1 mb-3">
+                      {[["Value Added Tax (VAT)", "15%"], ["National Health Insurance Levy (NHIL)", "2.5%"], ["Ghana Education Trust Fund Levy (GETFund)", "2.5%"]].map(([name, rate]) => (
+                        <div key={name} className="flex justify-between text-xs text-blue-700">
+                          <span>{name}</span><span className="font-medium">{rate}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setShopForm({ ...shopForm, taxLabel: "Ghana Tax", taxRate: 15 })}
+                      className="text-xs font-medium text-blue-700 hover:text-blue-900 border border-blue-200 bg-white px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
+                    >
+                      Apply Ghana Standard (20%)
+                    </button>
                   </div>
-                  <div className="min-w-0">
-                    <label className="block text-xs font-medium text-gray-600 mb-1">Rate (%)</label>
-                    <input
-                      type="number"
-                      min="0"
-                      max="100"
-                      step="0.01"
-                      value={shopForm.taxRate}
-                      onChange={(e) => setShopForm({ ...shopForm, taxRate: e.target.value })}
-                      placeholder="e.g. 12.5"
-                      className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
-                    />
+
+                  <div className="grid grid-cols-2 gap-4">
+                    <div className="min-w-0">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Tax label</label>
+                      <input
+                        type="text"
+                        value={shopForm.taxLabel}
+                        onChange={(e) => setShopForm({ ...shopForm, taxLabel: e.target.value })}
+                        placeholder="e.g. Ghana Tax"
+                        className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Rate (%)</label>
+                      <input
+                        type="number"
+                        min="0"
+                        max="100"
+                        step="0.01"
+                        value={shopForm.taxRate}
+                        onChange={(e) => setShopForm({ ...shopForm, taxRate: e.target.value })}
+                        placeholder="20"
+                        className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                      />
+                    </div>
                   </div>
                 </div>
               )}
