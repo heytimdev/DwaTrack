@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Trash2, Receipt, Loader, Download, ScanLine, X, CheckCircle } from "lucide-react";
+import { Trash2, Receipt, Loader, Download, ScanLine, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
 import { ConfirmModal } from "./ConfirmModal";
@@ -186,32 +186,32 @@ export function Expenses() {
               </label>
             ) : (
               <div className="mb-4 rounded-lg border border-gray-200 overflow-hidden">
-                <div className="relative">
-                  <img src={ocrPreview} alt="Receipt preview" className="w-full h-32 object-cover" />
+                <img src={ocrPreview} alt="Receipt preview" className="w-full h-28 object-cover block" />
+                <div className="px-3 py-2 flex items-center justify-between gap-2 bg-gray-50 border-t border-gray-100">
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    {ocrLoading && (
+                      <>
+                        <Loader size={12} className="animate-spin text-teal-500 shrink-0" />
+                        <span className="text-xs text-gray-500 truncate">Reading receipt…</span>
+                      </>
+                    )}
+                    {ocrSuccess && !ocrLoading && (
+                      <>
+                        <CheckCircle size={12} className="text-teal-500 shrink-0" />
+                        <span className="text-xs text-teal-600 truncate">Fields filled — review and save</span>
+                      </>
+                    )}
+                    {ocrError && !ocrLoading && (
+                      <span className="text-xs text-red-500 truncate">{ocrError}</span>
+                    )}
+                  </div>
                   <button
                     type="button"
                     onClick={clearScan}
-                    className="absolute top-1.5 right-1.5 bg-black/50 hover:bg-black/70 text-white rounded-full p-0.5 border-none cursor-pointer"
+                    className="shrink-0 text-xs font-medium text-gray-400 hover:text-red-500 border-none bg-transparent cursor-pointer py-1 px-2 -mr-1 transition-colors"
                   >
-                    <X size={13} />
+                    Remove
                   </button>
-                </div>
-                <div className="px-3 py-2 flex items-center gap-2">
-                  {ocrLoading && (
-                    <>
-                      <Loader size={13} className="animate-spin text-teal-500 shrink-0" />
-                      <span className="text-xs text-gray-500">Reading receipt…</span>
-                    </>
-                  )}
-                  {ocrSuccess && !ocrLoading && (
-                    <>
-                      <CheckCircle size={13} className="text-teal-500 shrink-0" />
-                      <span className="text-xs text-teal-600">Fields filled — review and save</span>
-                    </>
-                  )}
-                  {ocrError && !ocrLoading && (
-                    <span className="text-xs text-red-500">{ocrError}</span>
-                  )}
                 </div>
               </div>
             )}
