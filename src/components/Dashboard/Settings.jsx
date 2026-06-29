@@ -32,8 +32,6 @@ export function Settings() {
     businessEmail: currentUser?.businessEmail || "",
     businessLogo: currentUser?.businessLogo || null,
     taxEnabled: currentUser?.taxEnabled || false,
-    taxLabel: currentUser?.taxLabel || "VAT",
-    taxRate: currentUser?.taxRate ?? 0,
   });
   const [shopSaved, setShopSaved] = useState(false);
   const [logoPreview, setLogoPreview] = useState(currentUser?.businessLogo || null);
@@ -90,7 +88,7 @@ export function Settings() {
 
   function handleShopSave(e) {
     e.preventDefault();
-    updateShopInfo(shopForm);
+    updateShopInfo({ ...shopForm, taxLabel: "GRA VAT", taxRate: 20 });
     setShopSaved(true);
     setTimeout(() => setShopSaved(false), 2500);
   }
@@ -220,12 +218,12 @@ export function Settings() {
                 />
               </div>
             </div>
-            {/* Tax configuration */}
+            {/* GRA VAT toggle */}
             <div className="border-t border-gray-100 pt-5">
               <div className="flex items-center justify-between mb-3">
                 <div>
-                  <p className="text-sm font-medium text-gray-700 m-0">Tax Configuration</p>
-                  <p className="text-xs text-gray-400 m-0 mt-0.5">Applies as a line item on every receipt.</p>
+                  <p className="text-sm font-medium text-gray-700 m-0">GRA VAT</p>
+                  <p className="text-xs text-gray-400 m-0 mt-0.5">Enable if your business is registered for VAT with the Ghana Revenue Authority.</p>
                 </div>
                 <label className="relative inline-flex items-center cursor-pointer">
                   <input
@@ -238,50 +236,14 @@ export function Settings() {
                 </label>
               </div>
               {shopForm.taxEnabled && (
-                <div className="space-y-3">
-                  {/* Ghana standard preset */}
-                  <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
-                    <p className="text-xs font-semibold text-blue-800 m-0 mb-2">Ghana VAT-able Supply — Effective Rate: 20%</p>
-                    <div className="space-y-1 mb-3">
-                      {[["Value Added Tax (VAT)", "15%"], ["National Health Insurance Levy (NHIL)", "2.5%"], ["Ghana Education Trust Fund Levy (GETFund)", "2.5%"]].map(([name, rate]) => (
-                        <div key={name} className="flex justify-between text-xs text-blue-700">
-                          <span>{name}</span><span className="font-medium">{rate}</span>
-                        </div>
-                      ))}
-                    </div>
-                    <button
-                      type="button"
-                      onClick={() => setShopForm({ ...shopForm, taxLabel: "Ghana Tax", taxRate: 15 })}
-                      className="text-xs font-medium text-blue-700 hover:text-blue-900 border border-blue-200 bg-white px-3 py-1.5 rounded-lg cursor-pointer transition-colors"
-                    >
-                      Apply Ghana Standard (20%)
-                    </button>
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="min-w-0">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Tax label</label>
-                      <input
-                        type="text"
-                        value={shopForm.taxLabel}
-                        onChange={(e) => setShopForm({ ...shopForm, taxLabel: e.target.value })}
-                        placeholder="e.g. Ghana Tax"
-                        className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
-                      />
-                    </div>
-                    <div className="min-w-0">
-                      <label className="block text-xs font-medium text-gray-600 mb-1">Rate (%)</label>
-                      <input
-                        type="number"
-                        min="0"
-                        max="100"
-                        step="0.01"
-                        value={shopForm.taxRate}
-                        onChange={(e) => setShopForm({ ...shopForm, taxRate: e.target.value })}
-                        placeholder="20"
-                        className="w-full min-w-0 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
-                      />
-                    </div>
+                <div className="bg-blue-50 border border-blue-100 rounded-lg p-3">
+                  <p className="text-xs font-semibold text-blue-800 m-0 mb-2">GRA VAT-able Supply — Effective Rate: 20%</p>
+                  <div className="space-y-1">
+                    {[["Value Added Tax (VAT)", "15%"], ["National Health Insurance Levy (NHIL)", "2.5%"], ["Ghana Education Trust Fund Levy (GETFund)", "2.5%"]].map(([name, rate]) => (
+                      <div key={name} className="flex justify-between text-xs text-blue-700">
+                        <span>{name}</span><span className="font-medium">{rate}</span>
+                      </div>
+                    ))}
                   </div>
                 </div>
               )}

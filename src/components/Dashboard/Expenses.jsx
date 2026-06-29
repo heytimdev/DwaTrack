@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState } from "react";
 import { Trash2, Receipt, Loader, Download, ScanLine, X, CheckCircle } from "lucide-react";
 import { useApp } from "../../context/AppContext";
 import { useAuth } from "../../context/AuthContext";
@@ -19,7 +19,7 @@ export function Expenses() {
   const [ocrLoading,   setOcrLoading]   = useState(false);
   const [ocrSuccess,   setOcrSuccess]   = useState(false);
   const [ocrError,     setOcrError]     = useState("");
-  const fileInputRef = useRef(null);
+
 
   const totalExpenses = expenses.reduce((s, e) => s + (parseFloat(e.amount) || 0), 0);
 
@@ -169,7 +169,7 @@ export function Expenses() {
 
             {/* OCR scan area */}
             <input
-              ref={fileInputRef}
+              id="receipt-scan-input"
               type="file"
               accept="image/*,image/heic,image/heif"
               className="hidden"
@@ -177,14 +177,13 @@ export function Expenses() {
             />
 
             {!ocrPreview ? (
-              <button
-                type="button"
-                onClick={() => fileInputRef.current?.click()}
+              <label
+                htmlFor="receipt-scan-input"
                 className="w-full mb-4 flex items-center justify-center gap-2 border border-dashed border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-600 text-sm font-medium py-2.5 rounded-lg cursor-pointer transition-colors"
               >
                 <ScanLine size={15} />
                 Scan Receipt
-              </button>
+              </label>
             ) : (
               <div className="mb-4 rounded-lg border border-gray-200 overflow-hidden">
                 <div className="relative">

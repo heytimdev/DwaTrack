@@ -68,20 +68,14 @@ export function ReceiptModal({ transaction, onClose }) {
       ...(transaction.addedBy ? [["Served by", transaction.addedBy]] : []),
     ].map(([l, v]) => row(l, v)).join("");
 
-    const isGhanaTax = transaction.taxAmount > 0 && transaction.taxLabel === "Ghana Tax";
     const taxRows = transaction.taxAmount > 0
-      ? isGhanaTax
-        ? [
-            row("Subtotal", `${currency}${subtotal.toFixed(2)}`),
-            row("VAT (15%)", `${currency}${(subtotal * 0.15).toFixed(2)}`),
-            row("NHIL (2.5%)", `${currency}${(subtotal * 0.025).toFixed(2)}`),
-            row("GETFund (2.5%)", `${currency}${(subtotal * 0.025).toFixed(2)}`),
-            row("Total Tax (20%)", `${currency}${Number(transaction.taxAmount).toFixed(2)}`),
-          ].join("")
-        : [
-            row("Subtotal", `${currency}${subtotal.toFixed(2)}`),
-            row(transaction.taxLabel || "Tax", `${currency}${Number(transaction.taxAmount).toFixed(2)}`),
-          ].join("")
+      ? [
+          row("Subtotal", `${currency}${subtotal.toFixed(2)}`),
+          row("VAT (15%)", `${currency}${(subtotal * 0.15).toFixed(2)}`),
+          row("NHIL (2.5%)", `${currency}${(subtotal * 0.025).toFixed(2)}`),
+          row("GETFund (2.5%)", `${currency}${(subtotal * 0.025).toFixed(2)}`),
+          row("Total Tax (20%)", `${currency}${Number(transaction.taxAmount).toFixed(2)}`),
+        ].join("")
       : "";
 
     const totalsBlock = `
@@ -282,31 +276,24 @@ export function ReceiptModal({ transaction, onClose }) {
                 </div>
               )}
               {transaction.taxAmount > 0 && (
-                transaction.taxLabel === "Ghana Tax" ? (
-                  <>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">VAT (15%)</span>
-                      <span>{currency}{(subtotal * 0.15).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">NHIL (2.5%)</span>
-                      <span>{currency}{(subtotal * 0.025).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span className="text-gray-500">GETFund (2.5%)</span>
-                      <span>{currency}{(subtotal * 0.025).toFixed(2)}</span>
-                    </div>
-                    <div className="flex justify-between font-medium">
-                      <span className="text-gray-500">Total Tax (20%)</span>
-                      <span>{currency}{Number(transaction.taxAmount).toFixed(2)}</span>
-                    </div>
-                  </>
-                ) : (
+                <>
                   <div className="flex justify-between">
-                    <span className="text-gray-500">{transaction.taxLabel || "Tax"}</span>
+                    <span className="text-gray-500">VAT (15%)</span>
+                    <span>{currency}{(subtotal * 0.15).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">NHIL (2.5%)</span>
+                    <span>{currency}{(subtotal * 0.025).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span className="text-gray-500">GETFund (2.5%)</span>
+                    <span>{currency}{(subtotal * 0.025).toFixed(2)}</span>
+                  </div>
+                  <div className="flex justify-between font-medium">
+                    <span className="text-gray-500">Total Tax (20%)</span>
                     <span>{currency}{Number(transaction.taxAmount).toFixed(2)}</span>
                   </div>
-                )
+                </>
               )}
               <div className="flex justify-between font-bold text-base text-gray-900 pt-1">
                 <span>Total</span>
