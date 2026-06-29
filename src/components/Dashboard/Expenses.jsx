@@ -166,7 +166,6 @@ export function Expenses() {
               ref={fileInputRef}
               type="file"
               accept="image/*"
-              capture="environment"
               className="hidden"
               onChange={handleScanReceipt}
             />
