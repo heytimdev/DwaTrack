@@ -168,19 +168,14 @@ export function Expenses() {
             <h3 className="text-sm font-semibold text-gray-800 m-0 mb-4">Add Expense</h3>
 
             {/* OCR scan area */}
-            <input
-              id="receipt-scan-input"
-              type="file"
-              accept="image/*,image/heic,image/heif"
-              className="absolute opacity-0 w-0 h-0 overflow-hidden"
-              onChange={handleScanReceipt}
-            />
-
             {!ocrPreview ? (
-              <label
-                htmlFor="receipt-scan-input"
-                className="w-full mb-4 flex items-center justify-center gap-2 border border-dashed border-teal-300 bg-teal-50 hover:bg-teal-100 text-teal-600 text-sm font-medium py-2.5 rounded-lg cursor-pointer transition-colors"
-              >
+              <label className="relative w-full mb-4 flex items-center justify-center gap-2 border border-dashed border-teal-300 bg-teal-50 active:bg-teal-100 text-teal-600 text-sm font-medium py-2.5 rounded-lg cursor-pointer transition-colors overflow-hidden">
+                <input
+                  type="file"
+                  accept="image/*,image/heic,image/heif"
+                  onChange={handleScanReceipt}
+                  className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+                />
                 <ScanLine size={15} />
                 Scan Receipt
               </label>
