@@ -5,7 +5,8 @@ import { Package, Plus, Trash2, RefreshCw, AlertTriangle, X } from "lucide-react
 import { ConfirmModal } from "./ConfirmModal";
 
 function AddStockModal({ onClose, onAdd }) {
-  const [form, setForm] = useState({ name: "", quantity: "", unit: "pcs", lowStockThreshold: "5" });
+  const { currency } = useAuth();
+  const [form, setForm] = useState({ name: "", quantity: "", unit: "pcs", lowStockThreshold: "5", price: "", costPrice: "", category: "" });
   const [error, setError] = useState("");
 
   function handleSubmit(e) {
@@ -18,7 +19,7 @@ function AddStockModal({ onClose, onAdd }) {
 
   return (
     <div className="fixed inset-0 bg-black/40 z-50 flex items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-xl max-h-[90vh] overflow-y-auto">
         <div className="flex items-center justify-between p-5 border-b border-gray-100">
           <h2 className="text-base font-semibold text-gray-800 m-0">Add Stock Item</h2>
           <button onClick={onClose} className="text-gray-400 hover:text-gray-600 bg-transparent border-none cursor-pointer p-1">
@@ -56,14 +57,7 @@ function AddStockModal({ onClose, onAdd }) {
                 onChange={(e) => setForm({ ...form, unit: e.target.value })}
                 className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500"
               >
-                <option value="pcs">pcs</option>
-                <option value="kg">kg</option>
-                <option value="g">g</option>
-                <option value="L">L</option>
-                <option value="ml">ml</option>
-                <option value="box">box</option>
-                <option value="pack">pack</option>
-                <option value="dozen">dozen</option>
+                {["pcs","kg","g","L","ml","box","pack","dozen"].map((u) => <option key={u}>{u}</option>)}
               </select>
             </div>
           </div>
@@ -79,6 +73,48 @@ function AddStockModal({ onClose, onAdd }) {
             />
             <p className="text-xs text-gray-400 m-0">Alert when quantity falls below this number</p>
           </div>
+
+          {/* Product details — synced to product catalogue */}
+          <div className="border-t border-gray-100 pt-3 flex flex-col gap-3">
+            <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide m-0">Product details (synced to catalogue)</p>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Selling price ({currency})</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={form.price}
+                  onChange={(e) => setForm({ ...form, price: e.target.value })}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <label className="text-sm font-medium text-gray-700">Cost price ({currency})</label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="0.00"
+                  value={form.costPrice}
+                  onChange={(e) => setForm({ ...form, costPrice: e.target.value })}
+                  className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500"
+                />
+              </div>
+            </div>
+            <div className="flex flex-col gap-1">
+              <label className="text-sm font-medium text-gray-700">Category (optional)</label>
+              <input
+                type="text"
+                placeholder="e.g. Beverages"
+                value={form.category}
+                onChange={(e) => setForm({ ...form, category: e.target.value })}
+                className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500"
+              />
+            </div>
+          </div>
+
           <div className="flex gap-3 pt-1">
             <button
               type="button"

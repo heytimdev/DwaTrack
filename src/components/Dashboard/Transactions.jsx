@@ -120,7 +120,7 @@ export function Transactions() {
   const [page,       setPage]       = useState(1);
 
   // New product form
-  const [newProduct,   setNewProduct]   = useState({ name: "", price: "", costPrice: "", category: "" });
+  const [newProduct,   setNewProduct]   = useState({ name: "", price: "", costPrice: "", category: "", quantity: "", unit: "pcs", lowStockThreshold: "5" });
   const [productError, setProductError] = useState("");
 
   // Accept search query from header global search
@@ -193,8 +193,16 @@ export function Transactions() {
       setProductError("Name and price are required.");
       return;
     }
-    addProduct({ name: newProduct.name, price: parseFloat(newProduct.price), costPrice: parseFloat(newProduct.costPrice) || 0, category: newProduct.category });
-    setNewProduct({ name: "", price: "", costPrice: "", category: "" });
+    addProduct({
+      name: newProduct.name,
+      price: parseFloat(newProduct.price),
+      costPrice: parseFloat(newProduct.costPrice) || 0,
+      category: newProduct.category,
+      quantity: parseInt(newProduct.quantity) || 0,
+      unit: newProduct.unit || "pcs",
+      lowStockThreshold: parseInt(newProduct.lowStockThreshold) || 5,
+    });
+    setNewProduct({ name: "", price: "", costPrice: "", category: "", quantity: "", unit: "pcs", lowStockThreshold: "5" });
     setProductError("");
   }
 
@@ -484,6 +492,33 @@ export function Transactions() {
                     onChange={(e) => setNewProduct({ ...newProduct, category: e.target.value })}
                     placeholder="e.g. Beverages"
                     className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400" />
+                </div>
+                <div className="border-t border-gray-100 pt-3">
+                  <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Stock details</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Initial qty</label>
+                      <input type="number" min="0" value={newProduct.quantity}
+                        onChange={(e) => setNewProduct({ ...newProduct, quantity: e.target.value })}
+                        placeholder="0"
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400" />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-medium text-gray-600 mb-1">Unit</label>
+                      <select value={newProduct.unit}
+                        onChange={(e) => setNewProduct({ ...newProduct, unit: e.target.value })}
+                        className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400 bg-white">
+                        {["pcs","kg","g","L","ml","box","pack","dozen"].map((u) => <option key={u}>{u}</option>)}
+                      </select>
+                    </div>
+                  </div>
+                  <div className="mt-2">
+                    <label className="block text-xs font-medium text-gray-600 mb-1">Low stock alert at</label>
+                    <input type="number" min="0" value={newProduct.lowStockThreshold}
+                      onChange={(e) => setNewProduct({ ...newProduct, lowStockThreshold: e.target.value })}
+                      placeholder="5"
+                      className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400" />
+                  </div>
                 </div>
                 <button type="submit"
                   className="w-full bg-teal-500 hover:bg-teal-600 text-white py-2.5 rounded-lg text-sm font-medium border-none cursor-pointer transition-colors">

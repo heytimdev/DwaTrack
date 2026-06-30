@@ -31,9 +31,10 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // POST /api/products  (owner or manager)
+// Also creates a matching stock entry if one doesn't already exist.
 router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) => {
   try {
-    const { name, price, costPrice, category } = req.body;
+    const { name, price, costPrice, category, quantity, unit, lowStockThreshold } = req.body;
     if (!name) return res.status(400).json({ error: 'Product name is required' });
 
     const { rows } = await pool.query(
@@ -42,6 +43,17 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
       [req.user.ownerId, name, price || 0, costPrice || 0, category || null]
     );
     const p = rows[0];
+
+    // Cross-create a stock entry if none exists with this name for this owner
+    await pool.query(
+      `INSERT INTO stock (owner_id, name, quantity, unit, low_stock_threshold)
+       SELECT $1, $2, $3, $4, $5
+       WHERE NOT EXISTS (
+         SELECT 1 FROM stock WHERE owner_id = $1 AND LOWER(name) = LOWER($2)
+       )`,
+      [req.user.ownerId, name, Number(quantity) || 0, unit || 'pcs', Number(lowStockThreshold) || 5]
+    );
+
     logAction(req, 'product.add', 'product', p.id, { name: p.name, price: p.price });
     res.status(201).json(format(p));
   } catch (err) {

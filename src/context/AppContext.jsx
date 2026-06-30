@@ -98,6 +98,8 @@ export function AppProvider({ children }) {
     try {
       const newProd = await api.post("/products", productData);
       setProducts((prev) => [...prev, newProd]);
+      // Refresh stock — product creation also creates a linked stock entry
+      api.get("/stock").then(setStock).catch(() => {});
       toast.success("Product added");
       return newProd;
     } catch (err) {
@@ -179,6 +181,8 @@ export function AppProvider({ children }) {
     try {
       const newItem = await api.post("/stock", itemData);
       setStock((prev) => [...prev, newItem]);
+      // Refresh products — stock creation also creates a linked product entry
+      api.get("/products").then(setProducts).catch(() => {});
       toast.success("Stock item added");
       return newItem;
     } catch (err) {
