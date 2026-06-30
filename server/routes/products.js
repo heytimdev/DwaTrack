@@ -47,9 +47,9 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
     // Cross-create a stock entry if none exists with this name for this owner
     await pool.query(
       `INSERT INTO stock (owner_id, name, quantity, unit, low_stock_threshold)
-       SELECT $1, $2, $3, $4, $5
+       SELECT $1::uuid, $2::text, $3::int, $4::text, $5::int
        WHERE NOT EXISTS (
-         SELECT 1 FROM stock WHERE owner_id = $1 AND LOWER(name) = LOWER($2)
+         SELECT 1 FROM stock WHERE owner_id = $1::uuid AND LOWER(name) = LOWER($2::text)
        )`,
       [req.user.ownerId, name, Number(quantity) || 0, unit || 'pcs', Number(lowStockThreshold) || 5]
     );

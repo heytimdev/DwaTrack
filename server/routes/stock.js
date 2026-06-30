@@ -49,9 +49,9 @@ router.post('/', requireAuth, requireRole('owner', 'manager'), async (req, res) 
     // Cross-create a product entry if none exists with this name for this owner
     await pool.query(
       `INSERT INTO products (owner_id, name, price, cost_price, category)
-       SELECT $1, $2, $3, $4, $5
+       SELECT $1::uuid, $2::text, $3::numeric, $4::numeric, $5::text
        WHERE NOT EXISTS (
-         SELECT 1 FROM products WHERE owner_id = $1 AND LOWER(name) = LOWER($2)
+         SELECT 1 FROM products WHERE owner_id = $1::uuid AND LOWER(name) = LOWER($2::text)
        )`,
       [req.user.ownerId, name, Number(price) || 0, Number(costPrice) || 0, category || null]
     );
