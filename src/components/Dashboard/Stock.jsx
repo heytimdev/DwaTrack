@@ -162,13 +162,27 @@ export function Stock() {
   const [showAdd, setShowAdd] = useState(false);
   const [restockTarget, setRestockTarget] = useState(null);
   const [search, setSearch] = useState("");
+  const [sortBy, setSortBy] = useState("name-asc");
+  const [filterStatus, setFilterStatus] = useState("all");
 
   const isOwnerOrManager = canManageStock;
   const [deleteTarget, setDeleteTarget] = useState(null);
 
-  const filtered = stock.filter((s) =>
-    s.name?.toLowerCase().includes(search.toLowerCase())
-  );
+  const filtered = stock
+    .filter((s) => s.name?.toLowerCase().includes(search.toLowerCase()))
+    .filter((s) => {
+      if (filterStatus === "out") return s.quantity === 0;
+      if (filterStatus === "low") return s.quantity > 0 && s.quantity <= s.lowStockThreshold;
+      if (filterStatus === "in") return s.quantity > s.lowStockThreshold;
+      return true;
+    })
+    .sort((a, b) => {
+      if (sortBy === "name-asc") return a.name.localeCompare(b.name);
+      if (sortBy === "name-desc") return b.name.localeCompare(a.name);
+      if (sortBy === "qty-asc") return a.quantity - b.quantity;
+      if (sortBy === "qty-desc") return b.quantity - a.quantity;
+      return 0;
+    });
 
   const lowStockItems = stock.filter((s) => s.quantity <= s.lowStockThreshold);
 
@@ -231,15 +245,37 @@ export function Stock() {
         </div>
       )}
 
-      {/* Search */}
-      <div className="mb-4">
+      {/* Search + Sort + Filter */}
+      <div className="flex flex-col sm:flex-row gap-3 mb-4">
         <input
           type="text"
-          placeholder="Search stock items..."
+          placeholder="Search items..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          className="w-full max-w-xs border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500"
+          className="flex-1 border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500"
         />
+        <select
+          value={sortBy}
+          onChange={(e) => setSortBy(e.target.value)}
+          className="border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-500 bg-white text-gray-700"
+        >
+          <option value="name-asc">Name A–Z</option>
+          <option value="name-desc">Name Z–A</option>
+          <option value="qty-asc">Qty: Low first</option>
+          <option value="qty-desc">Qty: High first</option>
+        </select>
+        <div className="flex rounded-lg border border-gray-200 overflow-hidden shrink-0 text-sm">
+          {[["all", "All"], ["in", "In Stock"], ["low", "Low"], ["out", "Out"]].map(([val, label]) => (
+            <button
+              key={val}
+              type="button"
+              onClick={() => setFilterStatus(val)}
+              className={`px-3 py-2 border-none cursor-pointer transition-colors ${filterStatus === val ? "bg-teal-600 text-white font-medium" : "bg-white text-gray-600 hover:bg-gray-50"}`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Table */}
@@ -247,7 +283,7 @@ export function Stock() {
         {filtered.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-16 text-gray-400">
             <Package size={40} className="mb-3 opacity-40" />
-            <p className="text-sm m-0">{stock.length === 0 ? "No stock items yet. Add your first item." : "No items match your search."}</p>
+            <p className="text-sm m-0">{stock.length === 0 ? "No stock items yet. Add your first item." : "No items match your search or filter."}</p>
           </div>
         ) : (
           <div className="overflow-x-auto">
