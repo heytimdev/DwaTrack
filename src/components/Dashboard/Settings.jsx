@@ -33,7 +33,8 @@ export function Settings() {
     businessLogo: currentUser?.businessLogo || null,
     taxEnabled: currentUser?.taxEnabled || false,
   });
-  const [shopSaved, setShopSaved] = useState(false);
+  const [shopSaved,  setShopSaved]  = useState(false);
+  const [taxSaving,  setTaxSaving]  = useState(false);
   const [logoPreview, setLogoPreview] = useState(currentUser?.businessLogo || null);
 
   // Avatar
@@ -84,6 +85,18 @@ export function Settings() {
       setShopForm((prev) => ({ ...prev, businessLogo: ev.target.result }));
     };
     reader.readAsDataURL(file);
+  }
+
+  async function handleTaxToggle() {
+    if (taxSaving) return;
+    const newValue = !shopForm.taxEnabled;
+    setShopForm(prev => ({ ...prev, taxEnabled: newValue }));
+    setTaxSaving(true);
+    try {
+      await updateShopInfo({ ...shopForm, taxEnabled: newValue, taxLabel: "GRA VAT", taxRate: 20 });
+    } finally {
+      setTaxSaving(false);
+    }
   }
 
   function handleShopSave(e) {
@@ -229,8 +242,10 @@ export function Settings() {
                   type="button"
                   role="switch"
                   aria-checked={shopForm.taxEnabled}
-                  onClick={() => setShopForm({ ...shopForm, taxEnabled: !shopForm.taxEnabled })}
-                  className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors border-none cursor-pointer ${shopForm.taxEnabled ? "bg-teal-500" : "bg-gray-200"}`}
+                  onClick={handleTaxToggle}
+                  disabled={taxSaving}
+                  style={{ touchAction: "manipulation" }}
+                  className={`relative inline-flex h-5 w-10 shrink-0 items-center rounded-full transition-colors border-none cursor-pointer disabled:opacity-60 ${shopForm.taxEnabled ? "bg-teal-500" : "bg-gray-200"}`}
                 >
                   <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow transition-transform ${shopForm.taxEnabled ? "translate-x-5" : "translate-x-0.5"}`} />
                 </button>
