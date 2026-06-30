@@ -58,6 +58,28 @@ router.post('/', requireAuth, async (req, res) => {
     const addedBy = `${req.body.firstName || ''} ${req.body.lastName || ''}`.trim()
       || 'Unknown';
 
+    // Stock validation — reject if any tracked item has insufficient quantity
+    if (Array.isArray(items) && items.length > 0) {
+      const shortfall = [];
+      for (const item of items) {
+        if (!item.productName || !item.qty) continue;
+        const { rows: sr } = await pool.query(
+          `SELECT quantity FROM stock WHERE owner_id = $1 AND LOWER(name) = LOWER($2)`,
+          [req.user.ownerId, item.productName]
+        );
+        if (sr.length > 0 && sr[0].quantity < item.qty) {
+          shortfall.push(
+            sr[0].quantity === 0
+              ? `${item.productName} is out of stock`
+              : `${item.productName} only has ${sr[0].quantity} left (requested ${item.qty})`
+          );
+        }
+      }
+      if (shortfall.length > 0) {
+        return res.status(400).json({ error: shortfall.join(' · ') });
+      }
+    }
+
     const receiptNumber = generateReceiptNumber();
 
     // Determine payment status from paymentMethod + amountPaid

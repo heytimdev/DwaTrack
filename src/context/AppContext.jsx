@@ -53,6 +53,15 @@ export function AppProvider({ children }) {
         lastName:  currentUser.lastName,
       });
       setTransactions((prev) => [newTx, ...prev]);
+      // Immediately decrement stock for instant UI feedback, then confirm with server
+      if (Array.isArray(txData.items)) {
+        setStock((prev) => prev.map((s) => {
+          const sold = txData.items.find(
+            (i) => i.productName?.toLowerCase() === s.name.toLowerCase()
+          );
+          return sold ? { ...s, quantity: Math.max(0, s.quantity - (parseInt(sold.qty) || 0)) } : s;
+        }));
+      }
       api.get("/stock").then(setStock).catch(() => {});
       toast.success("Sale recorded successfully");
       return newTx;

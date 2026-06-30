@@ -6,7 +6,7 @@ import { useAuth } from "../../context/AuthContext";
 const PAYMENT_METHODS = ["cash", "mobile money", "card", "bank transfer", "credit"];
 
 export function AddTransactionModal({ onClose, onSuccess }) {
-  const { products, addTransaction, customers, addCustomer } = useApp();
+  const { products, addTransaction, customers, addCustomer, stock } = useApp();
   const { currentUser, currency } = useAuth();
 
   const taxEnabled = currentUser?.taxEnabled || false;
@@ -97,6 +97,23 @@ export function AddTransactionModal({ onClose, onSuccess }) {
     }
     if (isCredit && !customerId) {
       setError("Please select or create a customer for a credit sale.");
+      return;
+    }
+
+    // Stock check — only blocks items that ARE tracked in stock with zero/insufficient qty
+    const stockErrors = validItems
+      .map((item) => {
+        const tracked = stock.find((s) => s.name.toLowerCase() === item.productName.toLowerCase());
+        if (tracked && tracked.quantity < parseInt(item.qty)) {
+          return tracked.quantity === 0
+            ? `${item.productName} is out of stock`
+            : `${item.productName} only has ${tracked.quantity} left (requested ${item.qty})`;
+        }
+        return null;
+      })
+      .filter(Boolean);
+    if (stockErrors.length > 0) {
+      setError(stockErrors.join(" · "));
       return;
     }
 
@@ -244,7 +261,17 @@ export function AddTransactionModal({ onClose, onSuccess }) {
               </div>
 
               <div className="space-y-2">
-                {items.map((item, index) => (
+                {items.map((item, index) => {
+                  const selectedProduct = products.find((p) => p.id === item.productId);
+                  const stockEntry = selectedProduct
+                    ? stock.find((s) => s.name.toLowerCase() === selectedProduct.name.toLowerCase())
+                    : item.productName
+                    ? stock.find((s) => s.name.toLowerCase() === item.productName.toLowerCase())
+                    : null;
+                  const enteredQty = parseInt(item.qty) || 0;
+                  const isOverStock = stockEntry && enteredQty > stockEntry.quantity;
+
+                  return (
                   <div key={index} className="border border-gray-100 rounded-lg p-3 bg-gray-50">
                     <div className="grid grid-cols-2 gap-2 mb-2">
                       <div className="col-span-2 min-w-0">
@@ -255,12 +282,24 @@ export function AddTransactionModal({ onClose, onSuccess }) {
                           className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400 bg-white"
                         >
                           <option value="">-- Select product or type below --</option>
-                          {products.map((p) => (
-                            <option key={p.id} value={p.id}>
-                              {p.name} — {currency}{Number(p.price).toFixed(2)}
-                            </option>
-                          ))}
+                          {products.map((p) => {
+                            const s = stock.find((s) => s.name.toLowerCase() === p.name.toLowerCase());
+                            return (
+                              <option key={p.id} value={p.id}>
+                                {p.name} — {currency}{Number(p.price).toFixed(2)}{s ? ` (${s.quantity} in stock)` : ""}
+                              </option>
+                            );
+                          })}
                         </select>
+                        {stockEntry && (
+                          <p className={`text-xs mt-1 m-0 ${stockEntry.quantity === 0 ? "text-red-500 font-medium" : isOverStock ? "text-amber-600 font-medium" : "text-gray-400"}`}>
+                            {stockEntry.quantity === 0
+                              ? "Out of stock"
+                              : isOverStock
+                              ? `Only ${stockEntry.quantity} available — ${enteredQty - stockEntry.quantity} short`
+                              : `${stockEntry.quantity} in stock`}
+                          </p>
+                        )}
                       </div>
 
                       {!item.productId && (
@@ -296,7 +335,7 @@ export function AddTransactionModal({ onClose, onSuccess }) {
                           min="1"
                           value={item.qty}
                           onChange={(e) => handleItemChange(index, "qty", e.target.value)}
-                          className="w-full border border-gray-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400"
+                          className={`w-full border rounded-lg px-3 py-2 text-sm outline-none focus:border-teal-400 ${isOverStock ? "border-amber-400 bg-amber-50" : "border-gray-200"}`}
                         />
                       </div>
                     </div>
@@ -316,7 +355,8 @@ export function AddTransactionModal({ onClose, onSuccess }) {
                       )}
                     </div>
                   </div>
-                ))}
+                  );
+                })}
               </div>
             </div>
 
